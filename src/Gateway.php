@@ -261,17 +261,24 @@ class Gateway
         $props = array_keys($classMetadata->properties);
         $propValues = $this->objectFactory->read($entity, $props);
 
-        $fieldNames = [];
-        $fieldValues = [];
-
         if ($classMetadata->isAutoIncrement) {
             foreach ($classMetadata->idProperties as $idProperty) {
                 if (isset($propValues[$idProperty])) {
                     // @todo custom exception
-                    throw new \RuntimeException('Cannot save() an entity with an auto-increment field already set.');
+                    throw new \RuntimeException('Cannot save() an entity with an autoincrement field already set.');
+                }
+            }
+        } else {
+            foreach ($classMetadata->idProperties as $idProperty) {
+                if (! isset($propValues[$idProperty])) {
+                    // @todo custom exception
+                    throw new \RuntimeException('Cannot save() an entity with a non-autoincrement identity not set.');
                 }
             }
         }
+
+        $fieldNames = [];
+        $fieldValues = [];
 
         foreach ($propValues as $prop => $value) {
             $classProperty = $classMetadata->properties[$prop];
@@ -309,6 +316,8 @@ class Gateway
      * @param object $entity The entity to update.
      *
      * @return void
+     *
+     * @throws \RuntimeException
      */
     public function update(string $class, object $entity) : void
     {
