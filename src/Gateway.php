@@ -218,7 +218,7 @@ class Gateway
      */
     public function exists(string $class, object $entity) : bool
     {
-
+        return $this->existsIdentity($class, $this->getIdentity($class, $entity));
     }
 
     /**
@@ -278,7 +278,7 @@ class Gateway
      */
     public function remove(string $class, object $entity) : void
     {
-
+        $this->removeIdentity($class, $this->getIdentity($class, $entity));
     }
 
     /**
@@ -294,5 +294,18 @@ class Gateway
     public function removeIdentity(string $class, array $id) : void
     {
 
+    }
+
+    /**
+     * @param string $class  The entity class name.
+     * @param object $entity The entity.
+     *
+     * @return array The identity, as an associative array of property name to value.
+     */
+    private function getIdentity(string $class, object $entity) : array
+    {
+        $classMetadata = $this->classMetadata[$class];
+
+        return $this->objectFactory->read($entity, $classMetadata->idProperties);
     }
 }

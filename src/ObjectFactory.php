@@ -55,7 +55,7 @@ class ObjectFactory
      *
      * @return void
      *
-     * @throws \ReflectionException If a class or property does not exist.
+     * @throws \ReflectionException If a property does not exist.
      */
     public function hydrate(object $object, array $values) : void
     {
@@ -77,5 +77,43 @@ class ObjectFactory
 
             $reflectionProperty->setValue($object, $value);
         }
+    }
+
+    /**
+     * Reads object properties.
+     *
+     * This does not currently aim to support private properties in parent classes.
+     *
+     * @param object $object The object to read.
+     * @param array  $props  A numeric array of property names to read.
+     *
+     * @return array An associative array mapping property names to values.
+     *
+     * @throws \ReflectionException If a property does not exist.
+     */
+    public function read(object $object, array $props) : array
+    {
+        $class = get_class($object);
+
+        if (isset($this->classes[$class])) {
+            $reflectionClass = $this->classes[$class];
+        } else {
+            $reflectionClass = $this->classes[$class] = new \ReflectionClass($class);
+        }
+
+        $values = [];
+
+        foreach ($props as $prop) {
+            if (isset($this->properties[$class][$prop])) {
+                $reflectionProperty = $this->properties[$class][$prop];
+            } else {
+                $reflectionProperty = $this->properties[$class][$prop] = $reflectionClass->getProperty($prop);
+                $reflectionProperty->setAccessible(true);
+            }
+
+            $values[$prop] = $reflectionProperty->getValue($object);
+        }
+
+        return $values;
     }
 }
