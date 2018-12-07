@@ -108,6 +108,29 @@ class Gateway
     }
 
     /**
+     * @param string $table        The table name.
+     * @param array  $updateFields The list of field names to update.
+     * @param array  $whereFields  The list of field names part of the WHERE clause.
+     *
+     * @return string
+     */
+    private function getUpdateSQL(string $table, array $updateFields, array $whereFields) : string
+    {
+        foreach ($updateFields as $key => $field) {
+            $updateFields[$key] = $field . ' = ?';
+        }
+
+        foreach ($whereFields as $key => $field) {
+            $whereFields[$key] = $field . ' = ?';
+        }
+
+        $updateFields = implode(', ', $updateFields);
+        $whereFields = implode(' AND ', $whereFields);
+
+        return sprintf('UPDATE %s SET %s WHERE %s', $table, $updateFields, $whereFields);
+    }
+
+    /**
      * Loads the entity with the given identity from the database.
      *
      * An optional array of property names can be provided, to load a partial object. By default, all properties will be
@@ -265,7 +288,7 @@ class Gateway
             foreach ($classMetadata->idProperties as $idProperty) {
                 if (isset($propValues[$idProperty])) {
                     // @todo custom exception
-                    throw new \RuntimeException('Cannot save() an entity with an autoincrement field already set.');
+                    throw new \RuntimeException('Cannot save() an entity with an autoincrement identity already set.');
                 }
             }
         } else {
@@ -280,6 +303,7 @@ class Gateway
         $fieldNames = [];
         $fieldValues = [];
 
+        // @todo don't not assume that all props are persistent; filter against the props listed in ClassMetadata
         foreach ($propValues as $prop => $value) {
             $classProperty = $classMetadata->properties[$prop];
 
@@ -321,7 +345,51 @@ class Gateway
      */
     public function update(string $class, object $entity) : void
     {
+        $classMetadata = $this->classMetadata[$class];
 
+        $props = array_keys($classMetadata->properties);
+        $propValues = $this->objectFactory->read($entity, $props);
+
+        foreach ($classMetadata->idProperties as $idProperty) {
+            if (! isset($propValues[$idProperty])) {
+                // @todo custom exception
+                throw new \RuntimeException('Cannot update() an entity with no identity.');
+            }
+        }
+
+        $updateFieldNames = [];
+        $whereFieldNames = [];
+        $fieldValues = [];
+
+        foreach ($classMetadata->nonIdProperties as $prop) {
+            if (isset($propValues[$prop])) {
+                $classProperty = $classMetadata->properties[$prop];
+
+                foreach ($classProperty->getFieldNames() as $fieldName) {
+                    $updateFieldNames[] = $fieldName;
+                }
+
+                foreach ($classProperty->propToFields($propValues[$prop]) as $fieldValue) {
+                    $fieldValues[] = $fieldValue;
+                }
+            }
+        }
+
+        foreach ($classMetadata->idProperties as $prop) {
+            $classProperty = $classMetadata->properties[$prop];
+
+            foreach ($classProperty->getFieldNames() as $fieldName) {
+                $whereFieldNames[] = $fieldName;
+            }
+
+            foreach ($classProperty->propToFields($propValues[$prop]) as $fieldValue) {
+                $fieldValues[] = $fieldValue;
+            }
+        }
+
+        $sql = $this->getUpdateSQL($classMetadata->tableName, $updateFieldNames, $whereFieldNames);
+        $statement = $this->connection->prepare($sql);
+        $statement->execute($fieldValues);
     }
 
     /**
