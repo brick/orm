@@ -131,6 +131,23 @@ class Gateway
     }
 
     /**
+     * @param string $table        The table name.
+     * @param array  $whereFields  The list of field names part of the WHERE clause.
+     *
+     * @return string
+     */
+    private function getDeleteSQL(string $table, array $whereFields) : string
+    {
+        foreach ($whereFields as $key => $field) {
+            $whereFields[$key] = $field . ' = ?';
+        }
+
+        $whereFields = implode(' AND ', $whereFields);
+
+        return sprintf('DELETE FROM %s WHERE %s', $table, $whereFields);
+    }
+
+    /**
      * Loads the entity with the given identity from the database.
      *
      * An optional array of property names can be provided, to load a partial object. By default, all properties will be
@@ -184,6 +201,11 @@ class Gateway
             foreach ($classProperty->propToFields($value) as $fieldValue) {
                 $whereFieldValues[] = $fieldValue;
             }
+        }
+
+        if (! $selectFields) {
+            // no props requested, just perform a SELECT 1
+            $selectFields = ['1'];
         }
 
         $sql = $this->getSelectSQL($classMetadata->tableName, $selectFields, $whereFields, $lockMode);
@@ -419,7 +441,26 @@ class Gateway
      */
     public function removeIdentity(string $class, array $id) : void
     {
+        $classMetadata = $this->classMetadata[$class];
 
+        $whereFields = [];
+        $whereFieldValues = [];
+
+        foreach ($id as $prop => $value) {
+            $classProperty = $classMetadata->properties[$prop];
+
+            foreach ($classProperty->getFieldNames() as $fieldName) {
+                $whereFields[] = $fieldName;
+            }
+
+            foreach ($classProperty->propToFields($value) as $fieldValue) {
+                $whereFieldValues[] = $fieldValue;
+            }
+        }
+
+        $sql = $this->getDeleteSQL($classMetadata->tableName, $whereFields);
+        $statement = $this->connection->prepare($sql);
+        $statement->execute($whereFieldValues);
     }
 
     /**
