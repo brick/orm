@@ -80,14 +80,24 @@ class ObjectFactory
     }
 
     /**
-     * Reads object properties.
+     * Reads *initialized* object properties.
+     *
+     * Only initialized properties are read from the object; in PHP 7.4 this will take on its full meaning,
+     * in the meantime we always consider null to be uninitialized; there is not ambiguity for non-nullable
+     * properties, but for nullable properties we cannot make the difference between a null property and an
+     * uninitialized property, so null will still be considered uninitialized.
+     *
+     * The impact will be visible when attempting to update() an existing entity, and a nullable property has been
+     * explicitly set to null: this property will *not* be saved to the database. This will be fixed with PHP 7.4.
+     *
+     * @todo Change for PHP 7.4
      *
      * This does not currently aim to support private properties in parent classes.
      *
      * @param object $object The object to read.
      * @param array  $props  A numeric array of property names to read.
      *
-     * @return array An associative array mapping property names to values.
+     * @return array A map of property names to values.
      *
      * @throws \ReflectionException If a property does not exist.
      */
@@ -111,7 +121,12 @@ class ObjectFactory
                 $reflectionProperty->setAccessible(true);
             }
 
-            $values[$prop] = $reflectionProperty->getValue($object);
+            // @todo if ($reflectionProperty->isInitialized()) {
+            $value = $reflectionProperty->getValue($object);
+
+            if ($value !== null) {
+                $values[$prop] = $value;
+            }
         }
 
         return $values;

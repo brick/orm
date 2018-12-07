@@ -13,6 +13,11 @@ use Brick\Db\Connection;
  * error messages when called with improper parameters. This class is not part of the public API and may change at any
  * time. Use the generated repositories instead. You have been warned.
  *
+ * Current limitations:
+ * - Before PHP 7.4: update() will ignore null fields, even if they've been explicitly nulled out after load()
+ * - No support for private properties in parent classes
+ * - No support for update() on mutated identities: explicitly remove() the previous identity then add() the new one
+ *
  * @internal
  */
 class Gateway
@@ -49,8 +54,8 @@ class Gateway
 
     /**
      * @param string   $table         The table to select from.
-     * @param string[] $selectFields  The field names to select.
-     * @param string[] $whereFields   The field names part of the WHERE clause.
+     * @param string[] $selectFields  The list of field names to select.
+     * @param string[] $whereFields   The list of field names part of the WHERE clause.
      * @param int      $lockMode      The lock mode, as a LockMode constant.
      *
      * @return string
@@ -86,6 +91,20 @@ class Gateway
         }
 
         return $query;
+    }
+
+    /**
+     * @param string $table  The table name.
+     * @param array  $fields The list of field names.
+     *
+     * @return string
+     */
+    private function getInsertSQL(string $table, array $fields) : string
+    {
+        $values = implode(', ', array_fill(0, count($fields), '?'));
+        $fields = implode(', ', $fields);
+
+        return sprintf('INSERT INTO %s (%s) VALUES (%s)', $table, $fields, $values);
     }
 
     /**
@@ -231,10 +250,54 @@ class Gateway
      * @param object $entity The entity to save.
      *
      * @return void
+     *
+     * @throws \RuntimeException
+     * @throws \Brick\Db\DbException If a database error occurs.
      */
     public function save(string $class, object $entity) : void
     {
+        $classMetadata = $this->classMetadata[$class];
 
+        $props = array_keys($classMetadata->properties);
+        $propValues = $this->objectFactory->read($entity, $props);
+
+        $fieldNames = [];
+        $fieldValues = [];
+
+        if ($classMetadata->isAutoIncrement) {
+            foreach ($classMetadata->idProperties as $idProperty) {
+                if (isset($propValues[$idProperty])) {
+                    // @todo custom exception
+                    throw new \RuntimeException('Cannot save() an entity with an auto-increment field already set.');
+                }
+            }
+        }
+
+        foreach ($propValues as $prop => $value) {
+            $classProperty = $classMetadata->properties[$prop];
+
+            foreach ($classProperty->getFieldNames() as $fieldName) {
+                $fieldNames[] = $fieldName;
+            }
+
+            foreach ($classProperty->propToFields($value) as $fieldValue) {
+                $fieldValues[] = $fieldValue;
+            }
+        }
+
+        $sql = $this->getInsertSQL($classMetadata->tableName, $fieldNames);
+        $statement = $this->connection->prepare($sql);
+        $statement->execute($fieldValues);
+
+        // Set the identity property if the table is auto-increment
+        if ($classMetadata->isAutoIncrement) {
+            $lastInsertId = $this->connection->lastInsertId();
+
+            $prop = $classMetadata->idProperties[0]; // can only be a single property mapping to a single field
+            $value = $classMetadata->properties[$prop]->fieldsToProp([$lastInsertId]);
+
+            $this->objectFactory->hydrate($entity, [$prop => $value]);
+        }
     }
 
     /**
@@ -287,11 +350,20 @@ class Gateway
      * @param object $entity The entity.
      *
      * @return array The identity, as an associative array of property name to value.
+     *
+     * @throws \RuntimeException
      */
     private function getIdentity(string $class, object $entity) : array
     {
         $classMetadata = $this->classMetadata[$class];
 
-        return $this->objectFactory->read($entity, $classMetadata->idProperties);
+        $identity = $this->objectFactory->read($entity, $classMetadata->idProperties);
+
+        if (count($identity) !== count($classMetadata->idProperties)) {
+            // @todo NoIdentityException
+            throw new \RuntimeException('The entity has no identity.');
+        }
+
+        return $identity;
     }
 }
