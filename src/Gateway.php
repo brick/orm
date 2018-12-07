@@ -89,25 +89,6 @@ class Gateway
     }
 
     /**
-     * @param ClassMetadata $classMetadata The class metadata.
-     * @param array         $propValues    An associative array of property name to value.
-     *
-     * @return array A numeric array of database field values.
-     */
-    private function getFieldValues(ClassMetadata $classMetadata, array $propValues) : array
-    {
-        $fieldValues = [];
-
-        foreach ($propValues as $prop => $value) {
-            foreach ($classMetadata->properties[$prop]->propToFields($value) as $fieldValue) {
-                $fieldValues[] = $fieldValue;
-            }
-        }
-
-        return $fieldValues;
-    }
-
-    /**
      * Loads the entity with the given identity from the database.
      *
      * An optional array of property names can be provided, to load a partial object. By default, all properties will be
@@ -149,18 +130,23 @@ class Gateway
         }
 
         $whereFields = [];
+        $whereFieldValues = [];
 
         foreach ($id as $prop => $value) {
-            foreach ($classMetadata->properties[$prop]->getFieldNames() as $fieldName) {
+            $classProperty = $classMetadata->properties[$prop];
+
+            foreach ($classProperty->getFieldNames() as $fieldName) {
                 $whereFields[] = $fieldName;
+            }
+
+            foreach ($classProperty->propToFields($value) as $fieldValue) {
+                $whereFieldValues[] = $fieldValue;
             }
         }
 
         $sql = $this->getSelectSQL($classMetadata->tableName, $selectFields, $whereFields, $lockMode);
         $statement = $this->connection->prepare($sql);
-
-        $values = $this->getFieldValues($classMetadata, $id);
-        $statement->execute($values);
+        $statement->execute($whereFieldValues);
 
         $fieldValues = $statement->fetch();
 
