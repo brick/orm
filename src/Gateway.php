@@ -15,7 +15,7 @@ use Brick\Db\Connection;
  *
  * Current limitations:
  * - Before PHP 7.4: update() will ignore null fields, even if they've been explicitly nulled out after load()
- * - No support for private properties in parent classes
+ * - No support for private properties (for simplicity, performance, ease of requesting property names in load(), and lazy initialization proxies)
  * - No support for update() on mutated identities: explicitly remove() the previous identity then add() the new one
  *
  * @internal
@@ -155,7 +155,7 @@ class Gateway
      * of this array or not. If an empty array is provided, only the properties part of the identity will be set.
      *
      * @param string        $class    The entity class name.
-     * @param array         $id       The identity, as an associative array of property name to value.
+     * @param array         $id       The identity, as a map of property name to value.
      * @param string[]|null $props    An optional array of property names to load.
      * @param int           $lockMode The lock mode.
      *
@@ -164,6 +164,29 @@ class Gateway
      * @throws \RuntimeException If a property name does not exist.
      */
     public function load(string $class, array $id, ?array $props, int $lockMode) : ?object
+    {
+        $propValues = $this->loadProps($class, $id, $props, $lockMode);
+
+        if ($propValues === null) {
+            return null;
+        }
+
+        return $this->objectFactory->instantiate($class, $propValues + $id);
+    }
+
+    /**
+     * Loads an entity's properties.
+     *
+     * @param string        $class    The entity class name.
+     * @param array         $id       The identity, as a map of property name to value.
+     * @param string[]|null $props    An optional array of property names to load. Defaults to non-id properties.
+     * @param int           $lockMode The lock mode.
+     *
+     * @return array|null The properties, or null if the entity doesn't exist.
+     *
+     * @throws \RuntimeException If a property name does not exist.
+     */
+    public function loadProps(string $class, array $id, ?array $props, int $lockMode) : ?array
     {
         $classMetadata = $this->classMetadata[$class];
 
@@ -218,8 +241,6 @@ class Gateway
             return null;
         }
 
-        $entity = $this->objectFactory->instantiate($class, $id);
-
         $index = 0;
         $propValues = [];
 
@@ -233,9 +254,7 @@ class Gateway
             $propValues[$prop] = $classProperty->fieldsToProp($propFieldValues);
         }
 
-        $this->objectFactory->hydrate($entity, $propValues);
-
-        return $entity;
+        return $propValues;
     }
 
     /**
@@ -249,13 +268,26 @@ class Gateway
      * Only properties part of the identity will be set.
      *
      * @param string $class The entity class name.
-     * @param array  $id    The identity, as an associative array of property name to value.
+     * @param array  $id    The identity, as a map of property name to value.
      *
      * @return object
      */
     public function getPlaceholder(string $class, array $id) : object
     {
         return $this->objectFactory->instantiate($class, $id);
+    }
+
+    /**
+     * @param string $class
+     * @param array  $id
+     *
+     * @return object
+     */
+    public function getProxy(string $class, array $id) : object
+    {
+        $proxyClass = sprintf('Brick\ORM\Proxy\%sProxy', (new \ReflectionClass($class))->getShortName());
+
+        return new $proxyClass($this, $id);
     }
 
     /**
@@ -277,7 +309,7 @@ class Gateway
      * @todo faster implementation
      *
      * @param string $class The entity class name.
-     * @param array  $id    The identity, as an associative array of property name to value.
+     * @param array  $id    The identity, as a map of property name to value.
      *
      * @return bool
      */
@@ -435,7 +467,7 @@ class Gateway
      * This results in an immediate DELETE statement being executed against the database.
      *
      * @param string $class The entity class name.
-     * @param array  $id    The identity, as an associative array of property name to value.
+     * @param array  $id    The identity, as a map of property name to value.
      *
      * @return void
      */
@@ -467,7 +499,7 @@ class Gateway
      * @param string $class  The entity class name.
      * @param object $entity The entity.
      *
-     * @return array The identity, as an associative array of property name to value.
+     * @return array The identity, as a map of property name to value.
      *
      * @throws \RuntimeException
      */
