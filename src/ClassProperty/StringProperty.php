@@ -2,6 +2,8 @@
 
 namespace Brick\ORM\ClassProperty;
 
+use Brick\ORM\Gateway;
+
 /**
  * @internal
  */
@@ -22,7 +24,7 @@ class StringProperty extends BuiltinProperty
     /**
      * {@inheritdoc}
      */
-    public function fieldsToProp(array $fieldValues)
+    public function fieldsToProp(Gateway $gateway, array $fieldValues)
     {
         if ($fieldValues[0] === null) {
             return null;

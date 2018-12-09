@@ -4,6 +4,7 @@ namespace Brick\ORM\ClassProperty;
 
 use Brick\ORM\ClassMetadata;
 use Brick\ORM\ClassProperty;
+use Brick\ORM\Gateway;
 
 /**
  * @internal
@@ -94,8 +95,15 @@ class EntityProperty implements ClassProperty
     /**
      * {@inheritdoc}
      */
-    public function fieldsToProp(array $fieldValues)
+    public function fieldsToProp(Gateway $gateway, array $fieldValues)
     {
-        // @todo implement (generate proxy?)
+        $id = [];
+        $index = 0;
+
+        foreach ($this->classMetadata->idProperties as $idProperty) {
+            $id[$idProperty] = $fieldValues[$index++];
+        }
+
+        return $gateway->getProxy($this->classMetadata->className, $id);
     }
 }

@@ -1,8 +1,6 @@
 <?php
 
-namespace Brick\ORM;
-
-use Brick\ORM\Reflection\PropertyType;
+namespace Brick\ORM\Reflection;
 
 use Brick\Reflection\ImportResolver;
 

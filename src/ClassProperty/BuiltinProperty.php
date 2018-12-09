@@ -12,7 +12,7 @@ abstract class BuiltinProperty implements ClassProperty
     /**
      * @var string
      */
-    protected $fieldName;
+    public $fieldName;
 
     /**
      * @param string $fieldName

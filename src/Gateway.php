@@ -251,7 +251,7 @@ class Gateway
             $propFieldValues = array_slice($fieldValues, $index, $fieldCount);
             $index += $fieldCount;
 
-            $propValues[$prop] = $classProperty->fieldsToProp($propFieldValues);
+            $propValues[$prop] = $classProperty->fieldsToProp($this, $propFieldValues);
         }
 
         return $propValues;
@@ -379,7 +379,7 @@ class Gateway
             $lastInsertId = $this->connection->lastInsertId();
 
             $prop = $classMetadata->idProperties[0]; // can only be a single property mapping to a single field
-            $value = $classMetadata->properties[$prop]->fieldsToProp([$lastInsertId]);
+            $value = $classMetadata->properties[$prop]->fieldsToProp($this, [$lastInsertId]);
 
             $this->objectFactory->hydrate($entity, [$prop => $value]);
         }

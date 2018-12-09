@@ -40,9 +40,10 @@ interface ClassProperty
      * The number of values of the input array must be equal to the number returned by getFieldCount().
      * Each value must be of one of the native PHP types accepted by the PreparedStatement::execute() method.
      *
+     * @param Gateway $gateway
      * @param mixed[] $fieldValues The list of database field values.
      *
      * @return mixed The property value.
      */
-    public function fieldsToProp(array $fieldValues);
+    public function fieldsToProp(Gateway $gateway, array $fieldValues);
 }
