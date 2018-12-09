@@ -1,15 +1,15 @@
 <?php
 
-namespace Brick\ORM\ClassProperty;
+namespace Brick\ORM\PropertyMapping;
 
 use Brick\ORM\ClassMetadata;
-use Brick\ORM\ClassProperty;
+use Brick\ORM\PropertyMapping;
 use Brick\ORM\Gateway;
 
 /**
  * @internal
  */
-class EntityProperty implements ClassProperty
+class EntityMapping implements PropertyMapping
 {
     /**
      * The class metadata of the target entity.

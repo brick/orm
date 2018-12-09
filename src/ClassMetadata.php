@@ -21,9 +21,9 @@ class ClassMetadata
     public $tableName;
 
     /**
-     * A map of property names to ClassProperty instances.
+     * A map of property names to PropertyMapping instances.
      *
-     * @var ClassProperty[]
+     * @var PropertyMapping[]
      */
     public $properties;
 

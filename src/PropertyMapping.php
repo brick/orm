@@ -2,7 +2,7 @@
 
 namespace Brick\ORM;
 
-interface ClassProperty
+interface PropertyMapping
 {
     /**
      * Returns the number of database fields required to compute the property value.

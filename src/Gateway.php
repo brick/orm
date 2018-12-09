@@ -215,13 +215,13 @@ class Gateway
         $whereFieldValues = [];
 
         foreach ($id as $prop => $value) {
-            $classProperty = $classMetadata->properties[$prop];
+            $propertyMapping = $classMetadata->properties[$prop];
 
-            foreach ($classProperty->getFieldNames() as $fieldName) {
+            foreach ($propertyMapping->getFieldNames() as $fieldName) {
                 $whereFields[] = $fieldName;
             }
 
-            foreach ($classProperty->propToFields($value) as $fieldValue) {
+            foreach ($propertyMapping->propToFields($value) as $fieldValue) {
                 $whereFieldValues[] = $fieldValue;
             }
         }
@@ -245,13 +245,13 @@ class Gateway
         $propValues = [];
 
         foreach ($props as $prop) {
-            $classProperty = $classMetadata->properties[$prop];
-            $fieldCount = $classProperty->getFieldCount();
+            $propertyMapping = $classMetadata->properties[$prop];
+            $fieldCount = $propertyMapping->getFieldCount();
 
             $propFieldValues = array_slice($fieldValues, $index, $fieldCount);
             $index += $fieldCount;
 
-            $propValues[$prop] = $classProperty->fieldsToProp($this, $propFieldValues);
+            $propValues[$prop] = $propertyMapping->fieldsToProp($this, $propFieldValues);
         }
 
         return $propValues;
@@ -359,13 +359,13 @@ class Gateway
 
         // @todo don't not assume that all props are persistent; filter against the props listed in ClassMetadata
         foreach ($propValues as $prop => $value) {
-            $classProperty = $classMetadata->properties[$prop];
+            $propertyMapping = $classMetadata->properties[$prop];
 
-            foreach ($classProperty->getFieldNames() as $fieldName) {
+            foreach ($propertyMapping->getFieldNames() as $fieldName) {
                 $fieldNames[] = $fieldName;
             }
 
-            foreach ($classProperty->propToFields($value) as $fieldValue) {
+            foreach ($propertyMapping->propToFields($value) as $fieldValue) {
                 $fieldValues[] = $fieldValue;
             }
         }
@@ -417,26 +417,26 @@ class Gateway
 
         foreach ($classMetadata->nonIdProperties as $prop) {
             if (isset($propValues[$prop])) {
-                $classProperty = $classMetadata->properties[$prop];
+                $propertyMapping = $classMetadata->properties[$prop];
 
-                foreach ($classProperty->getFieldNames() as $fieldName) {
+                foreach ($propertyMapping->getFieldNames() as $fieldName) {
                     $updateFieldNames[] = $fieldName;
                 }
 
-                foreach ($classProperty->propToFields($propValues[$prop]) as $fieldValue) {
+                foreach ($propertyMapping->propToFields($propValues[$prop]) as $fieldValue) {
                     $fieldValues[] = $fieldValue;
                 }
             }
         }
 
         foreach ($classMetadata->idProperties as $prop) {
-            $classProperty = $classMetadata->properties[$prop];
+            $propertyMapping = $classMetadata->properties[$prop];
 
-            foreach ($classProperty->getFieldNames() as $fieldName) {
+            foreach ($propertyMapping->getFieldNames() as $fieldName) {
                 $whereFieldNames[] = $fieldName;
             }
 
-            foreach ($classProperty->propToFields($propValues[$prop]) as $fieldValue) {
+            foreach ($propertyMapping->propToFields($propValues[$prop]) as $fieldValue) {
                 $fieldValues[] = $fieldValue;
             }
         }
@@ -479,13 +479,13 @@ class Gateway
         $whereFieldValues = [];
 
         foreach ($id as $prop => $value) {
-            $classProperty = $classMetadata->properties[$prop];
+            $propertyMapping = $classMetadata->properties[$prop];
 
-            foreach ($classProperty->getFieldNames() as $fieldName) {
+            foreach ($propertyMapping->getFieldNames() as $fieldName) {
                 $whereFields[] = $fieldName;
             }
 
-            foreach ($classProperty->propToFields($value) as $fieldValue) {
+            foreach ($propertyMapping->propToFields($value) as $fieldValue) {
                 $whereFieldValues[] = $fieldValue;
             }
         }

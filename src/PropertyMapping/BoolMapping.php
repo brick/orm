@@ -1,13 +1,13 @@
 <?php
 
-namespace Brick\ORM\ClassProperty;
+namespace Brick\ORM\PropertyMapping;
 
 use Brick\ORM\Gateway;
 
 /**
  * @internal
  */
-class BoolProperty extends BuiltinProperty
+class BoolMapping extends BuiltinTypeMapping
 {
     /**
      * {@inheritdoc}

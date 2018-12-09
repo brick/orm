@@ -1,13 +1,13 @@
 <?php
 
-namespace Brick\ORM\ClassProperty;
+namespace Brick\ORM\PropertyMapping;
 
-use Brick\ORM\ClassProperty;
+use Brick\ORM\PropertyMapping;
 
 /**
  * @internal
  */
-abstract class BuiltinProperty implements ClassProperty
+abstract class BuiltinTypeMapping implements PropertyMapping
 {
     /**
      * @var string
