@@ -53,25 +53,21 @@ class Gateway
     }
 
     /**
-     * @param string   $table         The table to select from.
-     * @param string[] $selectFields  The list of field names to select.
-     * @param string[] $whereFields   The list of field names part of the WHERE clause.
-     * @param int      $lockMode      The lock mode, as a LockMode constant.
+     * @param string   $table           The table to select from.
+     * @param string[] $selectFields    The list of field names to select.
+     * @param string[] $whereConditions The list of 'key = value' conditions.
+     * @param int      $lockMode        The lock mode, as a LockMode constant.
      *
      * @return string
      *
      * @throws \InvalidArgumentException
      */
-    private function getSelectSQL(string $table, array $selectFields, array $whereFields, int $lockMode) : string
+    private function getSelectSQL(string $table, array $selectFields, array $whereConditions, int $lockMode) : string
     {
-        foreach ($whereFields as $key => $field) {
-            $whereFields[$key] = $field . ' = ?';
-        }
-
         $selectFields = implode(', ', $selectFields);
-        $whereFields = implode(' AND ', $whereFields);
+        $whereConditions = implode(' AND ', $whereConditions);
 
-        $query = sprintf('SELECT %s FROM %s WHERE %s', $selectFields, $table, $whereFields);
+        $query = sprintf('SELECT %s FROM %s WHERE %s', $selectFields, $table, $whereConditions);
 
         // @todo MySQL / PostgreSQL only
         switch ($lockMode) {
@@ -94,57 +90,50 @@ class Gateway
     }
 
     /**
-     * @param string $table  The table name.
-     * @param array  $fields The list of field names.
+     * Builds an INSERT query.
+     *
+     * The arrays of fields and values must have the same number of elements.
+     *
+     * @param string   $table  The table name.
+     * @param string[] $fields The list of field names.
+     * @param string[] $values The list of placeheld field values.
      *
      * @return string
      */
-    private function getInsertSQL(string $table, array $fields) : string
+    private function getInsertSQL(string $table, array $fields, array $values) : string
     {
-        $values = implode(', ', array_fill(0, count($fields), '?'));
         $fields = implode(', ', $fields);
+        $values = implode(', ', $values);
 
         return sprintf('INSERT INTO %s (%s) VALUES (%s)', $table, $fields, $values);
     }
 
     /**
-     * @param string $table        The table name.
-     * @param array  $updateFields The list of field names to update.
-     * @param array  $whereFields  The list of field names part of the WHERE clause.
+     * @param string $table           The table name.
+     * @param array  $updates         The list of 'key = value' pairs to update.
+     * @param array  $whereConditions The list of 'key = value' WHERE conditions.
      *
      * @return string
      */
-    private function getUpdateSQL(string $table, array $updateFields, array $whereFields) : string
+    private function getUpdateSQL(string $table, array $updates, array $whereConditions) : string
     {
-        foreach ($updateFields as $key => $field) {
-            $updateFields[$key] = $field . ' = ?';
-        }
+        $updates = implode(', ', $updates);
+        $whereConditions = implode(' AND ', $whereConditions);
 
-        foreach ($whereFields as $key => $field) {
-            $whereFields[$key] = $field . ' = ?';
-        }
-
-        $updateFields = implode(', ', $updateFields);
-        $whereFields = implode(' AND ', $whereFields);
-
-        return sprintf('UPDATE %s SET %s WHERE %s', $table, $updateFields, $whereFields);
+        return sprintf('UPDATE %s SET %s WHERE %s', $table, $updates, $whereConditions);
     }
 
     /**
-     * @param string $table        The table name.
-     * @param array  $whereFields  The list of field names part of the WHERE clause.
+     * @param string $table           The table name.
+     * @param array  $whereConditions The list of 'key = value' WHERE conditions.
      *
      * @return string
      */
-    private function getDeleteSQL(string $table, array $whereFields) : string
+    private function getDeleteSQL(string $table, array $whereConditions) : string
     {
-        foreach ($whereFields as $key => $field) {
-            $whereFields[$key] = $field . ' = ?';
-        }
+        $whereConditions = implode(' AND ', $whereConditions);
 
-        $whereFields = implode(' AND ', $whereFields);
-
-        return sprintf('DELETE FROM %s WHERE %s', $table, $whereFields);
+        return sprintf('DELETE FROM %s WHERE %s', $table, $whereConditions);
     }
 
     /**
@@ -206,23 +195,30 @@ class Gateway
         $selectFields = [];
 
         foreach ($props as $prop) {
-            foreach ($classMetadata->properties[$prop]->getFieldNames() as $fieldName) {
-                $selectFields[] = $fieldName;
+            $propertyMapping = $classMetadata->properties[$prop];
+
+            // @todo quote field names
+            $fieldNames = $propertyMapping->getFieldNames();
+            $fieldToInputValuesSQL = $propertyMapping->getFieldToInputValuesSQL($fieldNames);
+
+            foreach ($fieldToInputValuesSQL as $selectField) {
+                $selectFields[] = $selectField;
             }
         }
 
-        $whereFields = [];
-        $whereFieldValues = [];
+        $whereConditions = [];
+        $outputValues = [];
 
         foreach ($id as $prop => $value) {
             $propertyMapping = $classMetadata->properties[$prop];
+            $valuesToFieldSQL = $propertyMapping->getOutputValuesToFieldSQL();
 
-            foreach ($propertyMapping->getFieldNames() as $fieldName) {
-                $whereFields[] = $fieldName;
+            foreach ($propertyMapping->getFieldNames() as $index => $fieldName) { // @todo quote field name
+                $whereConditions[] = $fieldName . ' = ' . $valuesToFieldSQL[$index];
             }
 
-            foreach ($propertyMapping->propToFields($value) as $fieldValue) {
-                $whereFieldValues[] = $fieldValue;
+            foreach ($propertyMapping->convertPropToOutputValues($value) as $outputValue) {
+                $outputValues[] = $outputValue;
             }
         }
 
@@ -231,13 +227,13 @@ class Gateway
             $selectFields = ['1'];
         }
 
-        $sql = $this->getSelectSQL($classMetadata->tableName, $selectFields, $whereFields, $lockMode);
+        $sql = $this->getSelectSQL($classMetadata->tableName, $selectFields, $whereConditions, $lockMode);
         $statement = $this->connection->prepare($sql);
-        $statement->execute($whereFieldValues);
+        $statement->execute($outputValues);
 
-        $fieldValues = $statement->fetch();
+        $inputValues = $statement->fetch();
 
-        if ($fieldValues === null) {
+        if ($inputValues === null) {
             return null;
         }
 
@@ -246,12 +242,12 @@ class Gateway
 
         foreach ($props as $prop) {
             $propertyMapping = $classMetadata->properties[$prop];
-            $fieldCount = $propertyMapping->getFieldCount();
+            $valuesCount = $propertyMapping->getInputValuesCount();
 
-            $propFieldValues = array_slice($fieldValues, $index, $fieldCount);
-            $index += $fieldCount;
+            $propInputValues = array_slice($inputValues, $index, $valuesCount);
+            $index += $valuesCount;
 
-            $propValues[$prop] = $propertyMapping->fieldsToProp($this, $propFieldValues);
+            $propValues[$prop] = $propertyMapping->convertInputValuesToProp($this, $propInputValues);
         }
 
         return $propValues;
@@ -356,30 +352,35 @@ class Gateway
 
         $fieldNames = [];
         $fieldValues = [];
+        $outputValues = [];
 
-        // @todo don't not assume that all props are persistent; filter against the props listed in ClassMetadata
+        // @todo do not assume that all props are persistent; filter against the props listed in ClassMetadata
         foreach ($propValues as $prop => $value) {
             $propertyMapping = $classMetadata->properties[$prop];
 
-            foreach ($propertyMapping->getFieldNames() as $fieldName) {
+            $valuesToFieldSQL = $propertyMapping->getOutputValuesToFieldSQL();
+
+            foreach ($propertyMapping->getFieldNames() as $index => $fieldName) { // @todo quote field name
                 $fieldNames[] = $fieldName;
+                $fieldValues[] = $valuesToFieldSQL[$index];
             }
 
-            foreach ($propertyMapping->propToFields($value) as $fieldValue) {
-                $fieldValues[] = $fieldValue;
+            foreach ($propertyMapping->convertPropToOutputValues($value) as $outputValue) {
+                $outputValues[] = $outputValue;
             }
         }
 
-        $sql = $this->getInsertSQL($classMetadata->tableName, $fieldNames);
+        $sql = $this->getInsertSQL($classMetadata->tableName, $fieldNames, $fieldValues);
         $statement = $this->connection->prepare($sql);
-        $statement->execute($fieldValues);
+        $statement->execute($outputValues);
 
         // Set the identity property if the table is auto-increment
         if ($classMetadata->isAutoIncrement) {
             $lastInsertId = $this->connection->lastInsertId();
 
-            $prop = $classMetadata->idProperties[0]; // can only be a single property mapping to a single field
-            $value = $classMetadata->properties[$prop]->fieldsToProp($this, [$lastInsertId]);
+            // Note: can only be a single property mapping to a single field, using a single scalar value
+            $prop = $classMetadata->idProperties[0];
+            $value = $classMetadata->properties[$prop]->convertInputValuesToProp($this, [$lastInsertId]);
 
             $this->objectFactory->hydrate($entity, [$prop => $value]);
         }
@@ -411,39 +412,41 @@ class Gateway
             }
         }
 
-        $updateFieldNames = [];
-        $whereFieldNames = [];
-        $fieldValues = [];
+        $updates = [];
+        $whereConditions = [];
+        $outputValues = [];
 
         foreach ($classMetadata->nonIdProperties as $prop) {
             if (isset($propValues[$prop])) {
                 $propertyMapping = $classMetadata->properties[$prop];
+                $valuesToFieldSQL = $propertyMapping->getOutputValuesToFieldSQL();
 
-                foreach ($propertyMapping->getFieldNames() as $fieldName) {
-                    $updateFieldNames[] = $fieldName;
+                foreach ($propertyMapping->getFieldNames() as $index => $fieldName) { // @todo quote field name
+                    $updates[] = $fieldName . ' = ' . $valuesToFieldSQL[$index];
                 }
 
-                foreach ($propertyMapping->propToFields($propValues[$prop]) as $fieldValue) {
-                    $fieldValues[] = $fieldValue;
+                foreach ($propertyMapping->convertPropToOutputValues($propValues[$prop]) as $outputValue) {
+                    $outputValues[] = $outputValue;
                 }
             }
         }
 
         foreach ($classMetadata->idProperties as $prop) {
             $propertyMapping = $classMetadata->properties[$prop];
+            $valuesToFieldSQL = $propertyMapping->getOutputValuesToFieldSQL();
 
-            foreach ($propertyMapping->getFieldNames() as $fieldName) {
-                $whereFieldNames[] = $fieldName;
+            foreach ($propertyMapping->getFieldNames() as $index => $fieldName) {
+                $whereConditions[] = $fieldName . ' = ' . $valuesToFieldSQL[$index];
             }
 
-            foreach ($propertyMapping->propToFields($propValues[$prop]) as $fieldValue) {
-                $fieldValues[] = $fieldValue;
+            foreach ($propertyMapping->convertPropToOutputValues($propValues[$prop]) as $outputValue) {
+                $outputValues[] = $outputValue;
             }
         }
 
-        $sql = $this->getUpdateSQL($classMetadata->tableName, $updateFieldNames, $whereFieldNames);
+        $sql = $this->getUpdateSQL($classMetadata->tableName, $updates, $whereConditions);
         $statement = $this->connection->prepare($sql);
-        $statement->execute($fieldValues);
+        $statement->execute($outputValues);
     }
 
     /**
@@ -475,24 +478,25 @@ class Gateway
     {
         $classMetadata = $this->classMetadata[$class];
 
-        $whereFields = [];
-        $whereFieldValues = [];
+        $whereConditions = [];
+        $outputValues = [];
 
         foreach ($id as $prop => $value) {
             $propertyMapping = $classMetadata->properties[$prop];
+            $valuesToFieldSQL = $propertyMapping->getOutputValuesToFieldSQL();
 
-            foreach ($propertyMapping->getFieldNames() as $fieldName) {
-                $whereFields[] = $fieldName;
+            foreach ($propertyMapping->getFieldNames() as $index => $fieldName) { // @todo quote field name
+                $whereConditions[] = $fieldName . ' = ' . $valuesToFieldSQL[$index];
             }
 
-            foreach ($propertyMapping->propToFields($value) as $fieldValue) {
-                $whereFieldValues[] = $fieldValue;
+            foreach ($propertyMapping->convertPropToOutputValues($value) as $outputValue) {
+                $outputValues[] = $outputValue;
             }
         }
 
-        $sql = $this->getDeleteSQL($classMetadata->tableName, $whereFields);
+        $sql = $this->getDeleteSQL($classMetadata->tableName, $whereConditions);
         $statement = $this->connection->prepare($sql);
-        $statement->execute($whereFieldValues);
+        $statement->execute($outputValues);
     }
 
     /**

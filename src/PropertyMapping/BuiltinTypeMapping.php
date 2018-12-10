@@ -25,7 +25,15 @@ abstract class BuiltinTypeMapping implements PropertyMapping
     /**
      * {@inheritdoc}
      */
-    public function getFieldCount() : int
+    public function getFieldNames() : array
+    {
+        return [$this->fieldName];
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getInputValuesCount(): int
     {
         return 1;
     }
@@ -33,8 +41,16 @@ abstract class BuiltinTypeMapping implements PropertyMapping
     /**
      * {@inheritdoc}
      */
-    public function getFieldNames() : array
+    public function getFieldToInputValuesSQL(array $fieldNames) : array
     {
-        return [$this->fieldName];
+        return $fieldNames;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getOutputValuesToFieldSQL() : array
+    {
+        return ['?'];
     }
 }

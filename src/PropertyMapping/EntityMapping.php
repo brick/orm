@@ -38,22 +38,6 @@ class EntityMapping implements PropertyMapping
      *
      * {@inheritdoc}
      */
-    public function getFieldCount() : int
-    {
-        $count = 0;
-
-        foreach ($this->classMetadata->idProperties as $prop) {
-            $count += $this->classMetadata->properties[$prop]->getFieldCount();
-        }
-
-        return $count;
-    }
-
-    /**
-     * @todo precompute for better performance
-     *
-     * {@inheritdoc}
-     */
     public function getFieldNames() : array
     {
         $names = [];
@@ -68,11 +52,79 @@ class EntityMapping implements PropertyMapping
     }
 
     /**
+     * @todo quick&dirty; precompute for better performance
+     *
+     * {@inheritdoc}
+     */
+    public function getInputValuesCount(): int
+    {
+        return count($this->getFieldToInputValuesSQL($this->getFieldNames()));
+    }
+
+    /**
+     * @todo precompute for better performance
+     *
+     * {@inheritdoc}
+     */
+    public function getFieldToInputValuesSQL(array $fieldNames) : array
+    {
+        $wrappedFields = [];
+        $currentIndex = 0;
+
+        foreach ($this->classMetadata->idProperties as $prop) {
+            $propertyMapping = $this->classMetadata->properties[$prop];
+            $readFieldCount = $propertyMapping->getInputValuesCount();
+
+            $currentFieldNames = array_slice($fieldNames, $currentIndex, $readFieldCount);
+            $currentIndex += $readFieldCount;
+
+            foreach ($propertyMapping->getFieldToInputValuesSQL($currentFieldNames) as $wrappedField) {
+                $wrappedFields[] = $wrappedField;
+            }
+        }
+
+        return $wrappedFields;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function convertInputValuesToProp(Gateway $gateway, array $values)
+    {
+        $id = [];
+        $index = 0;
+
+        foreach ($this->classMetadata->idProperties as $idProperty) {
+            $id[$idProperty] = $values[$index++];
+        }
+
+        return $gateway->getProxy($this->classMetadata->className, $id);
+    }
+
+    /**
+     * @todo precompute for better performance
+     *
+     * {@inheritdoc}
+     */
+    public function getOutputValuesToFieldSQL() : array
+    {
+        $result = [];
+
+        foreach ($this->classMetadata->idProperties as $prop) {
+            foreach ($this->classMetadata->properties[$prop]->getOutputValuesToFieldSQL() as $sql) {
+                $result[] = $sql;
+            }
+        }
+
+        return $result;
+    }
+
+    /**
      * @todo use Gateway::getIdentity() instead; currently does not check that the object has an identity
      *
      * {@inheritdoc}
      */
-    public function propToFields($propValue) : array
+    public function convertPropToOutputValues($propValue) : array
     {
         $entity = $propValue;
         $r = new \ReflectionObject($entity);
@@ -84,26 +136,11 @@ class EntityMapping implements PropertyMapping
             $p->setAccessible(true);
             $idPropValue = $p->getValue($entity);
 
-            foreach ($this->classMetadata->properties[$prop]->propToFields($idPropValue) as $fieldValue) {
+            foreach ($this->classMetadata->properties[$prop]->convertPropToOutputValues($idPropValue) as $fieldValue) {
                 $fieldValues[] = $fieldValue;
             }
         }
 
         return $fieldValues;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function fieldsToProp(Gateway $gateway, array $fieldValues)
-    {
-        $id = [];
-        $index = 0;
-
-        foreach ($this->classMetadata->idProperties as $idProperty) {
-            $id[$idProperty] = $fieldValues[$index++];
-        }
-
-        return $gateway->getProxy($this->classMetadata->className, $id);
     }
 }

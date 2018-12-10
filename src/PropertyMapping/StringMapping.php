@@ -12,7 +12,7 @@ class StringMapping extends BuiltinTypeMapping
     /**
      * {@inheritdoc}
      */
-    public function propToFields($propValue) : array
+    public function convertPropToOutputValues($propValue) : array
     {
         if ($propValue === null) {
             return [null];
@@ -24,12 +24,12 @@ class StringMapping extends BuiltinTypeMapping
     /**
      * {@inheritdoc}
      */
-    public function fieldsToProp(Gateway $gateway, array $fieldValues)
+    public function convertInputValuesToProp(Gateway $gateway, array $values)
     {
-        if ($fieldValues[0] === null) {
+        if ($values[0] === null) {
             return null;
         }
 
-        return (string) $fieldValues[0];
+        return (string) $values[0];
     }
 }
