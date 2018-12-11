@@ -14,6 +14,13 @@ class ClassMetadata
     public $className;
 
     /**
+     * The entity's proxy class name.
+     *
+     * @var string
+     */
+    public $proxyClassName;
+
+    /**
      * The database table name.
      *
      * @var string
