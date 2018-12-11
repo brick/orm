@@ -40,16 +40,23 @@ class Gateway
     private $objectFactory;
 
     /**
+     * @var string
+     */
+    private $proxyNamespace;
+
+    /**
      * Gateway constructor.
      *
      * @param Connection      $connection
      * @param ClassMetadata[] $classMetadata
+     * @param string          $proxyNamespace
      */
-    public function __construct(Connection $connection, array $classMetadata)
+    public function __construct(Connection $connection, array $classMetadata, string $proxyNamespace)
     {
         $this->connection = $connection;
         $this->classMetadata = $classMetadata;
         $this->objectFactory = new ObjectFactory();
+        $this->proxyNamespace = $proxyNamespace;
     }
 
     /**
@@ -281,7 +288,8 @@ class Gateway
      */
     public function getProxy(string $class, array $id) : object
     {
-        $proxyClass = sprintf('Brick\ORM\Proxy\%sProxy', (new \ReflectionClass($class))->getShortName());
+        $shortName = (new \ReflectionClass($class))->getShortName();
+        $proxyClass = sprintf('%s\%sProxy', $this->proxyNamespace, $shortName);
 
         return new $proxyClass($this, $id);
     }
