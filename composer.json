@@ -1,0 +1,20 @@
+{
+  "name": "brick/orm",
+  "description": "Object-Relational Mapper",
+  "type": "library",
+  "keywords": [
+    "ORM",
+    "Data Mapper"
+  ],
+  "license": "MIT",
+  "require": {
+    "php": ">=7.2",
+    "brick/db": "dev-interfaces",
+    "brick/reflection": "0.2.*"
+  },
+  "autoload": {
+    "psr-4": {
+      "Brick\\ORM\\": "src/"
+    }
+  }
+}
