@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace REPO_NAMESPACE;
 
 use Brick\ORM\Gateway;
