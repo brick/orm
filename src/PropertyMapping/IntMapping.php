@@ -14,6 +14,14 @@ class IntMapping extends BuiltinTypeMapping
     /**
      * {@inheritdoc}
      */
+    public function getType() : string
+    {
+        return 'int';
+    }
+
+    /**
+     * {@inheritdoc}
+     */
     public function convertPropToOutputValues($propValue) : array
     {
         if ($propValue === null) {

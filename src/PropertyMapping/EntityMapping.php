@@ -36,6 +36,14 @@ class EntityMapping implements PropertyMapping
     }
 
     /**
+     * {@inheritdoc}
+     */
+    public function getType() : string
+    {
+        return $this->classMetadata->className;
+    }
+
+    /**
      * @todo precompute for better performance
      *
      * {@inheritdoc}

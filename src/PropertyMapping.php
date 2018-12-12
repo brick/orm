@@ -10,6 +10,13 @@ namespace Brick\ORM;
 interface PropertyMapping
 {
     /**
+     * Returns the PHP type of the property.
+     *
+     * @return string
+     */
+    public function getType() : string;
+
+    /**
      * Returns the list of database field names required to compute the property value.
      *
      * @return string[]

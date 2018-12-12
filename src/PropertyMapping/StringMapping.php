@@ -14,6 +14,14 @@ class StringMapping extends BuiltinTypeMapping
     /**
      * {@inheritdoc}
      */
+    public function getType() : string
+    {
+        return 'string';
+    }
+
+    /**
+     * {@inheritdoc}
+     */
     public function convertPropToOutputValues($propValue) : array
     {
         if ($propValue === null) {

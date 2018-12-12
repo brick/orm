@@ -14,6 +14,14 @@ class BoolMapping extends BuiltinTypeMapping
     /**
      * {@inheritdoc}
      */
+    public function getType() : string
+    {
+        return 'bool';
+    }
+
+    /**
+     * {@inheritdoc}
+     */
     public function convertPropToOutputValues($propValue) : array
     {
         if ($propValue === null) {

@@ -27,6 +27,11 @@ class Configuration
     private $repositoryDir;
 
     /**
+     * @var string|null
+     */
+    private $classMetadataFile;
+
+    /**
      * @var EntityConfiguration[]
      */
     private $entities = [];
@@ -133,6 +138,38 @@ class Configuration
         }
 
         return $this->repositoryDir;
+    }
+
+    /**
+     * Sets the path to the PHP file where the ClassMetadata will be stored.
+     *
+     * @param string $classMetadataFile
+     *
+     * @return Configuration
+     */
+    public function setClassMetadataFile(string $classMetadataFile) : Configuration
+    {
+        $this->classMetadataFile = $classMetadataFile;
+
+        if (substr($classMetadataFile, -4) !== '.php') {
+            throw new \InvalidArgumentException('The ClassMetadata file path must have a .php extension.');
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return string
+     *
+     * @throws \LogicException
+     */
+    public function getClassMetadataFile() : string
+    {
+        if ($this->classMetadataFile === null) {
+            throw new \LogicException('ClassMetadata file path is not set.');
+        }
+
+        return $this->classMetadataFile;
     }
 
     /**
