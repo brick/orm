@@ -14,6 +14,17 @@ use Brick\Reflection\ImportResolver;
  */
 class PropertyTypeChecker
 {
+    private const BUILTIN_TYPES = [
+        'bool',
+        'int',
+        'float',
+        'string',
+        'array',
+        'object',
+        'callable',
+        'iterable'
+    ];
+
     /**
      * An associative array of ImportResolver objects, indexed by FQCN.
      *
@@ -118,18 +129,9 @@ class PropertyTypeChecker
             throw new \RuntimeException('The type of a property cannot be void.');
         }
 
-        $builtInTypes = [
-            'bool',
-            'int',
-            'float',
-            'string',
-            'array',
-            'object',
-            'callable',
-            'iterable'
-        ];
+        $isBuiltin = in_array($typeLower, self::BUILTIN_TYPES, true);
 
-        if (! in_array($typeLower, $builtInTypes, true)) {
+        if (! $isBuiltin) {
             // Not a built-in type: we need to resolve the type according to the namespace and imports.
             $class = $property->getDeclaringClass();
             $className = $class->getName();
@@ -147,6 +149,7 @@ class PropertyTypeChecker
 
         $propertyType->type = $type;
         $propertyType->isNullable = $isNullable;
+        $propertyType->isBuiltin = $isBuiltin;
 
         return $propertyType;
     }

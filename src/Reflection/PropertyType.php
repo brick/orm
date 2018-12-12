@@ -18,4 +18,9 @@ class PropertyType
      * @var bool
      */
     public $isNullable;
+
+    /**
+     * @var bool
+     */
+    public $isBuiltin;
 }
