@@ -28,8 +28,8 @@ interface PropertyMapping
     /**
      * Returns the SQL to read each database value required to compute the property value.
      *
-     * The input array will contain exactly one string for each field returned by getFieldNames(), in the same order.
-     * It will contain the field names, with possible prefixes and quoting.
+     * The input array will contain exactly one string for each field returned by getFieldNames().
+     * It will contain these field names, in the same order, with possible prefixes and quoting.
      *
      * The result array must contain exactly one string for each value required by convertInputValuesToProp(), in the
      * same order.
@@ -55,7 +55,7 @@ interface PropertyMapping
      *
      * This method may return more than one placeholder per database field, if a SQL function has to be called to merge
      * two or more values into a single field; for example, sending a Geometry could require to send 2 database values
-     * (WKT and SRID) and merge into a single field using ST_GeomFromText(?, ?).
+     * (WKT and SRID) and merge them into a single field using ST_GeomFromText(?, ?).
      *
      * If no transformation is required, this method should return an array containing as many question marks as there
      * are fields in getFieldNames(). For example, if getFieldNames() returns 2 fields, it should return ['?', '?'].
@@ -82,7 +82,7 @@ interface PropertyMapping
      * The result array must contain exactly one value for each question mark placeholder returned by
      * getOutputValuesToFieldSQL(), in the same order.
      *
-     * Each value must be of one of the native PHP types accepted by the PreparedStatement::execute() method.
+     * Each value in the array must be of one of the native PHP types accepted by PreparedStatement::execute().
      *
      * @param mixed $propValue The property value.
      *
