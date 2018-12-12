@@ -1,3 +1,4 @@
+#!/usr/bin/env php
 <?php
 
 declare(strict_types=1);
@@ -15,12 +16,38 @@ use Brick\ORM\Configuration;
 use Brick\ORM\ProxyBuilder;
 use Brick\ORM\RepositoryBuilder;
 
-require __DIR__ . '/../../autoload.php';
+// Include the autoloader
+
+(function() {
+    $possibleVendorLocations = array(
+        '..',         // when used in its original location during development, in bin/
+        '../../../..' // when used from a Composer vendor directory, in vendor/brick/orm/bin/
+    );
+
+    $found = false;
+    foreach ($possibleVendorLocations as $location) {
+        $autoloader = __DIR__ . '/' . $location . '/vendor/autoload.php';
+        if (is_readable($autoloader)) {
+            require $autoloader;
+            $found = true;
+            break;
+        }
+    }
+
+    if (! $found) {
+        echo 'Could not find the vendor/autoload.php file.', PHP_EOL;
+        echo 'Did you install your dependencies using Composer?', PHP_EOL;
+        exit(1);
+    }
+
+})();
 
 if ($argc !== 2) {
     echo "Usage: {$argv[0]} path/to/configuration.php", PHP_EOL;
     exit(1);
 }
+
+// Start building
 
 (function(string $path) {
     /** @var Configuration $configuration */

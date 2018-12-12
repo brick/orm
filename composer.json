@@ -16,5 +16,6 @@
     "psr-4": {
       "Brick\\ORM\\": "src/"
     }
-  }
+  },
+  "bin": ["bin/orm-build"]
 }
