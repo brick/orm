@@ -62,7 +62,10 @@ if ($argc !== 2) {
 
         $php = '<?php return unserialize(' . var_export(serialize($classMetadata), true) . ");\n";
 
-        file_put_contents($configuration->getClassMetadataFile(), $php);
+        $path = $configuration->getClassMetadataFile();
+        echo $path, PHP_EOL;
+
+        file_put_contents($path, $php);
 
         return $classMetadata;
     })();
@@ -88,6 +91,8 @@ if ($argc !== 2) {
                 . $entityConfiguration->getClassShortName()
                 . 'Repository.php';
 
+            echo $path, PHP_EOL;
+
             file_put_contents($path, $builder->build());
         }
     })();
@@ -106,7 +111,11 @@ if ($argc !== 2) {
                 . $entityConfiguration->getClassShortName()
                 . 'Proxy.php';
 
+            echo $path, PHP_EOL;
+
             file_put_contents($path, $builder->build());
         }
     })();
 })($argv[1]);
+
+echo 'Success.', PHP_EOL;
