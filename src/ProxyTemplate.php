@@ -59,6 +59,11 @@ class CLASS_NAMEProxy extends CLASS_NAME implements Proxy
         if (! $this->__isInitialized) {
             $propValues = $this->__gateway->loadProps(CLASS_NAME::class, $this->__identity, null, LockMode::NONE);
 
+            if ($propValues === null) {
+                // @todo custom exception class + show identity (using scalars?) in error message
+                throw new \RuntimeException(sprintf('Proxied entity does not exist.'));
+            }
+
             foreach ($propValues as $prop => $value) {
                 $this->{$prop} = $value;
             }
