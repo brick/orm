@@ -40,6 +40,25 @@ class ObjectFactory
 
         $object = $reflectionClass->newInstanceWithoutConstructor();
 
+        // Unset (actually, set null for now) properties that are not in $values and have a default value
+        // See: https://externals.io/message/103601
+        // @todo update for PHP 7.4
+
+        foreach ($reflectionClass->getDefaultProperties() as $property => $value) {
+            $reflectionProperty = $reflectionClass->getProperty($property);
+
+            if ($reflectionProperty->isStatic()) {
+                continue;
+            }
+
+            $propertyName = $reflectionProperty->getName();
+
+            if (! isset($values[$propertyName])) {
+                $reflectionProperty->setAccessible(true);
+                $reflectionProperty->setValue($object, null);
+            }
+        }
+
         if ($values) {
             $this->hydrate($object, $values);
         }
