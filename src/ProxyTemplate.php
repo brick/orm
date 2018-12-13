@@ -6,6 +6,7 @@ namespace PROXY_NAMESPACE;
 
 use Brick\ORM\Gateway;
 use Brick\ORM\LockMode;
+use Brick\ORM\Proxy;
 
 use IMPORTS;
 
@@ -13,7 +14,7 @@ use IMPORTS;
  * Proxy for CLASS_NAME entities.
  * This class is generated automatically. Please do not edit.
  */
-class CLASS_NAMEProxy extends CLASS_NAME
+class CLASS_NAMEProxy extends CLASS_NAME implements Proxy
 {
     /**
      * @var Gateway
