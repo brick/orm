@@ -79,7 +79,7 @@ class Gateway
                 break;
 
             case LockMode::WRITE:
-                $query .= ' FOR UDPATE';
+                $query .= ' FOR UPDATE';
                 break;
 
             default:
