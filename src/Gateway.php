@@ -363,7 +363,6 @@ class Gateway
         $fieldValues = [];
         $outputValues = [];
 
-        // @todo do not assume that all props are persistent; filter against the props listed in ClassMetadata
         foreach ($propValues as $prop => $value) {
             if (! isset($classMetadata->propertyMappings[$prop])) {
                 // Non-persistent property
