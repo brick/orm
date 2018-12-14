@@ -23,6 +23,8 @@ class ObjectFactory
     /**
      * Instantiates an object without calling the class constructor.
      *
+     * The resulting object has no initialized properties, even for properties having a default value.
+     *
      * @param string $class
      * @param array  $values
      *
@@ -40,9 +42,10 @@ class ObjectFactory
 
         $object = $reflectionClass->newInstanceWithoutConstructor();
 
-        // Unset (actually, set null for now) properties that are not in $values and have a default value
-        // See: https://externals.io/message/103601
-        // @todo update for PHP 7.4
+        // Unset properties that are not in $values and have a default value.
+        // By default, newInstanceWithoutConstructor() would set these to their default values.
+
+        $unsetProps = [];
 
         foreach ($reflectionClass->getDefaultProperties() as $property => $value) {
             $reflectionProperty = $reflectionClass->getProperty($property);
@@ -53,10 +56,17 @@ class ObjectFactory
 
             $propertyName = $reflectionProperty->getName();
 
-            if (! isset($values[$propertyName])) {
-                $reflectionProperty->setAccessible(true);
-                $reflectionProperty->setValue($object, null);
+            if (! array_key_exists($propertyName, $values)) {
+                $unsetProps[] = $propertyName;
             }
+        }
+
+        if ($unsetProps) {
+            (function() use ($unsetProps) {
+                foreach ($unsetProps as $unsetProp) {
+                    unset($this->{$unsetProp});
+                }
+            })->bindTo($object, $class)();
         }
 
         if ($values) {
