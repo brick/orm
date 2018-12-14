@@ -22,16 +22,26 @@ class ObjectFactory
     private $classes = [];
 
     /**
-     * Instantiates an empty object, without calling the class constructor and without initializing properties.
+     * Instantiates an empty object, without calling the class constructor.
      *
-     * @param string $class
-     * @param array  $values
+     * This aim of this method is to return an object whose *persistent* properties are not initialized.
+     *
+     * It must be called with the list of properties to unset: we cannot blindly unset() every single property in the
+     * class, as we should not unset() transient properties, if any; transient properties should keep their default
+     * value if they have one.
+     *
+     * This method is therefore aimed to be called with the list of persistent properties of the object. This list
+     * should ideally be pre-filtered to remove typed properties that have no default value, as unset() will have no
+     * effect on them, for even better performance.
+     *
+     * @param string   $class      The fully-qualified class name.
+     * @param string[] $unsetProps The list of properties to unset.
      *
      * @return object
      *
      * @throws \ReflectionException If the class does not exist.
      */
-    public function instantiate(string $class, array $values = []) : object
+    public function instantiate(string $class, array $unsetProps) : object
     {
         if (isset($this->classes[$class])) {
             $reflectionClass = $this->classes[$class];
@@ -41,28 +51,12 @@ class ObjectFactory
 
         $object = $reflectionClass->newInstanceWithoutConstructor();
 
-        $unsetProps = [];
-
-        foreach ($reflectionClass->getDefaultProperties() as $property => $value) {
-            $reflectionProperty = $reflectionClass->getProperty($property);
-
-            if ($reflectionProperty->isStatic()) {
-                continue;
-            }
-
-            $unsetProps[] = $reflectionProperty->getName();
-        }
-
         if ($unsetProps) {
             (function() use ($unsetProps) {
                 foreach ($unsetProps as $unsetProp) {
                     unset($this->{$unsetProp});
                 }
             })->bindTo($object, $class)();
-        }
-
-        if ($values) {
-            $this->write($object, $values);
         }
 
         return $object;

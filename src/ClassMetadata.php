@@ -28,7 +28,9 @@ class ClassMetadata
     public $tableName;
 
     /**
-     * A map of property names to PropertyMapping instances.
+     * A map of persistent property names to PropertyMapping instances.
+     *
+     * This must contain exactly one entry for each property in $idProperties and $nonIdProperties.
      *
      * @var PropertyMapping[]
      */

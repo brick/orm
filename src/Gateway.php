@@ -160,7 +160,12 @@ class Gateway
             return null;
         }
 
-        return $this->objectFactory->instantiate($class, $propValues + $id);
+        $classMetadata = $this->classMetadata[$class];
+
+        $object = $this->objectFactory->instantiate($class, array_keys($classMetadata->properties));
+        $this->objectFactory->write($object, $propValues + $id);
+
+        return $object;
     }
 
     /**
@@ -270,7 +275,12 @@ class Gateway
      */
     public function getPlaceholder(string $class, array $id) : object
     {
-        return $this->objectFactory->instantiate($class, $id);
+        $classMetadata = $this->classMetadata[$class];
+
+        $entity = $this->objectFactory->instantiate($class, array_keys($classMetadata->properties));
+        $this->objectFactory->write($entity, $id);
+
+        return $entity;
     }
 
     /**

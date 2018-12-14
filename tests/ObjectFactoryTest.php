@@ -14,13 +14,44 @@ class ObjectFactoryTest extends TestCase
     public function testInstantiate()
     {
         $objectFactory = new ObjectFactory();
-        $user = $objectFactory->instantiate(User::class);
+        $user = $objectFactory->instantiate(User::class, []);
 
         $this->assertSame(User::class, get_class($user));
-        $this->assertSame([], $this->getInitializedProperties($user));
+
+        $this->assertSame([
+            "\0*\0id" => null,
+            "\0*\0name" => null,
+            "\0*\0status" => 'active',
+            "\0*\0reputation" => 0,
+            "\0*\0transient" => []
+        ], (array) $user);
+
+        $this->assertSame([
+            'id' => null,
+            'name' => null,
+            'status' => 'active',
+            'reputation' => 0,
+            'transient' => []
+        ], $objectFactory->read($user));
     }
 
-    public function testInstantiateWithValues()
+    public function testInstantiateWithUnsetProps()
+    {
+        $objectFactory = new ObjectFactory();
+        $user = $objectFactory->instantiate(User::class, ['id', 'name', 'status', 'reputation']);
+
+        $this->assertSame(User::class, get_class($user));
+
+        $this->assertSame([
+            "\0*\0transient" => []
+        ], (array) $user);
+
+        $this->assertSame([
+            'transient' => []
+        ], $objectFactory->read($user));
+    }
+
+    public function testWrite()
     {
         $values = [
             'name' => 'Ben',
@@ -28,33 +59,21 @@ class ObjectFactoryTest extends TestCase
         ];
 
         $objectFactory = new ObjectFactory();
-        $user = $objectFactory->instantiate(User::class, $values);
+        $user = $objectFactory->instantiate(User::class, ['id', 'name', 'status', 'reputation']);
+        $objectFactory->write($user, $values);
 
         $this->assertSame(User::class, get_class($user));
-        $this->assertSame($values, $this->getInitializedProperties($user));
-    }
 
-    /**
-     * @param object $object
-     *
-     * @return string[]
-     */
-    private function getInitializedProperties(object $object) : array
-    {
-        $properties = [];
+        $this->assertSame([
+            "\0*\0name" => 'Ben',
+            "\0*\0status" => 'pending',
+            "\0*\0transient" => []
+        ], (array) $user);
 
-        // Remove the "\0*\0" in front of protected properties.
-
-        foreach ((array) $object as $key => $value) {
-            $pos = strrpos($key, "\0");
-
-            if ($pos !== false) {
-                $key = substr($key, $pos + 1);
-            }
-
-            $properties[$key] = $value;
-        }
-
-        return $properties;
+        $this->assertSame([
+            'name' => 'Ben',
+            'status' => 'pending',
+            'transient' => []
+        ], $objectFactory->read($user));
     }
 }

@@ -24,4 +24,6 @@ class User
     protected $status = 'active';
 
     protected $reputation = 0;
+
+    protected $transient = [];
 }
