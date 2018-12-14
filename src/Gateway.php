@@ -145,16 +145,16 @@ class Gateway
      *
      * @param string        $class    The entity class name.
      * @param array         $id       The identity, as a map of property name to value.
-     * @param string[]|null $props    An optional array of property names to load.
      * @param int           $lockMode The lock mode.
+     * @param string[]|null $props    An optional array of property names to load.
      *
      * @return object|null The entity, or null if it doesn't exist.
      *
      * @throws \RuntimeException If a property name does not exist.
      */
-    public function load(string $class, array $id, ?array $props, int $lockMode) : ?object
+    public function load(string $class, array $id, int $lockMode, ?array $props) : ?object
     {
-        $propValues = $this->loadProps($class, $id, $props, $lockMode);
+        $propValues = $this->loadProps($class, $id, $lockMode, $props);
 
         if ($propValues === null) {
             return null;
@@ -173,14 +173,14 @@ class Gateway
      *
      * @param string        $class    The entity class name.
      * @param array         $id       The identity, as a map of property name to value.
-     * @param string[]|null $props    An optional array of property names to load. Defaults to non-id properties.
      * @param int           $lockMode The lock mode.
+     * @param string[]|null $props    An optional array of property names to load. Defaults to non-id properties.
      *
      * @return array|null The properties, or null if the entity doesn't exist.
      *
      * @throws \RuntimeException If a property name does not exist.
      */
-    public function loadProps(string $class, array $id, ?array $props, int $lockMode) : ?array
+    public function loadProps(string $class, array $id, int $lockMode, ?array $props) : ?array
     {
         $classMetadata = $this->classMetadata[$class];
 
@@ -321,7 +321,7 @@ class Gateway
      */
     public function existsIdentity(string $class, array $id) : bool
     {
-        return $this->load($class, $id, [], LockMode::NONE) !== null;
+        return $this->load($class, $id, LockMode::NONE, []) !== null;
     }
 
     /**

@@ -57,7 +57,8 @@ class CLASS_NAMEProxy extends CLASS_NAME implements Proxy
     public function __get(string $name)
     {
         if (! $this->__isInitialized) {
-            $propValues = $this->__gateway->loadProps(CLASS_NAME::class, $this->__identity, null, LockMode::NONE);
+            // @todo should this only load non-initialized properties? Currently it loads everything, overwriting initialized properties!
+            $propValues = $this->__gateway->loadProps(CLASS_NAME::class, $this->__identity, LockMode::NONE, null);
 
             if ($propValues === null) {
                 // @todo custom exception class + show identity (using scalars?) in error message
