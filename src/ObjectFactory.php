@@ -4,6 +4,14 @@ declare(strict_types=1);
 
 namespace Brick\ORM;
 
+/**
+ * Creates, reads and writes objects.
+ *
+ * Important note: this does not aim to support private properties in parent classes.
+ *
+ * This class is performance sensitive, and uses techniques benchmarked here:
+ * https://gist.github.com/BenMorel/9a920538862e4df0d7041f8812f069e5
+ */
 class ObjectFactory
 {
     /**
@@ -14,16 +22,7 @@ class ObjectFactory
     private $classes = [];
 
     /**
-     * An associative array mapping class name to property name to ReflectionProperty instances.
-     *
-     * @var \ReflectionProperty[][]
-     */
-    private $properties = [];
-
-    /**
-     * Instantiates an object without calling the class constructor.
-     *
-     * The resulting object has no initialized properties, even for properties having a default value.
+     * Instantiates an empty object, without calling the class constructor and without initializing properties.
      *
      * @param string $class
      * @param array  $values
@@ -42,9 +41,6 @@ class ObjectFactory
 
         $object = $reflectionClass->newInstanceWithoutConstructor();
 
-        // Unset properties that are not in $values and have a default value.
-        // By default, newInstanceWithoutConstructor() would set these to their default values.
-
         $unsetProps = [];
 
         foreach ($reflectionClass->getDefaultProperties() as $property => $value) {
@@ -54,11 +50,7 @@ class ObjectFactory
                 continue;
             }
 
-            $propertyName = $reflectionProperty->getName();
-
-            if (! array_key_exists($propertyName, $values)) {
-                $unsetProps[] = $propertyName;
-            }
+            $unsetProps[] = $reflectionProperty->getName();
         }
 
         if ($unsetProps) {
@@ -79,85 +71,45 @@ class ObjectFactory
     /**
      * Hydrates an object with an array of values.
      *
-     * This does not currently aim to support private properties in parent classes.
+     * This method does not support writing private properties in parent classes.
      *
      * @param object $object The object to hydrate.
      * @param array  $values An associative array mapping property names to values.
      *
      * @return void
-     *
-     * @throws \ReflectionException If a property does not exist.
      */
     public function hydrate(object $object, array $values) : void
     {
-        $class = get_class($object);
-
-        if (isset($this->classes[$class])) {
-            $reflectionClass = $this->classes[$class];
-        } else {
-            $reflectionClass = $this->classes[$class] = new \ReflectionClass($class);
-        }
-
-        foreach ($values as $property => $value) {
-            if (isset($this->properties[$class][$property])) {
-                $reflectionProperty = $this->properties[$class][$property];
-            } else {
-                $reflectionProperty = $this->properties[$class][$property] = $reflectionClass->getProperty($property);
-                $reflectionProperty->setAccessible(true);
+        (function() use ($values) {
+            foreach ($values as $key => $value) {
+                $this->{$key} = $value;
             }
-
-            $reflectionProperty->setValue($object, $value);
-        }
+        })->bindTo($object, $object)();
     }
 
     /**
      * Reads *initialized* object properties.
      *
-     * Only initialized properties are read from the object; in PHP 7.4 this will take on its full meaning,
-     * in the meantime we always consider null to be uninitialized; there is not ambiguity for non-nullable
-     * properties, but for nullable properties we cannot make the difference between a null property and an
-     * uninitialized property, so null will still be considered uninitialized.
-     *
-     * The impact will be visible when attempting to update() an existing entity, and a nullable property has been
-     * explicitly set to null: this property will *not* be saved to the database. This will be fixed with PHP 7.4.
-     *
-     * @todo Change for PHP 7.4
-     *
-     * This does not currently aim to support private properties in parent classes.
+     * Properties that are not initialized (or have been unset()) are not included in the array.
+     * This method assumes that there are no private properties in parent classes.
      *
      * @param object $object The object to read.
-     * @param array  $props  A numeric array of property names to read.
      *
      * @return array A map of property names to values.
-     *
-     * @throws \ReflectionException If a property does not exist.
      */
-    public function read(object $object, array $props) : array
+    public function read(object $object) : array
     {
-        $class = get_class($object);
-
-        if (isset($this->classes[$class])) {
-            $reflectionClass = $this->classes[$class];
-        } else {
-            $reflectionClass = $this->classes[$class] = new \ReflectionClass($class);
-        }
-
         $values = [];
 
-        foreach ($props as $prop) {
-            if (isset($this->properties[$class][$prop])) {
-                $reflectionProperty = $this->properties[$class][$prop];
-            } else {
-                $reflectionProperty = $this->properties[$class][$prop] = $reflectionClass->getProperty($prop);
-                $reflectionProperty->setAccessible(true);
+        foreach ((array) $object as $key => $value) {
+            // Remove the "\0*\0" in front of protected/private properties
+            $pos = strrpos($key, "\0");
+
+            if ($pos !== false) {
+                $key = substr($key, $pos + 1);
             }
 
-            // @todo if ($reflectionProperty->isInitialized()) {
-            $value = $reflectionProperty->getValue($object);
-
-            if ($value !== null) {
-                $values[$prop] = $value;
-            }
+            $values[$key] = $value;
         }
 
         return $values;

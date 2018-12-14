@@ -331,8 +331,7 @@ class Gateway
     {
         $classMetadata = $this->classMetadata[$class];
 
-        $props = array_keys($classMetadata->properties);
-        $propValues = $this->objectFactory->read($entity, $props);
+        $propValues = $this->objectFactory->read($entity);
 
         if ($classMetadata->isAutoIncrement) {
             foreach ($classMetadata->idProperties as $idProperty) {
@@ -356,6 +355,11 @@ class Gateway
 
         // @todo do not assume that all props are persistent; filter against the props listed in ClassMetadata
         foreach ($propValues as $prop => $value) {
+            if (! isset($classMetadata->properties[$prop])) {
+                // Non-persistent property
+                continue;
+            }
+
             $propertyMapping = $classMetadata->properties[$prop];
 
             $valuesToFieldSQL = $propertyMapping->getOutputValuesToFieldSQL();
@@ -402,8 +406,7 @@ class Gateway
     {
         $classMetadata = $this->classMetadata[$class];
 
-        $props = array_keys($classMetadata->properties);
-        $propValues = $this->objectFactory->read($entity, $props);
+        $propValues = $this->objectFactory->read($entity);
 
         foreach ($classMetadata->idProperties as $idProperty) {
             if (! isset($propValues[$idProperty])) {
@@ -510,12 +513,16 @@ class Gateway
     private function getIdentity(string $class, object $entity) : array
     {
         $classMetadata = $this->classMetadata[$class];
+        $values = $this->objectFactory->read($entity);
 
-        $identity = $this->objectFactory->read($entity, $classMetadata->idProperties);
+        $identity = [];
 
-        if (count($identity) !== count($classMetadata->idProperties)) {
-            // @todo NoIdentityException
-            throw new \RuntimeException('The entity has no identity.');
+        foreach ($classMetadata->idProperties as $idProperty) {
+            if (! isset($values[$idProperty])) {
+                throw new \RuntimeException('The entity has no identity.');
+            }
+
+            $identity[$idProperty] = $values[$idProperty];
         }
 
         return $identity;
