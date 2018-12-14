@@ -53,7 +53,7 @@ class EntityMapping implements PropertyMapping
         $names = [];
 
         foreach ($this->classMetadata->idProperties as $prop) {
-            foreach ($this->classMetadata->properties[$prop]->getFieldNames() as $name) {
+            foreach ($this->classMetadata->propertyMappings[$prop]->getFieldNames() as $name) {
                 $names[] = $this->fieldNamePrefix . $name;
             }
         }
@@ -82,7 +82,7 @@ class EntityMapping implements PropertyMapping
         $currentIndex = 0;
 
         foreach ($this->classMetadata->idProperties as $prop) {
-            $propertyMapping = $this->classMetadata->properties[$prop];
+            $propertyMapping = $this->classMetadata->propertyMappings[$prop];
             $readFieldCount = $propertyMapping->getInputValuesCount();
 
             $currentFieldNames = array_slice($fieldNames, $currentIndex, $readFieldCount);
@@ -121,7 +121,7 @@ class EntityMapping implements PropertyMapping
         $result = [];
 
         foreach ($this->classMetadata->idProperties as $prop) {
-            foreach ($this->classMetadata->properties[$prop]->getOutputValuesToFieldSQL() as $sql) {
+            foreach ($this->classMetadata->propertyMappings[$prop]->getOutputValuesToFieldSQL() as $sql) {
                 $result[] = $sql;
             }
         }
@@ -146,7 +146,7 @@ class EntityMapping implements PropertyMapping
             $p->setAccessible(true);
             $idPropValue = $p->getValue($entity);
 
-            foreach ($this->classMetadata->properties[$prop]->convertPropToOutputValues($idPropValue) as $fieldValue) {
+            foreach ($this->classMetadata->propertyMappings[$prop]->convertPropToOutputValues($idPropValue) as $fieldValue) {
                 $fieldValues[] = $fieldValue;
             }
         }

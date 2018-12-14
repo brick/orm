@@ -81,7 +81,7 @@ if ($argc !== 2) {
             $identityProps = [];
 
             foreach ($classMetadata[$className]->idProperties as $idProperty) {
-                $identityProps[$idProperty] = $classMetadata[$className]->properties[$idProperty]->getType();
+                $identityProps[$idProperty] = $classMetadata[$className]->propertyMappings[$idProperty]->getType();
             }
 
             $builder->setIdentityProps($identityProps);

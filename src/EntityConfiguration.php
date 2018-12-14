@@ -34,11 +34,15 @@ class EntityConfiguration
     private $isAutoIncrement = false;
 
     /**
+     * The list of persistent properties, or null if not set.
+     *
      * @var string[]|null
      */
     private $persistentProperties;
 
     /**
+     * The list of identity properties, or null if not set.
+     *
      * @var string[]|null
      */
     private $identityProperties;
@@ -166,6 +170,8 @@ class EntityConfiguration
     }
 
     /**
+     * Returns the list of properties that are part of the entity's identity.
+     *
      * @return string[]
      *
      * @throws \LogicException
@@ -244,7 +250,7 @@ class EntityConfiguration
     }
 
     /**
-     * Returns the properties that will be persisted to the database.
+     * Returns the list of properties that will be persisted to the database.
      *
      * @return string[]
      *

@@ -67,14 +67,15 @@ class ClassMetadataBuilder
         $persistentProperties = $entityConfiguration->getPersistentProperties();
         $identityProperties   = $entityConfiguration->getIdentityProperties();
 
+        $classMetadata->properties = $persistentProperties;
         $classMetadata->idProperties = $identityProperties;
         $classMetadata->nonIdProperties = array_values(array_diff($persistentProperties, $identityProperties));
 
-        $classMetadata->properties = [];
+        $classMetadata->propertyMappings = [];
 
         foreach ($persistentProperties as $property) {
             $propertyMapping = $entityConfiguration->getPropertyMapping($property, $this->classMetadata);
-            $classMetadata->properties[$property] = $propertyMapping;
+            $classMetadata->propertyMappings[$property] = $propertyMapping;
         }
     }
 }

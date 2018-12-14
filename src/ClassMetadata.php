@@ -28,16 +28,18 @@ class ClassMetadata
     public $tableName;
 
     /**
-     * A map of persistent property names to PropertyMapping instances.
+     * The list of persistent properties.
      *
-     * This must contain exactly one entry for each property in $idProperties and $nonIdProperties.
+     * This list must be the union of $idProperties and $nonIdProperties.
      *
-     * @var PropertyMapping[]
+     * @var string[]
      */
     public $properties;
 
     /**
      * The list of property names that are part of the identity.
+     *
+     * This list must not intersect with $nonIdProperties.
      *
      * @var string[]
      */
@@ -46,9 +48,20 @@ class ClassMetadata
     /**
      * The list of property names that are NOT part of the identity.
      *
+     * This list must not intersect with $idProperties.
+     *
      * @var string[]
      */
     public $nonIdProperties;
+
+    /**
+     * A map of persistent property names to PropertyMapping instances.
+     *
+     * The keys of this array must be equal to $properties.
+     *
+     * @var PropertyMapping[]
+     */
+    public $propertyMappings;
 
     /**
      * Whether the table uses an auto-increment primary key.

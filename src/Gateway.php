@@ -162,7 +162,7 @@ class Gateway
 
         $classMetadata = $this->classMetadata[$class];
 
-        $object = $this->objectFactory->instantiate($class, array_keys($classMetadata->properties));
+        $object = $this->objectFactory->instantiate($class, $classMetadata->properties);
         $this->objectFactory->write($object, $propValues + $id);
 
         return $object;
@@ -190,7 +190,7 @@ class Gateway
             $props = array_values(array_unique($props));
 
             foreach ($props as $prop) {
-                if (! isset($classMetadata->properties[$prop])) {
+                if (! isset($classMetadata->propertyMappings[$prop])) {
                     // @todo UnknownPropertyException
                     throw new \RuntimeException(sprintf('The %s::$%s property does not exist.', $class, $prop));
                 }
@@ -200,7 +200,7 @@ class Gateway
         $selectFields = [];
 
         foreach ($props as $prop) {
-            $propertyMapping = $classMetadata->properties[$prop];
+            $propertyMapping = $classMetadata->propertyMappings[$prop];
 
             // @todo quote field names
             $fieldNames = $propertyMapping->getFieldNames();
@@ -215,7 +215,7 @@ class Gateway
         $outputValues = [];
 
         foreach ($id as $prop => $value) {
-            $propertyMapping = $classMetadata->properties[$prop];
+            $propertyMapping = $classMetadata->propertyMappings[$prop];
             $valuesToFieldSQL = $propertyMapping->getOutputValuesToFieldSQL();
 
             foreach ($propertyMapping->getFieldNames() as $index => $fieldName) { // @todo quote field name
@@ -246,7 +246,7 @@ class Gateway
         $propValues = [];
 
         foreach ($props as $prop) {
-            $propertyMapping = $classMetadata->properties[$prop];
+            $propertyMapping = $classMetadata->propertyMappings[$prop];
             $valuesCount = $propertyMapping->getInputValuesCount();
 
             $propInputValues = array_slice($inputValues, $index, $valuesCount);
@@ -277,7 +277,7 @@ class Gateway
     {
         $classMetadata = $this->classMetadata[$class];
 
-        $entity = $this->objectFactory->instantiate($class, array_keys($classMetadata->properties));
+        $entity = $this->objectFactory->instantiate($class, $classMetadata->properties);
         $this->objectFactory->write($entity, $id);
 
         return $entity;
@@ -365,12 +365,12 @@ class Gateway
 
         // @todo do not assume that all props are persistent; filter against the props listed in ClassMetadata
         foreach ($propValues as $prop => $value) {
-            if (! isset($classMetadata->properties[$prop])) {
+            if (! isset($classMetadata->propertyMappings[$prop])) {
                 // Non-persistent property
                 continue;
             }
 
-            $propertyMapping = $classMetadata->properties[$prop];
+            $propertyMapping = $classMetadata->propertyMappings[$prop];
 
             $valuesToFieldSQL = $propertyMapping->getOutputValuesToFieldSQL();
 
@@ -394,7 +394,7 @@ class Gateway
 
             // Note: can only be a single property mapping to a single field, using a single scalar value
             $prop = $classMetadata->idProperties[0];
-            $value = $classMetadata->properties[$prop]->convertInputValuesToProp($this, [$lastInsertId]);
+            $value = $classMetadata->propertyMappings[$prop]->convertInputValuesToProp($this, [$lastInsertId]);
 
             $this->objectFactory->write($entity, [$prop => $value]);
         }
@@ -431,7 +431,7 @@ class Gateway
 
         foreach ($classMetadata->nonIdProperties as $prop) {
             if (isset($propValues[$prop])) {
-                $propertyMapping = $classMetadata->properties[$prop];
+                $propertyMapping = $classMetadata->propertyMappings[$prop];
                 $valuesToFieldSQL = $propertyMapping->getOutputValuesToFieldSQL();
 
                 foreach ($propertyMapping->getFieldNames() as $index => $fieldName) { // @todo quote field name
@@ -445,7 +445,7 @@ class Gateway
         }
 
         foreach ($classMetadata->idProperties as $prop) {
-            $propertyMapping = $classMetadata->properties[$prop];
+            $propertyMapping = $classMetadata->propertyMappings[$prop];
             $valuesToFieldSQL = $propertyMapping->getOutputValuesToFieldSQL();
 
             foreach ($propertyMapping->getFieldNames() as $index => $fieldName) {
@@ -495,7 +495,7 @@ class Gateway
         $outputValues = [];
 
         foreach ($id as $prop => $value) {
-            $propertyMapping = $classMetadata->properties[$prop];
+            $propertyMapping = $classMetadata->propertyMappings[$prop];
             $valuesToFieldSQL = $propertyMapping->getOutputValuesToFieldSQL();
 
             foreach ($propertyMapping->getFieldNames() as $index => $fieldName) { // @todo quote field name
