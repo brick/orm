@@ -14,9 +14,34 @@ class ClassMetadata
     public $className;
 
     /**
-     * The entity's proxy class name.
+     * The name of the discriminator column, or null if the entity is not part of an inheritance hierarchy.
      *
-     * @var string
+     * @var string|null
+     */
+    public $discriminatorColumn;
+
+    /**
+     * The discriminator value, or null if the entity is not part of an inheritance hierarchy, or if the entity is an
+     * abstract class in the inheritance hierarchy.
+     *
+     * @var string|null
+     */
+    public $discriminatorValue;
+
+    /**
+     * The discriminator map for inheritance.
+     *
+     * The keys are discriminator strings or ints, the values are class names.
+     * If the entity is not part of an inheritance hierarchy, this will be an empty array.
+     *
+     * @var array
+     */
+    public $discriminatorMap;
+
+    /**
+     * The entity's proxy class name, or null if the entity class is abstract.
+     *
+     * @var string|null
      */
     public $proxyClassName;
 

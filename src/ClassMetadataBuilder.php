@@ -36,14 +36,18 @@ class ClassMetadataBuilder
 
         $entityConfigurations = $this->configuration->getEntities();
 
-        foreach ($entityConfigurations as $className => $entityConfiguration) {
-            $this->classMetadata[$className] = new ClassMetadata();
+        foreach ($entityConfigurations as $entityConfiguration) {
+            foreach ($entityConfiguration->getClassHierarchy() as $className) {
+                $this->classMetadata[$className] = new ClassMetadata();
+            }
         }
 
         // This needs to be done in 2 steps, as references to all ClassMetadata instances must be available below.
 
-        foreach ($entityConfigurations as $className => $entityConfiguration) {
-            $this->fillClassMetadata($this->classMetadata[$className], $entityConfiguration);
+        foreach ($entityConfigurations as $entityConfiguration) {
+            foreach ($entityConfiguration->getClassHierarchy() as $className) {
+                $this->fillClassMetadata($this->classMetadata[$className], $className, $entityConfiguration);
+            }
         }
 
         return $this->classMetadata;
@@ -51,20 +55,40 @@ class ClassMetadataBuilder
 
     /**
      * @param ClassMetadata       $classMetadata
+     * @param string              $className
      * @param EntityConfiguration $entityConfiguration
      *
      * @return void
      */
-    private function fillClassMetadata(ClassMetadata $classMetadata, EntityConfiguration $entityConfiguration) : void
+    private function fillClassMetadata(ClassMetadata $classMetadata, string $className, EntityConfiguration $entityConfiguration) : void
     {
-        $classMetadata->className = $entityConfiguration->getClassName();
+        $reflectionClass = new \ReflectionClass($className);
 
-        // @todo don't just use entity short name: strip base entity namespace, add remaining namespace/dir to proxy!
-        $classMetadata->proxyClassName = sprintf('%s\%sProxy', $this->configuration->getProxyNamespace(), $entityConfiguration->getClassShortName());
+        $classMetadata->className = $className;
+
+        $classMetadata->discriminatorColumn = $entityConfiguration->getDiscriminatorColumn();
+        $classMetadata->discriminatorValue = null;
+
+        foreach ($entityConfiguration->getDiscriminatorMap() as $discriminatorValue => $targetClassName) {
+            if ($targetClassName === $className) {
+                $classMetadata->discriminatorValue = $discriminatorValue;
+                break;
+            }
+        }
+
+        $classMetadata->discriminatorMap = $entityConfiguration->getDiscriminatorMap();
+
+        if ($reflectionClass->isAbstract()) {
+            $classMetadata->proxyClassName = null;
+        } else {
+            // @todo don't just use entity short name: strip base entity namespace, add remaining namespace/dir to proxy!
+            $classMetadata->proxyClassName = sprintf('%s\%sProxy', $this->configuration->getProxyNamespace(), $reflectionClass->getShortName());
+        }
+
         $classMetadata->tableName = $entityConfiguration->getTableName();
         $classMetadata->isAutoIncrement = $entityConfiguration->isAutoIncrement();
 
-        $persistentProperties = $entityConfiguration->getPersistentProperties();
+        $persistentProperties = $entityConfiguration->getPersistentProperties($className);
         $identityProperties   = $entityConfiguration->getIdentityProperties();
 
         $classMetadata->properties = $persistentProperties;
@@ -73,9 +97,9 @@ class ClassMetadataBuilder
 
         $classMetadata->propertyMappings = [];
 
-        foreach ($persistentProperties as $property) {
-            $propertyMapping = $entityConfiguration->getPropertyMapping($property, $this->classMetadata);
-            $classMetadata->propertyMappings[$property] = $propertyMapping;
+        foreach ($persistentProperties as $propertyName) {
+            $propertyMapping = $entityConfiguration->getPropertyMapping($className, $propertyName, $this->classMetadata);
+            $classMetadata->propertyMappings[$propertyName] = $propertyMapping;
         }
     }
 }

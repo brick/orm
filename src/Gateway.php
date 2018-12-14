@@ -329,7 +329,7 @@ class Gateway
      *
      * This results in an immediate INSERT statement being executed against the database.
      *
-     * @param string $class  The entity class name.
+     * @param string $class  The entity class name. @todo unused now.
      * @param object $entity The entity to save.
      *
      * @return void
@@ -339,6 +339,8 @@ class Gateway
      */
     public function save(string $class, object $entity) : void
     {
+        $class = get_class($entity);
+
         $classMetadata = $this->classMetadata[$class];
 
         $propValues = $this->objectFactory->read($entity);
@@ -363,6 +365,12 @@ class Gateway
         $fieldValues = [];
         $outputValues = [];
 
+        if ($classMetadata->discriminatorColumn !== null) {
+            $fieldNames[] = $classMetadata->discriminatorColumn; // @todo quote field name
+            $fieldValues[] = '?';
+            $outputValues[] = $classMetadata->discriminatorValue;
+        }
+
         foreach ($propValues as $prop => $value) {
             if (! isset($classMetadata->propertyMappings[$prop])) {
                 // Non-persistent property
@@ -373,8 +381,8 @@ class Gateway
 
             $valuesToFieldSQL = $propertyMapping->getOutputValuesToFieldSQL();
 
-            foreach ($propertyMapping->getFieldNames() as $index => $fieldName) { // @todo quote field name
-                $fieldNames[] = $fieldName;
+            foreach ($propertyMapping->getFieldNames() as $index => $fieldName) {
+                $fieldNames[] = $fieldName; // @todo quote field name
                 $fieldValues[] = $valuesToFieldSQL[$index];
             }
 
@@ -404,7 +412,7 @@ class Gateway
      *
      * This results in an immediate UPDATE statement being executed against the database.
      *
-     * @param string $class  The entity class name.
+     * @param string $class  The entity class name. @todo unused now.
      * @param object $entity The entity to update.
      *
      * @return void
@@ -413,6 +421,8 @@ class Gateway
      */
     public function update(string $class, object $entity) : void
     {
+        $class = get_class($entity);
+
         $classMetadata = $this->classMetadata[$class];
 
         $propValues = $this->objectFactory->read($entity);

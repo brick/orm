@@ -100,20 +100,24 @@ if ($argc !== 2) {
     // Build proxies
 
     (function() use ($configuration, $classMetadata) {
-        foreach ($configuration->getEntities() as $className => $entityConfiguration) {
-            $builder = new ProxyBuilder();
-            $builder->setProxyNamespace($configuration->getProxyNamespace());
-            $builder->setEntityClassName($className);
-            $builder->setNonIdProps($classMetadata[$className]->nonIdProperties);
+        foreach ($configuration->getEntities() as $entityConfiguration) {
+            foreach ($entityConfiguration->getDiscriminatorMap() as $concreteClassName) {
+                $builder = new ProxyBuilder();
+                $builder->setProxyNamespace($configuration->getProxyNamespace());
+                $builder->setEntityClassName($concreteClassName);
+                $builder->setNonIdProps($classMetadata[$concreteClassName]->nonIdProperties);
 
-            $path = $configuration->getProxyDir()
-                . DIRECTORY_SEPARATOR
-                . $entityConfiguration->getClassShortName()
-                . 'Proxy.php';
+                $shortName = (new \ReflectionClass($concreteClassName))->getShortName();
 
-            echo $path, PHP_EOL;
+                $path = $configuration->getProxyDir()
+                    . DIRECTORY_SEPARATOR
+                    . $shortName
+                    . 'Proxy.php';
 
-            file_put_contents($path, $builder->build());
+                echo $path, PHP_EOL;
+
+                file_put_contents($path, $builder->build());
+            }
         }
     })();
 })($argv[1]);
