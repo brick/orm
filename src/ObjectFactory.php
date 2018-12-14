@@ -15,7 +15,7 @@ namespace Brick\ORM;
 class ObjectFactory
 {
     /**
-     * An associative array mapping class name to ReflectionClass instances.
+     * A map of fully qualified class names to ReflectionClass instances.
      *
      * @var \ReflectionClass[]
      */
@@ -62,35 +62,16 @@ class ObjectFactory
         }
 
         if ($values) {
-            $this->hydrate($object, $values);
+            $this->write($object, $values);
         }
 
         return $object;
     }
 
     /**
-     * Hydrates an object with an array of values.
-     *
-     * This method does not support writing private properties in parent classes.
-     *
-     * @param object $object The object to hydrate.
-     * @param array  $values An associative array mapping property names to values.
-     *
-     * @return void
-     */
-    public function hydrate(object $object, array $values) : void
-    {
-        (function() use ($values) {
-            foreach ($values as $key => $value) {
-                $this->{$key} = $value;
-            }
-        })->bindTo($object, $object)();
-    }
-
-    /**
      * Reads *initialized* object properties.
      *
-     * Properties that are not initialized (or have been unset()) are not included in the array.
+     * Properties that are not initialized, or have been unset(), are not included in the array.
      * This method assumes that there are no private properties in parent classes.
      *
      * @param object $object The object to read.
@@ -113,5 +94,24 @@ class ObjectFactory
         }
 
         return $values;
+    }
+
+    /**
+     * Writes an object's properties.
+     *
+     * This method does not support writing private properties in parent classes.
+     *
+     * @param object $object The object to write.
+     * @param array  $values A map of property names to values.
+     *
+     * @return void
+     */
+    public function write(object $object, array $values) : void
+    {
+        (function() use ($values) {
+            foreach ($values as $key => $value) {
+                $this->{$key} = $value;
+            }
+        })->bindTo($object, $object)();
     }
 }

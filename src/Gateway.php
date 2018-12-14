@@ -386,7 +386,7 @@ class Gateway
             $prop = $classMetadata->idProperties[0];
             $value = $classMetadata->properties[$prop]->convertInputValuesToProp($this, [$lastInsertId]);
 
-            $this->objectFactory->hydrate($entity, [$prop => $value]);
+            $this->objectFactory->write($entity, [$prop => $value]);
         }
     }
 
