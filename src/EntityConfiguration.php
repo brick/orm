@@ -34,20 +34,6 @@ class EntityConfiguration
     private $isAutoIncrement = false;
 
     /**
-     * The list of persistent properties, or null if not set.
-     *
-     * @var string[]|null
-     */
-    private $persistentProperties;
-
-    /**
-     * Temporary location for transient properties in subclasses. @todo rework
-     *
-     * @var array
-     */
-    private $transientProperties = [];
-
-    /**
      * The list of identity properties, or null if not set.
      *
      * @var string[]|null
@@ -101,6 +87,18 @@ class EntityConfiguration
     public function getClassShortName() : string
     {
         return $this->reflectionClass->getShortName();
+    }
+
+    /**
+     * @todo Implement.
+     *
+     * @param string $className
+     *
+     * @return EntityConfiguration
+     */
+    public function belongsTo(string $className) : EntityConfiguration
+    {
+        return $this;
     }
 
     /**
@@ -210,108 +208,6 @@ class EntityConfiguration
         }
 
         return $this->identityProperties;
-    }
-
-    /**
-     * @todo persistent / transient properties settings are flawed with inheritance, we need a way to configure it for each class in the hiearchy
-     *
-     * Sets the properties that will be persisted to the database.
-     *
-     * Note: use setPersistentProperties() OR setTransientProperties(), not both.
-     *
-     * @param string ...$properties
-     *
-     * @return EntityConfiguration
-     *
-     * @throws \InvalidArgumentException
-     */
-    public function setPersistentProperties(string ...$properties) : EntityConfiguration
-    {
-        if (count($properties) === 0) {
-            throw new \InvalidArgumentException('The list of persistent properties cannot be empty.');
-        }
-
-        $this->checkProperties($properties);
-
-        $this->persistentProperties = $properties;
-
-        return $this;
-    }
-
-    /**
-     * @todo persistent / transient properties settings are flawed with inheritance, we need a way to configure it for each class in the hiearchy
-     *
-     * Sets the properties that will *not* be persisted to the database.
-     *
-     * The persistent properties will be all of the persistable class properties, minus these ones.
-     *
-     * Note: use setPersistentProperties() OR setTransientProperties(), not both.
-     *
-     * @param string ...$transientProperties
-     *
-     * @return EntityConfiguration
-     *
-     * @throws \LogicException
-     */
-    public function setTransientProperties(string ...$transientProperties) : EntityConfiguration
-    {
-        $this->checkProperties($transientProperties);
-
-        $persistentProperties = [];
-
-        foreach ($this->getPersistableProperties() as $persistableProperty) {
-            if (! in_array($persistableProperty, $transientProperties)) {
-                $persistentProperties[] = $persistableProperty;
-            }
-        }
-
-        if (count($persistentProperties) === 0) {
-            throw new \LogicException('Cannot make all entity properties transient.');
-        }
-
-        $this->persistentProperties = $persistentProperties;
-
-        return $this;
-    }
-
-    /**
-     * @todo temporary hack to configure transient properties in subclasses.
-     *
-     * @param string $className
-     * @param string $propertyName
-     *
-     * @return EntityConfiguration
-     */
-    public function addTransientProperty(string $className, string $propertyName) : EntityConfiguration
-    {
-        $this->transientProperties[$className][$propertyName] = true;
-
-        return $this;
-    }
-
-    /**
-     * @todo persistent / transient properties settings are flawed with inheritance, we need a way to configure it for each class in the hiearchy
-     *       for now, this will always use the defaults (no configuration available) for non-root classes
-     *
-     * Returns the list of properties that will be persisted to the database.
-     *
-     * @param string|null $className The entity class name, or null to use the root entity (this entity)'s class name.
-     *
-     * @return string[]
-     *
-     * @throws \LogicException
-     */
-    public function getPersistentProperties(?string $className = null) : array
-    {
-        if ($className !== null && $className !== $this->getClassName()) {
-            return $this->getPersistableProperties($className);
-        }
-
-        if ($this->persistentProperties === null) {
-            $this->persistentProperties = $this->getPersistableProperties();
-        }
-
-        return $this->persistentProperties;
     }
 
     /**
@@ -467,7 +363,7 @@ class EntityConfiguration
      *
      * @throws \LogicException
      */
-    private function getPersistableProperties(?string $className = null) : array
+    public function getPersistentProperties(?string $className = null) : array
     {
         if ($className === null) {
             $reflectionClass = $this->reflectionClass;
@@ -484,8 +380,7 @@ class EntityConfiguration
 
             $propertyName = $reflectionProperty->getName();
 
-            if (isset($this->transientProperties[$reflectionClass->getName()][$propertyName])) {
-                // @todo temporary hack
+            if (in_array($propertyName, $this->configuration->getTransientProperties($reflectionClass->getName()))) {
                 continue;
             }
 

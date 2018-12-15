@@ -37,6 +37,13 @@ class Configuration
     private $entities = [];
 
     /**
+     * A map of entity class names to lists of property names.
+     *
+     * @var string[][]
+     */
+    private $transientProperties = [];
+
+    /**
      * @param string $proxyNamespace
      *
      * @return Configuration
@@ -183,6 +190,31 @@ class Configuration
         $this->entities[$className] = $entityConfiguration;
 
         return $entityConfiguration;
+    }
+
+    /**
+     * @param string $class
+     * @param string ...$properties
+     *
+     * @return Configuration
+     */
+    public function setTransientProperties(string $class, string ...$properties) : Configuration
+    {
+        $this->transientProperties[$class] = $properties;
+
+        return $this;
+    }
+
+    /**
+     * Returns the list of transient properties for the given class name.
+     *
+     * @param string $class
+     *
+     * @return string[]
+     */
+    public function getTransientProperties(string $class) : array
+    {
+        return $this->transientProperties[$class] ?? [];
     }
 
     /**
