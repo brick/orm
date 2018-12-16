@@ -19,6 +19,11 @@ class EntityConfiguration
     private $reflectionClass;
 
     /**
+     * @var string|null
+     */
+    private $belongsTo;
+
+    /**
      * @var PropertyTypeChecker
      */
     private $propertyTypeChecker;
@@ -90,7 +95,7 @@ class EntityConfiguration
     }
 
     /**
-     * @todo Implement.
+     * Sets the root entity of the aggregate this entity belongs to.
      *
      * @param string $className
      *
@@ -98,7 +103,17 @@ class EntityConfiguration
      */
     public function belongsTo(string $className) : EntityConfiguration
     {
+        $this->belongsTo = $className;
+
         return $this;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getBelongsTo() : ?string
+    {
+        return $this->belongsTo;
     }
 
     /**

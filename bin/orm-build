@@ -74,6 +74,11 @@ if ($argc !== 2) {
 
     (function() use ($configuration, $classMetadata) {
         foreach ($configuration->getEntities() as $className => $entityConfiguration) {
+            if ($entityConfiguration->getBelongsTo() !== null) {
+                // Only generate repositories for aggregate roots.
+                continue;
+            }
+
             $builder = new RepositoryBuilder();
             $builder->setRepositoryNamespace($configuration->getRepositoryNamespace());
             $builder->setEntityClassName($className);
