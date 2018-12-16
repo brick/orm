@@ -106,7 +106,13 @@ if ($argc !== 2) {
 
     (function() use ($configuration, $classMetadata) {
         foreach ($configuration->getEntities() as $entityConfiguration) {
-            foreach ($entityConfiguration->getDiscriminatorMap() as $concreteClassName) {
+            foreach ($entityConfiguration->getClassHierarchy() as $concreteClassName) {
+                $reflectionClass = new \ReflectionClass($concreteClassName);
+
+                if ($reflectionClass->isAbstract()) {
+                    continue;
+                }
+
                 $builder = new ProxyBuilder();
                 $builder->setProxyNamespace($configuration->getProxyNamespace());
                 $builder->setEntityClassName($concreteClassName);
