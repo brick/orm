@@ -22,7 +22,7 @@ class ProxyBuilder
     private $nonIdProps;
 
     /**
-     * @param string $namespace The namespace of the proxy.
+     * @param string $namespace The namespace of the proxy class.
      *
      * @return void
      */

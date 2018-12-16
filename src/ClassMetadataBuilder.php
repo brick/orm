@@ -81,8 +81,7 @@ class ClassMetadataBuilder
         if ($reflectionClass->isAbstract()) {
             $classMetadata->proxyClassName = null;
         } else {
-            // @todo don't just use entity short name: strip base entity namespace, add remaining namespace/dir to proxy!
-            $classMetadata->proxyClassName = sprintf('%s\%sProxy', $this->configuration->getProxyNamespace(), $reflectionClass->getShortName());
+            $classMetadata->proxyClassName = $this->configuration->getProxyClassName($className);
         }
 
         $classMetadata->tableName = $entityConfiguration->getTableName();

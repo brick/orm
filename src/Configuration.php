@@ -32,6 +32,11 @@ class Configuration
     private $classMetadataFile;
 
     /**
+     * @var string|null
+     */
+    private $baseEntityNamespace;
+
+    /**
      * @var EntityConfiguration[]
      */
     private $entities = [];
@@ -56,17 +61,86 @@ class Configuration
     }
 
     /**
+     * @param string|null $entityClass
+     *
      * @return string
      *
      * @throws \LogicException
      */
-    public function getProxyNamespace() : string
+    public function getProxyNamespace(?string $entityClass = null) : string
     {
         if ($this->proxyNamespace === null) {
             throw new \LogicException('Proxy namespace is not set.');
         }
 
-        return $this->proxyNamespace;
+        if ($entityClass === null) {
+            return $this->proxyNamespace;
+        }
+
+        if ($this->baseEntityNamespace !== null) {
+            $baseNamespace = $this->baseEntityNamespace . '\\';
+            $length = strlen($baseNamespace);
+
+            if (substr($entityClass, 0, $length) !== $baseNamespace) {
+                throw new \LogicException(sprintf('%s is not in namespace %s.', $entityClass, $this->baseEntityNamespace));
+            }
+
+            $entityClass = substr($entityClass, $length);
+        }
+
+        $pos = strrpos($entityClass, '\\');
+
+        if ($pos === false) {
+            return $this->proxyNamespace;
+        }
+
+        return $this->proxyNamespace . '\\' . substr($entityClass, 0, $pos);
+    }
+
+    /**
+     * Returns the proxy class name for the given entity class name.
+     *
+     * @param string $entityClass the FQCN of the entity.
+     *
+     * @return string The FQCN of the proxy.
+     *
+     * @throws \LogicException
+     */
+    public function getProxyClassName(string $entityClass) : string
+    {
+        if ($this->baseEntityNamespace !== null) {
+            $baseNamespace = $this->baseEntityNamespace . '\\';
+            $length = strlen($baseNamespace);
+
+            if (substr($entityClass, 0, $length) !== $baseNamespace) {
+                throw new \LogicException(sprintf('%s is not in namespace %s.', $entityClass, $this->baseEntityNamespace));
+            }
+
+            $entityClass = substr($entityClass, $length);
+        }
+
+        return $this->getProxyNamespace() . '\\' . $entityClass;
+    }
+
+    /**
+     * @param string $entityClass
+     *
+     * @return string
+     */
+    public function getProxyFileName(string $entityClass) : string
+    {
+        if ($this->baseEntityNamespace !== null) {
+            $baseNamespace = $this->baseEntityNamespace . '\\';
+            $length = strlen($baseNamespace);
+
+            if (substr($entityClass, 0, $length) !== $baseNamespace) {
+                throw new \LogicException(sprintf('%s is not in namespace %s.', $entityClass, $this->baseEntityNamespace));
+            }
+
+            $entityClass = substr($entityClass, $length);
+        }
+
+        return $this->getProxyDir() . DIRECTORY_SEPARATOR . str_replace('\\', DIRECTORY_SEPARATOR, $entityClass) . 'Proxy.php';
     }
 
     /**
@@ -108,17 +182,86 @@ class Configuration
     }
 
     /**
+     * @param string|null $entityClass
+     *
      * @return string
      *
      * @throws \LogicException
      */
-    public function getRepositoryNamespace() : string
+    public function getRepositoryNamespace(?string $entityClass = null) : string
     {
         if ($this->repositoryNamespace === null) {
             throw new \LogicException('Repository namespace is not set.');
         }
 
-        return $this->repositoryNamespace;
+        if ($entityClass === null) {
+            return $this->repositoryNamespace;
+        }
+
+        if ($this->baseEntityNamespace !== null) {
+            $baseNamespace = $this->baseEntityNamespace . '\\';
+            $length = strlen($baseNamespace);
+
+            if (substr($entityClass, 0, $length) !== $baseNamespace) {
+                throw new \LogicException(sprintf('%s is not in namespace %s.', $entityClass, $this->baseEntityNamespace));
+            }
+
+            $entityClass = substr($entityClass, $length);
+        }
+
+        $pos = strrpos($entityClass, '\\');
+
+        if ($pos === false) {
+            return $this->repositoryNamespace;
+        }
+
+        return $this->repositoryNamespace . '\\' . substr($entityClass, 0, $pos);
+    }
+
+    /**
+     * Returns the repository class name for the given entity class name.
+     *
+     * @param string $entityClass the FQCN of the entity.
+     *
+     * @return string The FQCN of the repository.
+     *
+     * @throws \LogicException
+     */
+    public function getRepositoryClassName(string $entityClass) : string
+    {
+        if ($this->baseEntityNamespace !== null) {
+            $baseNamespace = $this->baseEntityNamespace . '\\';
+            $length = strlen($baseNamespace);
+
+            if (substr($entityClass, 0, $length) !== $baseNamespace) {
+                throw new \LogicException(sprintf('%s is not in namespace %s.', $entityClass, $this->baseEntityNamespace));
+            }
+
+            $entityClass = substr($entityClass, $length);
+        }
+
+        return $this->getRepositoryNamespace() . '\\' . $entityClass;
+    }
+
+    /**
+     * @param string $entityClass
+     *
+     * @return string
+     */
+    public function getRepositoryFileName(string $entityClass) : string
+    {
+        if ($this->baseEntityNamespace !== null) {
+            $baseNamespace = $this->baseEntityNamespace . '\\';
+            $length = strlen($baseNamespace);
+
+            if (substr($entityClass, 0, $length) !== $baseNamespace) {
+                throw new \LogicException(sprintf('%s is not in namespace %s.', $entityClass, $this->baseEntityNamespace));
+            }
+
+            $entityClass = substr($entityClass, $length);
+        }
+
+        return $this->getRepositoryDir() . DIRECTORY_SEPARATOR . str_replace('\\', DIRECTORY_SEPARATOR, $entityClass) . 'Repository.php';
     }
 
     /**
@@ -177,6 +320,33 @@ class Configuration
         }
 
         return $this->classMetadataFile;
+    }
+
+    /**
+     * Sets the base namespace all entities live in.
+     *
+     * This is optional, but restricts the number of sub-namespaces (and subdirs) created for repositories and proxies.
+     *
+     * For example, by default App\Model\User's repository would live in RepositoryNamespace\App\Model\UserRepository,
+     * while with a base entity namespace of App\Model it would live in RepositoryNamespace\UserRepository.
+     *
+     * @param string $namespace
+     *
+     * @return Configuration
+     */
+    public function setBaseEntityNamespace(string $namespace) : Configuration
+    {
+        $this->baseEntityNamespace = $namespace;
+
+        return $this;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getBaseEntityNamespace() : ?string
+    {
+        return $this->baseEntityNamespace;
     }
 
     /**

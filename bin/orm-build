@@ -53,7 +53,7 @@ if ($argc !== 2) {
     /** @var Configuration $configuration */
     $configuration = require $path;
 
-    // Build class metadata
+    // Build class metadata for all entity classes
 
     /** @var ClassMetadata[] $classMetadata */
     $classMetadata = (function() use ($configuration) {
@@ -70,7 +70,7 @@ if ($argc !== 2) {
         return $classMetadata;
     })();
 
-    // Build repositories
+    // Build repositories for all aggregate roots
 
     (function() use ($configuration, $classMetadata) {
         foreach ($configuration->getEntities() as $className => $entityConfiguration) {
@@ -80,7 +80,7 @@ if ($argc !== 2) {
             }
 
             $builder = new RepositoryBuilder();
-            $builder->setRepositoryNamespace($configuration->getRepositoryNamespace());
+            $builder->setRepositoryNamespace($configuration->getRepositoryNamespace($className));
             $builder->setEntityClassName($className);
 
             $identityProps = [];
@@ -91,18 +91,15 @@ if ($argc !== 2) {
 
             $builder->setIdentityProps($identityProps);
 
-            $path = $configuration->getRepositoryDir()
-                . DIRECTORY_SEPARATOR
-                . $entityConfiguration->getClassShortName()
-                . 'Repository.php';
-
+            $path = $configuration->getRepositoryFileName($className);
             echo $path, PHP_EOL;
 
+            @mkdir(dirname($path), 0777, true);
             file_put_contents($path, $builder->build());
         }
     })();
 
-    // Build proxies
+    // Build proxies for all non-abstract entity classes
 
     (function() use ($configuration, $classMetadata) {
         foreach ($configuration->getEntities() as $entityConfiguration) {
@@ -114,19 +111,15 @@ if ($argc !== 2) {
                 }
 
                 $builder = new ProxyBuilder();
-                $builder->setProxyNamespace($configuration->getProxyNamespace());
+                $builder->setProxyNamespace($configuration->getProxyNamespace($concreteClassName));
                 $builder->setEntityClassName($concreteClassName);
                 $builder->setNonIdProps($classMetadata[$concreteClassName]->nonIdProperties);
 
-                $shortName = (new \ReflectionClass($concreteClassName))->getShortName();
-
-                $path = $configuration->getProxyDir()
-                    . DIRECTORY_SEPARATOR
-                    . $shortName
-                    . 'Proxy.php';
+                $path = $configuration->getProxyFileName($concreteClassName);
 
                 echo $path, PHP_EOL;
 
+                @mkdir(dirname($path), 0777, true);
                 file_put_contents($path, $builder->build());
             }
         }
