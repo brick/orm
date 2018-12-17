@@ -119,7 +119,7 @@ class Configuration
             $entityClass = substr($entityClass, $length);
         }
 
-        return $this->getProxyNamespace() . '\\' . $entityClass;
+        return $this->getProxyNamespace() . '\\' . $entityClass . 'Proxy';
     }
 
     /**
@@ -216,31 +216,6 @@ class Configuration
         }
 
         return $this->repositoryNamespace . '\\' . substr($entityClass, 0, $pos);
-    }
-
-    /**
-     * Returns the repository class name for the given entity class name.
-     *
-     * @param string $entityClass the FQCN of the entity.
-     *
-     * @return string The FQCN of the repository.
-     *
-     * @throws \LogicException
-     */
-    public function getRepositoryClassName(string $entityClass) : string
-    {
-        if ($this->baseEntityNamespace !== null) {
-            $baseNamespace = $this->baseEntityNamespace . '\\';
-            $length = strlen($baseNamespace);
-
-            if (substr($entityClass, 0, $length) !== $baseNamespace) {
-                throw new \LogicException(sprintf('%s is not in namespace %s.', $entityClass, $this->baseEntityNamespace));
-            }
-
-            $entityClass = substr($entityClass, $length);
-        }
-
-        return $this->getRepositoryNamespace() . '\\' . $entityClass;
     }
 
     /**
