@@ -17,6 +17,13 @@ interface PropertyMapping
     public function getType() : string;
 
     /**
+     * Returns whether the property is nullable.
+     *
+     * @return bool
+     */
+    public function isNullable() : bool;
+
+    /**
      * Returns the list of database field names required to compute the property value.
      *
      * @return string[]

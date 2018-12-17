@@ -18,21 +18,28 @@ class EntityMapping implements PropertyMapping
      *
      * @var ClassMetadata
      */
-    protected $classMetadata;
+    public $classMetadata;
 
     /**
      * @var string
      */
-    protected $fieldNamePrefix;
+    public $fieldNamePrefix;
+
+    /**
+     * @var bool
+     */
+    public $isNullable;
 
     /**
      * @param ClassMetadata $classMetadata   The target entity class name.
      * @param string        $fieldNamePrefix The prefix for field names.
+     * @param bool          $isNullable      Whether the property is nullable.
      */
-    public function __construct(ClassMetadata $classMetadata, string $fieldNamePrefix)
+    public function __construct(ClassMetadata $classMetadata, string $fieldNamePrefix, bool $isNullable)
     {
         $this->classMetadata   = $classMetadata;
         $this->fieldNamePrefix = $fieldNamePrefix;
+        $this->isNullable      = $isNullable;
     }
 
     /**
@@ -41,6 +48,14 @@ class EntityMapping implements PropertyMapping
     public function getType() : string
     {
         return $this->classMetadata->className;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function isNullable() : bool
+    {
+        return $this->isNullable;
     }
 
     /**

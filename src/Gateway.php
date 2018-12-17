@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Brick\ORM;
 
 use Brick\Db\Connection;
+use Brick\ORM\PropertyMapping\BuiltinTypeMapping;
+use Brick\ORM\PropertyMapping\EntityMapping;
 
 /**
  * The underlying table data gateway for repositories.
@@ -68,6 +70,52 @@ class Gateway
         $whereConditions = implode(' AND ', $whereConditions);
 
         $query = sprintf('SELECT %s FROM %s WHERE %s', $selectFields, $table, $whereConditions);
+
+        // @todo MySQL / PostgreSQL only
+        switch ($lockMode) {
+            case LockMode::NONE:
+                break;
+
+            case LockMode::READ:
+                $query .= ' FOR SHARE';
+                break;
+
+            case LockMode::WRITE:
+                $query .= ' FOR UPDATE';
+                break;
+
+            default:
+                throw new \InvalidArgumentException('Invalid lock mode.');
+        }
+
+        return $query;
+    }
+
+    /**
+     * @param string   $table           The table to select from.
+     * @param string   $alias           The table alias.
+     * @param string[] $selectFields    The list of field names to select.
+     * @param array    $joins           A list of ['INNER'|'LEFT', 'table name', 'alias', ['a = b', 'x = y'']] arrays.
+     * @param string[] $whereConditions The list of 'key = value' conditions.
+     * @param int      $lockMode        The lock mode, as a LockMode constant.
+     *
+     * @return string
+     *
+     * @throws \InvalidArgumentException
+     */
+    private function getSelectJoinSQL(string $table, string $alias, array $selectFields, array $joins, array $whereConditions, int $lockMode) : string
+    {
+        $selectFields = implode(', ', $selectFields);
+        $whereConditions = implode(' AND ', $whereConditions);
+
+        $query = sprintf('SELECT %s FROM %s AS %s', $selectFields, $table, $alias);
+
+        foreach ($joins as [$joinType, $joinTable, $joinTableAlias, $joinConditions]) {
+            $joinConditions = implode(' AND ', $joinConditions);
+            $query .= sprintf(' %s JOIN %s AS %s ON %s', $joinType, $joinTable, $joinTableAlias, $joinConditions);
+        }
+
+        $query .= ' WHERE ' . $whereConditions;
 
         // @todo MySQL / PostgreSQL only
         switch ($lockMode) {
@@ -256,6 +304,217 @@ class Gateway
         }
 
         return $propValues;
+    }
+
+    /**
+     * @todo implement orderBy
+     * @todo implement limit/offset
+     * @todo custom exceptions
+     *
+     * @param Query $query
+     * @param int   $lockMode
+     *
+     * @return object[]
+     */
+    public function find(Query $query, int $lockMode = LockMode::NONE) : array
+    {
+        $className = $query->getClassName();
+
+        if (! isset($this->classMetadata[$className])) {
+            throw new \InvalidArgumentException(sprintf('%s is not a valid entity.', $className));
+        }
+
+        $classMetadata = $this->classMetadata[$className];
+
+        $props = $query->getProperties();
+
+        if ($props === null) {
+            $props = $classMetadata->properties;
+        } else {
+            $props = array_values(array_unique($props));
+
+            foreach ($props as $prop) {
+                if (! isset($classMetadata->propertyMappings[$prop])) {
+                    // @todo UnknownPropertyException
+                    throw new \RuntimeException(sprintf('The %s::$%s property does not exist.', $className, $prop));
+                }
+            }
+        }
+
+        $tableAliasGenerator = new TableAliasGenerator();
+        $mainTableAlias = $tableAliasGenerator->generate();
+
+        $selectFields = [];
+
+        foreach ($props as $prop) {
+            $propertyMapping = $classMetadata->propertyMappings[$prop];
+
+            // @todo quote field names
+            $fieldNames = $propertyMapping->getFieldNames();
+            $fieldToInputValuesSQL = $propertyMapping->getFieldToInputValuesSQL($fieldNames);
+
+            foreach ($fieldToInputValuesSQL as $selectField) {
+                $selectFields[] = $mainTableAlias . '.' . $selectField;
+            }
+        }
+
+        $whereConditions = [];
+        $outputValues = [];
+
+        $joins = []; // Join arrays, indexed by (dotted) property name.
+        $tableAliases = []; // Table aliases, indexed by (dotted) property name.
+
+        foreach ($query->getPredicates() as $predicate) {
+            $properties = explode('.', $predicate->getProperty());
+            $count = count($properties);
+
+            $currentClassMetadata = $classMetadata;
+            $notEntity = false;
+
+            foreach ($properties as $index => $property) {
+                if ($notEntity) {
+                    throw new \InvalidArgumentException(sprint('%s is not a valid property for %s.', $predicate->getProperty(), $className));
+                }
+
+                if (! isset($currentClassMetadata->propertyMappings[$property])) {
+                    throw new \InvalidArgumentException(sprintf('%s has no property named $%s.', $currentClassMetadata->className, $property));
+                }
+
+                $propertyMapping = $currentClassMetadata->propertyMappings[$property];
+
+                if ($propertyMapping instanceof EntityMapping) {
+                    // @todo target entity should be part of ClassMetadata itself?
+                    $currentClassMetadata = $propertyMapping->classMetadata;
+
+                    $joinProp = implode('.', array_slice($properties, 0, $index + 1));
+
+                    // Note: no need to JOIN if performing a "=" or "!=" against the entity's identity only.
+                    // Only JOIN if the entity is not the last element of the dotted property.
+                    if (! isset($joins[$joinProp])) {
+                        $tableAlias = $tableAliasGenerator->generate();
+                        $tableAliases[$joinProp] = $tableAlias;
+
+                        if ($index === 0) {
+                            $sourceTableAlias = $mainTableAlias;
+                        } else {
+                            $previousJoinProp = implode('.', array_slice($properties, 0, $index));
+                            $sourceTableAlias = $tableAlias[$previousJoinProp];
+                        }
+
+                        $joinConditions = [];
+
+                        foreach ($currentClassMetadata->idProperties as $prop) {
+                            foreach ($currentClassMetadata->propertyMappings[$prop]->getFieldNames() as $name) {
+                                // @todo quote field names
+                                $joinConditions[] = $sourceTableAlias . '.' . $propertyMapping->fieldNamePrefix . $name . ' = ' . $tableAlias . '.' . $name;
+                            }
+                        }
+
+                        $joins[$joinProp] = [
+                            $propertyMapping->isNullable() ? 'LEFT' : 'INNER',
+                            $currentClassMetadata->tableName,
+                            $tableAlias,
+                            $joinConditions
+                        ];
+                    }
+                } else {
+                    $notEntity = true;
+                }
+            }
+
+            $previousJoinProp = implode('.', array_slice($properties, 0, count($properties) - 1));
+            $tableAlias = ($previousJoinProp !== '') ? $tableAliases[$previousJoinProp] : $mainTableAlias;
+
+            $operator = $predicate->getOperator();
+
+            if ($operator !== '=' && $operator !== '!=' && ! $propertyMapping instanceof BuiltinTypeMapping) {
+                // @todo custom exception
+                throw new \Exception(sprintf('Operator %s can only be used on builtin types.', $operator));
+            }
+
+            $whereCondition = [];
+
+            $valuesToFieldSQL = $propertyMapping->getOutputValuesToFieldSQL();
+
+            foreach ($propertyMapping->getFieldNames() as $index => $fieldName) { // @todo quote field name
+                $whereCondition[] = $tableAlias . '.' . $fieldName . ' ' . $operator .  ' ' . $valuesToFieldSQL[$index];
+            }
+
+            // @todo check that $value is of the correct type
+            $value = $predicate->getValue();
+
+            // @todo "= NULL" should generate IS NULL
+
+            foreach ($propertyMapping->convertPropToOutputValues($value) as $outputValue) {
+                $outputValues[] = $outputValue;
+            }
+
+            if ($operator === '!=') {
+                $whereCondition = implode(' OR ', $whereCondition);
+                if (count($propertyMapping->getFieldNames()) > 1) {
+                    $whereCondition = '(' . $whereCondition . ')';
+                }
+                $whereConditions[] = $whereCondition;
+            } else {
+                $whereConditions[] = implode(' AND ', $whereCondition);
+            }
+        }
+
+        $joins = array_values($joins);
+
+        $sql = $this->getSelectJoinSQL($classMetadata->tableName, $mainTableAlias, $selectFields, $joins, $whereConditions, $lockMode);
+
+        $statement = $this->connection->prepare($sql);
+        $statement->execute($outputValues);
+
+        $entities = [];
+
+        while (null !== $inputValues = $statement->fetch()) {
+            $index = 0;
+            $propValues = [];
+
+            foreach ($props as $prop) {
+                $propertyMapping = $classMetadata->propertyMappings[$prop];
+                $valuesCount = $propertyMapping->getInputValuesCount();
+
+                $propInputValues = array_slice($inputValues, $index, $valuesCount);
+                $index += $valuesCount;
+
+                $propValues[$prop] = $propertyMapping->convertInputValuesToProp($this, $propInputValues);
+            }
+
+            $entity = $this->objectFactory->instantiate($className, $classMetadata->properties);
+            $this->objectFactory->write($entity, $propValues);
+
+            $entities[] = $entity;
+        }
+
+        return $entities;
+    }
+
+    /**
+     * @param Query $query
+     * @param int   $lockMode
+     *
+     * @return object|null
+     *
+     * @throws \Exception @todo NonUniqueResultException
+     */
+    public function findOne(Query $query, int $lockMode = LockMode::NONE) : ?object
+    {
+        $entities = $this->find($query);
+        $count = count($entities);
+
+        if ($count === 0) {
+            return null;
+        }
+
+        if ($count === 1) {
+            return $entities[0];
+        }
+
+        // @todo NonUniqueResultException
+        throw new \Exception(sprintf('The query returned %u results, expected at most 1.', $count));
     }
 
     /**

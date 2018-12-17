@@ -247,13 +247,13 @@ class EntityConfiguration
         if ($propertyType->isBuiltin) {
             switch ($propertyType->type) {
                 case 'int':
-                    return new PropertyMapping\IntMapping($fieldName);
+                    return new PropertyMapping\IntMapping($fieldName, $propertyType->isNullable);
 
                 case 'string':
-                    return new PropertyMapping\StringMapping($fieldName);
+                    return new PropertyMapping\StringMapping($fieldName, $propertyType->isNullable);
 
                 case 'bool':
-                    return new PropertyMapping\BoolMapping($fieldName);
+                    return new PropertyMapping\BoolMapping($fieldName, $propertyType->isNullable);
 
                 default:
                     throw new \LogicException(sprintf('Cannot persist type "%s" in %s::$%s.', $propertyType->type, $className, $propertyName));
@@ -264,7 +264,7 @@ class EntityConfiguration
             throw new \LogicException(sprintf('Type %s of %s::$%s is not an entity.', $propertyType->type, $className, $propertyName));
         }
 
-        return new PropertyMapping\EntityMapping($classMetadata[$propertyType->type], $fieldName . '_');
+        return new PropertyMapping\EntityMapping($classMetadata[$propertyType->type], $fieldName . '_', $propertyType->isNullable);
     }
 
     /**

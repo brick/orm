@@ -17,11 +17,26 @@ abstract class BuiltinTypeMapping implements PropertyMapping
     public $fieldName;
 
     /**
-     * @param string $fieldName
+     * @var bool
      */
-    public function __construct(string $fieldName)
+    public $isNullable;
+
+    /**
+     * @param string $fieldName
+     * @param bool   $isNullable
+     */
+    public function __construct(string $fieldName, bool $isNullable)
     {
         $this->fieldName = $fieldName;
+        $this->isNullable = $isNullable;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function isNullable() : bool
+    {
+        return $this->isNullable;
     }
 
     /**
