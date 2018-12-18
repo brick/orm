@@ -24,9 +24,7 @@ class Query
     private $predicates = [];
 
     /**
-     * A map of property name to 'ASC' or 'DESC'.
-     *
-     * @var array
+     * @var QueryOrderBy[]
      */
     private $orderBy = [];
 
@@ -66,6 +64,8 @@ class Query
      * @param mixed  $value
      *
      * @return Query
+     *
+     * @throws \InvalidArgumentException If the operator is invalid.
      */
     public function addPredicate(string $property, string $operator, $value) : Query
     {
@@ -75,26 +75,29 @@ class Query
     }
 
     /**
-     * @param array $orderBy A map of property name to 'ASC' or 'DESC'.
+     * @param string $property  The property to order by.
+     * @param string $direction The order direction, 'ASC' or 'DESC'.
      *
      * @return Query
+     *
+     * @throws \InvalidArgumentException If the order direction is invalid.
      */
-    public function setOrderBy(array $orderBy) : Query
+    public function addOrderBy(string $property, string $direction = 'ASC') : Query
     {
-        $this->orderBy = $orderBy;
+        $this->orderBy[] = new QueryOrderBy($property, $direction);
 
         return $this;
     }
 
     /**
-     * @param int      $limit
-     * @param int|null $offset
+     * @param int $limit
+     * @param int $offset
      *
      * @return Query
      */
-    public function setLimit(int $limit, ?int $offset = null) : Query
+    public function setLimit(int $limit, int $offset = 0) : Query
     {
-        $this->limit = $limit;
+        $this->limit  = $limit;
         $this->offset = $offset;
 
         return $this;
@@ -125,7 +128,7 @@ class Query
     }
 
     /**
-     * @return string[]
+     * @return QueryOrderBy[]
      */
     public function getOrderBy() : array
     {

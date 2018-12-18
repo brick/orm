@@ -321,65 +321,9 @@ class Gateway
         $selectBuilder->setLockMode($lockMode);
 
         foreach ($query->getPredicates() as $predicate) {
-            $properties = explode('.', $predicate->getProperty());
-            $count = count($properties);
-
-            $currentClassMetadata = $classMetadata;
-            $notEntity = false;
-
-            foreach ($properties as $index => $property) {
-                if ($notEntity) {
-                    throw new \InvalidArgumentException(sprint('%s is not a valid property for %s.', $predicate->getProperty(), $className));
-                }
-
-                if (! isset($currentClassMetadata->propertyMappings[$property])) {
-                    throw new \InvalidArgumentException(sprintf('%s has no property named $%s.', $currentClassMetadata->className, $property));
-                }
-
-                $propertyMapping = $currentClassMetadata->propertyMappings[$property];
-
-                if ($propertyMapping instanceof EntityMapping) {
-                    // @todo target entity should be part of ClassMetadata itself?
-                    $currentClassMetadata = $propertyMapping->classMetadata;
-
-                    $joinProp = implode('.', array_slice($properties, 0, $index + 1));
-
-                    // Note: no need to JOIN if performing a "=" or "!=" against the entity's identity only.
-                    // Only JOIN if the entity is not the last element of the dotted property.
-                    if (($index !== $count - 1) && ! isset($tableAliases[$joinProp])) {
-                        $tableAlias = $tableAliasGenerator->generate();
-                        $tableAliases[$joinProp] = $tableAlias;
-
-                        if ($index === 0) {
-                            $sourceTableAlias = $mainTableAlias;
-                        } else {
-                            $previousJoinProp = implode('.', array_slice($properties, 0, $index));
-                            $sourceTableAlias = $tableAlias[$previousJoinProp];
-                        }
-
-                        $joinConditions = [];
-
-                        foreach ($currentClassMetadata->idProperties as $prop) {
-                            foreach ($currentClassMetadata->propertyMappings[$prop]->getFieldNames() as $name) {
-                                // @todo quote field names
-                                $joinConditions[] = $sourceTableAlias . '.' . $propertyMapping->fieldNamePrefix . $name . ' = ' . $tableAlias . '.' . $name;
-                            }
-                        }
-
-                        $selectBuilder->addJoin(
-                            $propertyMapping->isNullable() ? 'LEFT' : 'INNER',
-                            $currentClassMetadata->tableName,
-                            $tableAlias,
-                            $joinConditions
-                        );
-                    }
-                } else {
-                    $notEntity = true;
-                }
-            }
-
-            $previousJoinProp = implode('.', array_slice($properties, 0, count($properties) - 1));
-            $tableAlias = ($previousJoinProp !== '') ? $tableAliases[$previousJoinProp] : $mainTableAlias;
+            /** @var string $tableAlias */
+            /** @var PropertyMapping $propertyMapping */
+            [$tableAlias, $propertyMapping] = $this->addJoins($classMetadata, $selectBuilder, $tableAliasGenerator, $mainTableAlias, $tableAliases, $predicate->getProperty());
 
             $operator = $predicate->getOperator();
 
@@ -405,7 +349,25 @@ class Gateway
                 $outputValues[] = $outputValue;
             }
 
+            // a = x AND b = y, but (A != x OR b != y); other operators not allowed on mutiple fields
             $selectBuilder->addWhereConditions($whereConditions, $operator === '!=' ? 'OR' : 'AND');
+        }
+
+        foreach ($query->getOrderBy() as $orderBy) {
+            // @todo There is currently an unnecessary JOIN when ordering by an identity field of a related entity;
+            // example: ->addOrderBy('relatedEntity.id'); this could be avoided by reading the value from the base entity instead.
+
+            /** @var string $tableAlias */
+            /** @var PropertyMapping $propertyMapping */
+            [$tableAlias, $propertyMapping] = $this->addJoins($classMetadata, $selectBuilder, $tableAliasGenerator, $mainTableAlias, $tableAliases, $orderBy->getProperty());
+
+            foreach ($propertyMapping->getFieldNames() as $fieldName) {
+                $selectBuilder->addOrderBy($tableAlias . '.' . $fieldName, $orderBy->getDirection());
+            }
+        }
+
+        if (null !== $limit = $query->getLimit()) {
+            $selectBuilder->setLimit($limit, $query->getOffset());
         }
 
         $sql = $selectBuilder->build();
@@ -435,6 +397,76 @@ class Gateway
         }
 
         return $entities;
+    }
+
+    /**
+     * Adds joins for the given property, returns the alias of the table to read from, and the property mapping.
+     *
+     * @todo Quick & dirty. Refactor.
+     */
+    private function addJoins(ClassMetadata $classMetadata, SelectQueryBuilder $selectBuilder, TableAliasGenerator $tableAliasGenerator, string $mainTableAlias, array & $tableAliases, string $dottedProperty) : array
+    {
+        $properties = explode('.', $dottedProperty);
+        $count = count($properties);
+
+        $currentClassMetadata = $classMetadata;
+        $notEntity = false;
+
+        foreach ($properties as $index => $property) {
+            if ($notEntity) {
+                throw new \InvalidArgumentException(sprint('%s is not a valid property for %s.', $dottedProperty, $className));
+            }
+
+            if (! isset($currentClassMetadata->propertyMappings[$property])) {
+                throw new \InvalidArgumentException(sprintf('%s has no property named $%s.', $currentClassMetadata->className, $property));
+            }
+
+            $propertyMapping = $currentClassMetadata->propertyMappings[$property];
+
+            if ($propertyMapping instanceof EntityMapping) {
+                // @todo target entity should be part of ClassMetadata itself?
+                $currentClassMetadata = $propertyMapping->classMetadata;
+
+                $joinProp = implode('.', array_slice($properties, 0, $index + 1));
+
+                // Note: no need to JOIN if performing comparisons against the entity's identity only.
+                // Only JOIN if the entity is not the last element of the dotted property.
+                if (($index !== $count - 1) && ! isset($tableAliases[$joinProp])) {
+                    $tableAlias = $tableAliasGenerator->generate();
+                    $tableAliases[$joinProp] = $tableAlias;
+
+                    if ($index === 0) {
+                        $sourceTableAlias = $mainTableAlias;
+                    } else {
+                        $previousJoinProp = implode('.', array_slice($properties, 0, $index));
+                        $sourceTableAlias = $tableAliases[$previousJoinProp];
+                    }
+
+                    $joinConditions = [];
+
+                    foreach ($currentClassMetadata->idProperties as $prop) {
+                        foreach ($currentClassMetadata->propertyMappings[$prop]->getFieldNames() as $name) {
+                            // @todo quote field names
+                            $joinConditions[] = $sourceTableAlias . '.' . $propertyMapping->fieldNamePrefix . $name . ' = ' . $tableAlias . '.' . $name;
+                        }
+                    }
+
+                    $selectBuilder->addJoin(
+                        $propertyMapping->isNullable() ? 'LEFT' : 'INNER',
+                        $currentClassMetadata->tableName,
+                        $tableAlias,
+                        $joinConditions
+                    );
+                }
+            } else {
+                $notEntity = true;
+            }
+        }
+
+        $previousJoinProp = implode('.', array_slice($properties, 0, count($properties) - 1));
+        $tableAlias = ($previousJoinProp !== '') ? $tableAliases[$previousJoinProp] : $mainTableAlias;
+
+        return [$tableAlias, $propertyMapping];
     }
 
     /**

@@ -26,7 +26,7 @@ class QueryPredicate
      * @param string $operator The operator, such as "=", "!=" or ">".
      * @param mixed  $value    The value to compare against.
      *
-     * @throws \InvalidArgumentException
+     * @throws \InvalidArgumentException If the operator is invalid.
      */
     public function __construct(string $property, string $operator, $value)
     {
