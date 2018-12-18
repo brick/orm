@@ -346,7 +346,7 @@ class Gateway
 
                     // Note: no need to JOIN if performing a "=" or "!=" against the entity's identity only.
                     // Only JOIN if the entity is not the last element of the dotted property.
-                    if (! isset($tableAliases[$joinProp])) {
+                    if (($index !== $count - 1) && ! isset($tableAliases[$joinProp])) {
                         $tableAlias = $tableAliasGenerator->generate();
                         $tableAliases[$joinProp] = $tableAlias;
 
