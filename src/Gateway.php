@@ -92,52 +92,6 @@ class Gateway
     }
 
     /**
-     * @param string   $table           The table to select from.
-     * @param string   $alias           The table alias.
-     * @param string[] $selectFields    The list of field names to select.
-     * @param array    $joins           A list of ['INNER'|'LEFT', 'table name', 'alias', ['a = b', 'x = y'']] arrays.
-     * @param string[] $whereConditions The list of 'key = value' conditions.
-     * @param int      $lockMode        The lock mode, as a LockMode constant.
-     *
-     * @return string
-     *
-     * @throws \InvalidArgumentException
-     */
-    private function getSelectJoinSQL(string $table, string $alias, array $selectFields, array $joins, array $whereConditions, int $lockMode) : string
-    {
-        $selectFields = implode(', ', $selectFields);
-        $whereConditions = implode(' AND ', $whereConditions);
-
-        $query = sprintf('SELECT %s FROM %s AS %s', $selectFields, $table, $alias);
-
-        foreach ($joins as [$joinType, $joinTable, $joinTableAlias, $joinConditions]) {
-            $joinConditions = implode(' AND ', $joinConditions);
-            $query .= sprintf(' %s JOIN %s AS %s ON %s', $joinType, $joinTable, $joinTableAlias, $joinConditions);
-        }
-
-        $query .= ' WHERE ' . $whereConditions;
-
-        // @todo MySQL / PostgreSQL only
-        switch ($lockMode) {
-            case LockMode::NONE:
-                break;
-
-            case LockMode::READ:
-                $query .= ' FOR SHARE';
-                break;
-
-            case LockMode::WRITE:
-                $query .= ' FOR UPDATE';
-                break;
-
-            default:
-                throw new \InvalidArgumentException('Invalid lock mode.');
-        }
-
-        return $query;
-    }
-
-    /**
      * Builds an INSERT query.
      *
      * The arrays of fields and values must have the same number of elements.
@@ -361,8 +315,10 @@ class Gateway
         $whereConditions = [];
         $outputValues = [];
 
-        $joins = []; // Join arrays, indexed by (dotted) property name.
         $tableAliases = []; // Table aliases, indexed by (dotted) property name.
+
+        $selectBuilder = new SelectQueryBuilder($selectFields, $classMetadata->tableName, $mainTableAlias);
+        $selectBuilder->setLockMode($lockMode);
 
         foreach ($query->getPredicates() as $predicate) {
             $properties = explode('.', $predicate->getProperty());
@@ -390,7 +346,7 @@ class Gateway
 
                     // Note: no need to JOIN if performing a "=" or "!=" against the entity's identity only.
                     // Only JOIN if the entity is not the last element of the dotted property.
-                    if (! isset($joins[$joinProp])) {
+                    if (! isset($tableAliases[$joinProp])) {
                         $tableAlias = $tableAliasGenerator->generate();
                         $tableAliases[$joinProp] = $tableAlias;
 
@@ -410,12 +366,12 @@ class Gateway
                             }
                         }
 
-                        $joins[$joinProp] = [
+                        $selectBuilder->addJoin(
                             $propertyMapping->isNullable() ? 'LEFT' : 'INNER',
                             $currentClassMetadata->tableName,
                             $tableAlias,
                             $joinConditions
-                        ];
+                        );
                     }
                 } else {
                     $notEntity = true;
@@ -432,12 +388,12 @@ class Gateway
                 throw new \Exception(sprintf('Operator %s can only be used on builtin types.', $operator));
             }
 
-            $whereCondition = [];
+            $whereConditions = [];
 
             $valuesToFieldSQL = $propertyMapping->getOutputValuesToFieldSQL();
 
             foreach ($propertyMapping->getFieldNames() as $index => $fieldName) { // @todo quote field name
-                $whereCondition[] = $tableAlias . '.' . $fieldName . ' ' . $operator .  ' ' . $valuesToFieldSQL[$index];
+                $whereConditions[] = $tableAlias . '.' . $fieldName . ' ' . $operator .  ' ' . $valuesToFieldSQL[$index];
             }
 
             // @todo check that $value is of the correct type
@@ -449,21 +405,10 @@ class Gateway
                 $outputValues[] = $outputValue;
             }
 
-            if ($operator === '!=') {
-                $whereCondition = implode(' OR ', $whereCondition);
-                if (count($propertyMapping->getFieldNames()) > 1) {
-                    $whereCondition = '(' . $whereCondition . ')';
-                }
-                $whereConditions[] = $whereCondition;
-            } else {
-                $whereConditions[] = implode(' AND ', $whereCondition);
-            }
+            $selectBuilder->addWhereConditions($whereConditions, $operator === '!=' ? 'OR' : 'AND');
         }
 
-        $joins = array_values($joins);
-
-        $sql = $this->getSelectJoinSQL($classMetadata->tableName, $mainTableAlias, $selectFields, $joins, $whereConditions, $lockMode);
-
+        $sql = $selectBuilder->build();
         $statement = $this->connection->prepare($sql);
         $statement->execute($outputValues);
 
