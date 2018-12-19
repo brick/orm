@@ -218,14 +218,17 @@ class Gateway
 
         foreach ($id as $prop => $value) {
             $propertyMapping = $classMetadata->propertyMappings[$prop];
-            $valuesToFieldSQL = $propertyMapping->getOutputValuesToFieldSQL();
 
-            foreach ($propertyMapping->getFieldNames() as $index => $fieldName) { // @todo quote field name
-                $whereConditions[] = $fieldName . ' = ' . $valuesToFieldSQL[$index];
-            }
+            $expressionsAndOutputValues = $propertyMapping->convertPropToFields($value);
 
-            foreach ($propertyMapping->convertPropToOutputValues($value) as $outputValue) {
-                $outputValues[] = $outputValue;
+            foreach ($propertyMapping->getFieldNames() as $fieldNameIndex => $fieldName) {
+                foreach ($expressionsAndOutputValues[$fieldNameIndex] as $index => $expressionOrValue) {
+                    if ($index === 0) {
+                        $whereConditions[] = $fieldName . ' = ' . $expressionOrValue;
+                    } else {
+                        $outputValues[] = $expressionOrValue;
+                    }
+                }
             }
         }
 

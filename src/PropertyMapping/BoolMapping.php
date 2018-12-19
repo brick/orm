@@ -42,4 +42,20 @@ class BoolMapping extends BuiltinTypeMapping
 
         return (bool) $values[0];
     }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function convertPropToFields($propValue) : array
+    {
+        if ($propValue === null) {
+            return [
+                ['NULL']
+            ];
+        }
+
+        return [
+            ['?', (bool) $propValue]
+        ];
+    }
 }

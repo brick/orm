@@ -103,4 +103,35 @@ interface PropertyMapping
      * @return mixed[] The list of database values.
      */
     public function convertPropToOutputValues($propValue) : array;
+
+    /**
+     * Converts the given property to values for each database field it is mapped to.
+     *
+     * The result array must contain exactly one entry for each field returned by getFieldNames(), in the same order.
+     * Each entry must be a numeric array whose first entry is a string containing an SQL expression, and whose further
+     * entries are values to be sent for each question mark placeholder the SQL expression may contain.
+     *
+     * Example for a simple scalar value mapping:
+     * [
+     *     ['?', $value]
+     * ]
+     *
+     * Example for a geometry mapping 2 values to a single field:
+     * [
+     *     ['ST_GeomFromText(?, ?)', $wkt, $srid]
+     * ]
+     *
+     * Example for a complex property mapping many values to 4 fields:
+     * [
+     *     ['NULL'],
+     *     ['?', $value1],
+     *     ['?', $value2],
+     *     ['ST_GeomFromText(?, ?)', $wkt, $srid]
+     * }
+     *
+     * @param mixed $propValue The property value.
+     *
+     * @return array
+     */
+    public function convertPropToFields($propValue) : array;
 }

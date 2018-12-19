@@ -42,4 +42,20 @@ class StringMapping extends BuiltinTypeMapping
 
         return (string) $values[0];
     }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function convertPropToFields($propValue) : array
+    {
+        if ($propValue === null) {
+            return [
+                ['NULL']
+            ];
+        }
+
+        return [
+            ['?', (string) $propValue]
+        ];
+    }
 }

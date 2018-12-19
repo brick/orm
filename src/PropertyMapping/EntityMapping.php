@@ -168,4 +168,33 @@ class EntityMapping implements PropertyMapping
 
         return $fieldValues;
     }
+
+    /**
+     * @todo use Gateway::getIdentity() instead; currently does not check that the object has an identity
+     *
+     * {@inheritdoc}
+     */
+    public function convertPropToFields($propValue) : array
+    {
+        $result = [];
+
+        $entity = $propValue;
+        $r = new \ReflectionObject($entity);
+
+        foreach ($this->classMetadata->idProperties as $prop) {
+            if ($entity === null) {
+                $idPropValue = null;
+            } else {
+                $p = $r->getProperty($prop);
+                $p->setAccessible(true);
+                $idPropValue = $p->getValue($entity);
+            }
+
+            foreach ($this->classMetadata->propertyMappings[$prop]->convertPropToFields($idPropValue) as $expressionAndValues) {
+                $result[] = $expressionAndValues;
+            }
+        }
+
+        return $result;
+    }
 }

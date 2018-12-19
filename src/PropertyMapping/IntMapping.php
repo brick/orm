@@ -42,4 +42,20 @@ class IntMapping extends BuiltinTypeMapping
 
         return (int) $values[0];
     }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function convertPropToFields($propValue) : array
+    {
+        if ($propValue === null) {
+            return [
+                ['NULL']
+            ];
+        }
+
+        return [
+            ['?', (int) $propValue]
+        ];
+    }
 }
