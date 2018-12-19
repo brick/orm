@@ -40,7 +40,7 @@ interface PropertyMapping
     public function getInputValuesCount() : int;
 
     /**
-     * Returns the SQL to read each database value required to compute the property value.
+     * Returns the SQL expressions to read each database value required to compute the property value.
      *
      * The input array will contain exactly one string for each field returned by getFieldNames().
      * It will contain these field names, in the same order, with possible prefixes and quoting.
@@ -61,24 +61,6 @@ interface PropertyMapping
     public function getFieldToInputValuesSQL(array $fieldNames) : array;
 
     /**
-     * Returns the SQL to send values returned by convertPropToOutputValues() to the database fields.
-     *
-     * The result array must contain exactly one string for each field returned by getFieldNames(), in the same order.
-     * It must contain exactly one question mark placeholder per value returned by convertPropToOutputValues(), in the
-     * same order.
-     *
-     * This method may return more than one placeholder per database field, if a SQL function has to be called to merge
-     * two or more values into a single field; for example, sending a Geometry could require to send 2 database values
-     * (WKT and SRID) and merge them into a single field using ST_GeomFromText(?, ?).
-     *
-     * If no transformation is required, this method should return an array containing as many question marks as there
-     * are fields in getFieldNames(). For example, if getFieldNames() returns 2 fields, it should return ['?', '?'].
-     *
-     * @return string[] The list of SQL placeholders, optionally wrapped with SQL code.
-     */
-    public function getOutputValuesToFieldSQL() : array;
-
-    /**
      * Converts the given database values to a property value.
      *
      * The input array will contain one value for each getFieldToInputValuesSQL() entry, in the same order.
@@ -91,32 +73,18 @@ interface PropertyMapping
     public function convertInputValuesToProp(Gateway $gateway, array $values);
 
     /**
-     * Converts the given property value to database values.
-     *
-     * The result array must contain exactly one value for each question mark placeholder returned by
-     * getOutputValuesToFieldSQL(), in the same order.
-     *
-     * Each value in the array must be of one of the native PHP types accepted by PreparedStatement::execute().
-     *
-     * @param mixed $propValue The property value.
-     *
-     * @return mixed[] The list of database values.
-     */
-    public function convertPropToOutputValues($propValue) : array;
-
-    /**
-     * Converts the given property to values for each database field it is mapped to.
+     * Converts the given property to SQL expressions and values for each database field it is mapped to.
      *
      * The result array must contain exactly one entry for each field returned by getFieldNames(), in the same order.
      * Each entry must be a numeric array whose first entry is a string containing an SQL expression, and whose further
-     * entries are values to be sent for each question mark placeholder the SQL expression may contain.
+     * entries are values to be bound for each question mark placeholder the SQL expression contains.
      *
      * Example for a simple scalar value mapping:
      * [
      *     ['?', $value]
      * ]
      *
-     * Example for a geometry mapping 2 values to a single field:
+     * Example for a geometry object, mapping 2 values to a single field:
      * [
      *     ['ST_GeomFromText(?, ?)', $wkt, $srid]
      * ]
@@ -127,7 +95,7 @@ interface PropertyMapping
      *     ['?', $value1],
      *     ['?', $value2],
      *     ['ST_GeomFromText(?, ?)', $wkt, $srid]
-     * }
+     * ]
      *
      * @param mixed $propValue The property value.
      *

@@ -127,49 +127,6 @@ class EntityMapping implements PropertyMapping
     }
 
     /**
-     * @todo precompute for better performance
-     *
-     * {@inheritdoc}
-     */
-    public function getOutputValuesToFieldSQL() : array
-    {
-        $result = [];
-
-        foreach ($this->classMetadata->idProperties as $prop) {
-            foreach ($this->classMetadata->propertyMappings[$prop]->getOutputValuesToFieldSQL() as $sql) {
-                $result[] = $sql;
-            }
-        }
-
-        return $result;
-    }
-
-    /**
-     * @todo use Gateway::getIdentity() instead; currently does not check that the object has an identity
-     *
-     * {@inheritdoc}
-     */
-    public function convertPropToOutputValues($propValue) : array
-    {
-        $entity = $propValue;
-        $r = new \ReflectionObject($entity);
-
-        $fieldValues = [];
-
-        foreach ($this->classMetadata->idProperties as $prop) {
-            $p = $r->getProperty($prop);
-            $p->setAccessible(true);
-            $idPropValue = $p->getValue($entity);
-
-            foreach ($this->classMetadata->propertyMappings[$prop]->convertPropToOutputValues($idPropValue) as $fieldValue) {
-                $fieldValues[] = $fieldValue;
-            }
-        }
-
-        return $fieldValues;
-    }
-
-    /**
      * @todo use Gateway::getIdentity() instead; currently does not check that the object has an identity
      *
      * {@inheritdoc}

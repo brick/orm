@@ -222,6 +222,8 @@ class Gateway
             $expressionsAndOutputValues = $propertyMapping->convertPropToFields($value);
 
             foreach ($propertyMapping->getFieldNames() as $fieldNameIndex => $fieldName) {
+                // @todo keep an eye on https://wiki.php.net/rfc/spread_operator_for_array (maybe PHP 7.4?)
+                // this would allow for foreach (... as [$expression, ...$values])
                 foreach ($expressionsAndOutputValues[$fieldNameIndex] as $index => $expressionOrValue) {
                     if ($index === 0) {
                         $whereConditions[] = $fieldName . ' = ' . $expressionOrValue;
@@ -264,8 +266,6 @@ class Gateway
     }
 
     /**
-     * @todo implement orderBy
-     * @todo implement limit/offset
      * @todo custom exceptions
      *
      * @param Query $query
@@ -315,9 +315,7 @@ class Gateway
             }
         }
 
-        $whereConditions = [];
         $outputValues = [];
-
         $tableAliases = []; // Table aliases, indexed by (dotted) property name.
 
         $selectBuilder = new SelectQueryBuilder($selectFields, $classMetadata->tableName, $mainTableAlias);
@@ -337,30 +335,38 @@ class Gateway
 
             $whereConditions = [];
 
-            $valuesToFieldSQL = $propertyMapping->getOutputValuesToFieldSQL();
-
             // @todo check that $value is of the correct type
             $value = $predicate->getValue();
 
-            foreach ($propertyMapping->getFieldNames() as $index => $fieldName) { // @todo quote field name
-                if ($value === null) {
+            $fieldNames = $propertyMapping->getFieldNames();
+
+            if ($value === null) {
+                // property = null implies IS NULL on every single underlying database field
+                // property != null currently implies IS NOT NULL on every single underlying database field
+                // @todo property != null should imply IS NOT NULL on ANY OF the non-nullable fields
+                foreach ($fieldNames as $fieldName) { // @todo quote field name
                     if ($operator !== '=' && $operator != '!=') {
                         // @todo custom exception
-                        throw new \Exception(sprintf('Operator %s cannot be used on null values.'));
+                        throw new \Exception(sprintf('Operator %s cannot be used on null values.', $operator));
                     }
+
                     $whereConditions[] = $tableAlias . '.' . $fieldName . ' ' . ($operator === '=' ? 'IS NULL' : 'IS NOT NULL');
-                } else {
-                    $whereConditions[] = $tableAlias . '.' . $fieldName . ' ' . $operator .  ' ' . $valuesToFieldSQL[$index];
+                }
+            } else {
+                $expressionsAndOutputValues = $propertyMapping->convertPropToFields($value);
+
+                foreach ($fieldNames as $fieldNameIndex => $fieldName) {
+                    foreach ($expressionsAndOutputValues[$fieldNameIndex] as $index => $expressionOrValue) {
+                        if ($index === 0) {
+                            $whereConditions[] = $tableAlias . '.' . $fieldNames[$index] . ' ' . $operator . ' ' . $expressionOrValue;
+                        } else {
+                            $outputValues[] = $expressionOrValue;
+                        }
+                    }
                 }
             }
 
-            if ($value !== null) {
-                foreach ($propertyMapping->convertPropToOutputValues($value) as $outputValue) {
-                    $outputValues[] = $outputValue;
-                }
-            }
-
-            // a = x AND b = y, but (A != x OR b != y); other operators not allowed on mutiple fields
+            // a = x AND b = y, but (A != x OR b != y); other operators not allowed on multiple fields
             $selectBuilder->addWhereConditions($whereConditions, $operator === '!=' ? 'OR' : 'AND');
         }
 
@@ -626,15 +632,17 @@ class Gateway
 
             $propertyMapping = $classMetadata->propertyMappings[$prop];
 
-            $valuesToFieldSQL = $propertyMapping->getOutputValuesToFieldSQL();
+            $expressionsAndOutputValues = $propertyMapping->convertPropToFields($value);
 
-            foreach ($propertyMapping->getFieldNames() as $index => $fieldName) {
-                $fieldNames[] = $fieldName; // @todo quote field name
-                $fieldValues[] = $valuesToFieldSQL[$index];
-            }
-
-            foreach ($propertyMapping->convertPropToOutputValues($value) as $outputValue) {
-                $outputValues[] = $outputValue;
+            foreach ($propertyMapping->getFieldNames() as $fieldNameIndex => $fieldName) {
+                foreach ($expressionsAndOutputValues[$fieldNameIndex] as $index => $expressionOrValue) {
+                    if ($index === 0) {
+                        $fieldNames[] = $fieldName; // @todo quote field name
+                        $fieldValues[] = $expressionOrValue;
+                    } else {
+                        $outputValues[] = $expressionOrValue;
+                    }
+                }
             }
         }
 
@@ -688,28 +696,32 @@ class Gateway
         foreach ($classMetadata->nonIdProperties as $prop) {
             if (isset($propValues[$prop])) {
                 $propertyMapping = $classMetadata->propertyMappings[$prop];
-                $valuesToFieldSQL = $propertyMapping->getOutputValuesToFieldSQL();
+                $expressionsAndOutputValues = $propertyMapping->convertPropToFields($propValues[$prop]);
 
-                foreach ($propertyMapping->getFieldNames() as $index => $fieldName) { // @todo quote field name
-                    $updates[] = $fieldName . ' = ' . $valuesToFieldSQL[$index];
-                }
-
-                foreach ($propertyMapping->convertPropToOutputValues($propValues[$prop]) as $outputValue) {
-                    $outputValues[] = $outputValue;
+                foreach ($propertyMapping->getFieldNames() as $fieldNameIndex => $fieldName) { // @todo quote field name
+                    foreach ($expressionsAndOutputValues[$fieldNameIndex] as $index => $expressionOrValue) {
+                        if ($index === 0) {
+                            $updates[] = $fieldName . ' = ' . $expressionOrValue;
+                        } else {
+                            $outputValues[] = $expressionOrValue;
+                        }
+                    }
                 }
             }
         }
 
         foreach ($classMetadata->idProperties as $prop) {
             $propertyMapping = $classMetadata->propertyMappings[$prop];
-            $valuesToFieldSQL = $propertyMapping->getOutputValuesToFieldSQL();
+            $expressionsAndOutputValues = $propertyMapping->convertPropToFields($propValues[$prop]);
 
-            foreach ($propertyMapping->getFieldNames() as $index => $fieldName) {
-                $whereConditions[] = $fieldName . ' = ' . $valuesToFieldSQL[$index];
-            }
-
-            foreach ($propertyMapping->convertPropToOutputValues($propValues[$prop]) as $outputValue) {
-                $outputValues[] = $outputValue;
+            foreach ($propertyMapping->getFieldNames() as $fieldNameIndex => $fieldName) { // @todo quote field name
+                foreach ($expressionsAndOutputValues[$fieldNameIndex] as $index => $expressionOrValue) {
+                    if ($index === 0) {
+                        $whereConditions[] = $fieldName . ' = ' . $expressionOrValue;
+                    } else {
+                        $outputValues[] = $expressionOrValue;
+                    }
+                }
             }
         }
 
@@ -752,14 +764,16 @@ class Gateway
 
         foreach ($id as $prop => $value) {
             $propertyMapping = $classMetadata->propertyMappings[$prop];
-            $valuesToFieldSQL = $propertyMapping->getOutputValuesToFieldSQL();
+            $expressionsAndOutputValues = $propertyMapping->convertPropToFields($value);
 
-            foreach ($propertyMapping->getFieldNames() as $index => $fieldName) { // @todo quote field name
-                $whereConditions[] = $fieldName . ' = ' . $valuesToFieldSQL[$index];
-            }
-
-            foreach ($propertyMapping->convertPropToOutputValues($value) as $outputValue) {
-                $outputValues[] = $outputValue;
+            foreach ($propertyMapping->getFieldNames() as $fieldNameIndex => $fieldName) { // @todo quote field name
+                foreach ($expressionsAndOutputValues[$fieldNameIndex] as $index => $expressionOrValue) {
+                    if ($index === 0) {
+                        $whereConditions[] = $fieldName . ' = ' . $expressionOrValue;
+                    } else {
+                        $outputValues[] = $expressionOrValue;
+                    }
+                }
             }
         }
 

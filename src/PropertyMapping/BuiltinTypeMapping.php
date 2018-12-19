@@ -62,12 +62,4 @@ abstract class BuiltinTypeMapping implements PropertyMapping
     {
         return $fieldNames;
     }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function getOutputValuesToFieldSQL() : array
-    {
-        return ['?'];
-    }
 }
