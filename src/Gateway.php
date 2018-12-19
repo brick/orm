@@ -425,7 +425,7 @@ class Gateway
 
         foreach ($properties as $index => $property) {
             if ($notEntity) {
-                throw new \InvalidArgumentException(sprint('%s is not a valid property for %s.', $dottedProperty, $className));
+                throw new \InvalidArgumentException(sprintf('%s is not a valid property for %s.', $dottedProperty, $classMetadata->className));
             }
 
             if (! isset($currentClassMetadata->propertyMappings[$property])) {
