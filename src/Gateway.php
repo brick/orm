@@ -336,17 +336,25 @@ class Gateway
 
             $valuesToFieldSQL = $propertyMapping->getOutputValuesToFieldSQL();
 
-            foreach ($propertyMapping->getFieldNames() as $index => $fieldName) { // @todo quote field name
-                $whereConditions[] = $tableAlias . '.' . $fieldName . ' ' . $operator .  ' ' . $valuesToFieldSQL[$index];
-            }
-
             // @todo check that $value is of the correct type
             $value = $predicate->getValue();
 
-            // @todo "= NULL" should generate IS NULL
+            foreach ($propertyMapping->getFieldNames() as $index => $fieldName) { // @todo quote field name
+                if ($value === null) {
+                    if ($operator !== '=' && $operator != '!=') {
+                        // @todo custom exception
+                        throw new \Exception(sprintf('Operator %s cannot be used on null values.'));
+                    }
+                    $whereConditions[] = $tableAlias . '.' . $fieldName . ' ' . ($operator === '=' ? 'IS NULL' : 'IS NOT NULL');
+                } else {
+                    $whereConditions[] = $tableAlias . '.' . $fieldName . ' ' . $operator .  ' ' . $valuesToFieldSQL[$index];
+                }
+            }
 
-            foreach ($propertyMapping->convertPropToOutputValues($value) as $outputValue) {
-                $outputValues[] = $outputValue;
+            if ($value !== null) {
+                foreach ($propertyMapping->convertPropToOutputValues($value) as $outputValue) {
+                    $outputValues[] = $outputValue;
+                }
             }
 
             // a = x AND b = y, but (A != x OR b != y); other operators not allowed on mutiple fields
@@ -395,6 +403,9 @@ class Gateway
 
             $entities[] = $entity;
         }
+
+        echo "$sql\n";
+        var_export($outputValues);die;
 
         return $entities;
     }
