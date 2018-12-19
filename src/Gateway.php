@@ -407,9 +407,6 @@ class Gateway
             $entities[] = $entity;
         }
 
-        echo "$sql\n";
-        var_export($outputValues);die;
-
         return $entities;
     }
 
