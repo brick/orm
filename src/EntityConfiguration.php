@@ -87,14 +87,6 @@ class EntityConfiguration
     }
 
     /**
-     * @return string
-     */
-    public function getClassShortName() : string
-    {
-        return $this->reflectionClass->getShortName();
-    }
-
-    /**
      * Sets the root entity of the aggregate this entity belongs to.
      *
      * @param string $className
