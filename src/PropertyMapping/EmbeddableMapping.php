@@ -5,19 +5,20 @@ declare(strict_types=1);
 namespace Brick\ORM\PropertyMapping;
 
 use Brick\ORM\ClassMetadata;
-use Brick\ORM\EntityMetadata;
+use Brick\ORM\EmbeddableMetadata;
+use Brick\ORM\ObjectFactory;
 use Brick\ORM\PropertyMapping;
 use Brick\ORM\Gateway;
 
 /**
  * @internal
  */
-class EntityMapping implements PropertyMapping
+class EmbeddableMapping extends EntityMapping
 {
     /**
      * The class metadata of the target entity.
      *
-     * @var EntityMetadata
+     * @var EmbeddableMetadata
      */
     public $classMetadata;
 
@@ -32,11 +33,11 @@ class EntityMapping implements PropertyMapping
     public $isNullable;
 
     /**
-     * @param EntityMetadata $classMetadata   The target entity class metadata.
-     * @param string         $fieldNamePrefix The prefix for field names.
-     * @param bool           $isNullable      Whether the property is nullable.
+     * @param EmbeddableMetadata $classMetadata   The target entity class metadata.
+     * @param string             $fieldNamePrefix The prefix for field names.
+     * @param bool               $isNullable      Whether the property is nullable.
      */
-    public function __construct(EntityMetadata $classMetadata, string $fieldNamePrefix, bool $isNullable)
+    public function __construct(EmbeddableMetadata $classMetadata, string $fieldNamePrefix, bool $isNullable)
     {
         $this->classMetadata   = $classMetadata;
         $this->fieldNamePrefix = $fieldNamePrefix;
@@ -68,7 +69,7 @@ class EntityMapping implements PropertyMapping
     {
         $names = [];
 
-        foreach ($this->classMetadata->idProperties as $prop) {
+        foreach ($this->classMetadata->properties as $prop) {
             foreach ($this->classMetadata->propertyMappings[$prop]->getFieldNames() as $name) {
                 $names[] = $this->fieldNamePrefix . $name;
             }
@@ -97,7 +98,7 @@ class EntityMapping implements PropertyMapping
         $wrappedFields = [];
         $currentIndex = 0;
 
-        foreach ($this->classMetadata->idProperties as $prop) {
+        foreach ($this->classMetadata->properties as $prop) {
             $propertyMapping = $this->classMetadata->propertyMappings[$prop];
             $readFieldCount = $propertyMapping->getInputValuesCount();
 
@@ -117,19 +118,22 @@ class EntityMapping implements PropertyMapping
      */
     public function convertInputValuesToProp(Gateway $gateway, array $values)
     {
-        $id = [];
-        $index = 0;
+        $propValues = [];
 
-        foreach ($this->classMetadata->idProperties as $idProperty) {
-            $id[$idProperty] = $values[$index++];
+        foreach ($this->classMetadata->properties as $index => $property) {
+            $propValues[$property] = $values[$index];
         }
 
-        return $gateway->getProxy($this->classMetadata->className, $id);
+        $objectFactory = new ObjectFactory();
+
+        // no need to unset persistent any props here, as we're always loading all values in the embeddable
+        $object = $objectFactory->instantiate($this->classMetadata->className, []);
+        $objectFactory->write($object, $propValues);
+
+        return $object;
     }
 
     /**
-     * @todo use Gateway::getIdentity() instead; currently does not check that the object has an identity
-     *
      * {@inheritdoc}
      */
     public function convertPropToFields($propValue) : array
@@ -139,7 +143,7 @@ class EntityMapping implements PropertyMapping
         $entity = $propValue;
         $r = new \ReflectionObject($entity);
 
-        foreach ($this->classMetadata->idProperties as $prop) {
+        foreach ($this->classMetadata->properties as $prop) {
             if ($entity === null) {
                 $idPropValue = null;
             } else {

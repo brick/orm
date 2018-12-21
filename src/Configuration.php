@@ -37,16 +37,30 @@ class Configuration
     private $baseEntityNamespace;
 
     /**
-     * @var EntityConfiguration[]
+     * @var ClassConfiguration[]
      */
-    private $entities = [];
+    private $classes = [];
 
     /**
-     * A map of entity class names to lists of property names.
+     * A map of entity/embeddable class names to lists of transient property names.
      *
      * @var string[][]
      */
     private $transientProperties = [];
+
+    /**
+     * A map of entity/embeddable class names to property names to field names.
+     *
+     * @var string[][]
+     */
+    private $fieldNames = [];
+
+    /**
+     * A map of entity/embeddable class names to property names to field name prefixes.
+     *
+     * @var string[][]
+     */
+    private $fieldNamePrefixes = [];
 
     /**
      * @param string $proxyNamespace
@@ -332,9 +346,22 @@ class Configuration
     public function addEntity(string $className) : EntityConfiguration
     {
         $entityConfiguration = new EntityConfiguration($this, $className);
-        $this->entities[$className] = $entityConfiguration;
+        $this->classes[$className] = $entityConfiguration;
 
         return $entityConfiguration;
+    }
+
+    /**
+     * @param string $className
+     *
+     * @return EmbeddableConfiguration
+     */
+    public function addEmbeddable(string $className) : EmbeddableConfiguration
+    {
+        $embeddableConfiguration = new EmbeddableConfiguration($this, $className);
+        $this->classes[$className] = $embeddableConfiguration;
+
+        return $embeddableConfiguration;
     }
 
     /**
@@ -363,12 +390,82 @@ class Configuration
     }
 
     /**
+     * @param string $class
+     * @param string $property
+     * @param string $fieldName
+     *
+     * @return Configuration
+     */
+    public function setFieldName(string $class, string $property, string $fieldName) : Configuration
+    {
+        $this->fieldNames[$class][$property] = $fieldName;
+
+        return $this;
+    }
+
+    /**
+     * Sets custom field names for builtin type properties.
+     *
+     * If not set, the field name defaults to the property name.
+     *
+     * @return string[][]
+     */
+    public function getFieldNames() : array
+    {
+        return $this->fieldNames;
+    }
+
+    /**
+     * Sets field name prefixes for entity/embeddable properties.
+     *
+     * If not set, the field name prefix defaults to the property name followed by an underscore character.
+     *
+     * @param string $class
+     * @param string $property
+     * @param string $fieldNamePrefix
+     *
+     * @return Configuration
+     */
+    public function setFieldNamePrefix(string $class, string $property, string $fieldNamePrefix) : Configuration
+    {
+        $this->fieldNamePrefixes[$class][$property] = $fieldNamePrefix;
+
+        return $this;
+    }
+
+    /**
+     * @return string[][]
+     */
+    public function getFieldNamePrefixes() : array
+    {
+        return $this->fieldNamePrefixes;
+    }
+
+    /**
+     * Returns the class configurations, indexed by FQCN.
+     *
+     * @return ClassConfiguration[]
+     */
+    public function getClasses() : array
+    {
+        return $this->classes;
+    }
+
+    /**
      * Returns the entity configurations, indexed by FQCN.
      *
      * @return EntityConfiguration[]
      */
     public function getEntities() : array
     {
-        return $this->entities;
+        $entityConfigurations = [];
+
+        foreach ($this->classes as $className => $classConfiguration) {
+            if ($classConfiguration instanceof EntityConfiguration) {
+                $entityConfigurations[$className] = $classConfiguration;
+            }
+        }
+
+        return $entityConfigurations;
     }
 }

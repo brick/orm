@@ -6,6 +6,7 @@ namespace Brick\ORM;
 
 use Brick\Db\Connection;
 use Brick\ORM\PropertyMapping\BuiltinTypeMapping;
+use Brick\ORM\PropertyMapping\EmbeddableMapping;
 use Brick\ORM\PropertyMapping\EntityMapping;
 
 /**
@@ -16,8 +17,7 @@ use Brick\ORM\PropertyMapping\EntityMapping;
  * time. Use the generated repositories instead. You have been warned.
  *
  * Current limitations:
- * - Before PHP 7.4: update() will ignore null fields, even if they've been explicitly nulled out after load()
- * - No support for private properties (for simplicity, performance, ease of requesting property names in load(), and lazy initialization proxies)
+ * - No support for private properties (for simplicity, performuance, ease of requesting property names in load(), and lazy initialization proxies)
  * - No support for update() on mutated identities: explicitly remove() the previous identity then add() the new one
  *
  * @internal
@@ -427,10 +427,11 @@ class Gateway
         $count = count($properties);
 
         $currentClassMetadata = $classMetadata;
-        $notEntity = false;
+        $isEntityOrEmbeddable = true;
 
         foreach ($properties as $index => $property) {
-            if ($notEntity) {
+            if (! $isEntityOrEmbeddable) {
+                // Requesting a child property of a non-entity or embeddable property
                 throw new \InvalidArgumentException(sprintf('%s is not a valid property for %s.', $dottedProperty, $classMetadata->className));
             }
 
@@ -440,48 +441,65 @@ class Gateway
 
             $propertyMapping = $currentClassMetadata->propertyMappings[$property];
 
-            if ($propertyMapping instanceof EntityMapping) {
-                // @todo target entity should be part of ClassMetadata itself?
-                $currentClassMetadata = $propertyMapping->classMetadata;
+            if ($propertyMapping instanceof EmbeddableMapping) {
+                continue;
+            }
 
-                $joinProp = implode('.', array_slice($properties, 0, $index + 1));
+            if (! $propertyMapping instanceof EntityMapping) {
+                $isEntityOrEmbeddable = false;
+                continue;
+            }
 
-                // Note: no need to JOIN if performing comparisons against the entity's identity only.
-                // Only JOIN if the entity is not the last element of the dotted property.
-                if (($index !== $count - 1) && ! isset($tableAliases[$joinProp])) {
-                    $tableAlias = $tableAliasGenerator->generate();
-                    $tableAliases[$joinProp] = $tableAlias;
+            // @todo target entity should be part of ClassMetadata itself?
+            $currentClassMetadata = $propertyMapping->classMetadata;
 
-                    if ($index === 0) {
-                        $sourceTableAlias = $mainTableAlias;
-                    } else {
-                        $previousJoinProp = implode('.', array_slice($properties, 0, $index));
-                        $sourceTableAlias = $tableAliases[$previousJoinProp];
-                    }
+            $joinProp = implode('.', array_slice($properties, 0, $index + 1));
 
-                    $joinConditions = [];
+            // Note: no need to JOIN if performing comparisons against the entity's identity only.
+            // Only JOIN if the entity is not the last element of the dotted property.
+            if (($index !== $count - 1) && ! isset($tableAliases[$joinProp]) && $propertyMapping instanceof EntityMapping) {
+                $tableAlias = $tableAliasGenerator->generate();
+                $tableAliases[$joinProp] = $tableAlias;
 
-                    foreach ($currentClassMetadata->idProperties as $prop) {
-                        foreach ($currentClassMetadata->propertyMappings[$prop]->getFieldNames() as $name) {
-                            // @todo quote field names
-                            $joinConditions[] = $sourceTableAlias . '.' . $propertyMapping->fieldNamePrefix . $name . ' = ' . $tableAlias . '.' . $name;
-                        }
-                    }
-
-                    $selectBuilder->addJoin(
-                        $propertyMapping->isNullable() ? 'LEFT' : 'INNER',
-                        $currentClassMetadata->tableName,
-                        $tableAlias,
-                        $joinConditions
-                    );
+                if ($index === 0) {
+                    $sourceTableAlias = $mainTableAlias;
+                } else {
+                    $previousJoinProp = implode('.', array_slice($properties, 0, $index));
+                    $sourceTableAlias = $tableAliases[$previousJoinProp];
                 }
-            } else {
-                $notEntity = true;
+
+                $joinConditions = [];
+
+                foreach ($currentClassMetadata->idProperties as $prop) {
+                    foreach ($currentClassMetadata->propertyMappings[$prop]->getFieldNames() as $name) {
+                        // @todo quote field names
+                        $joinConditions[] = $sourceTableAlias . '.' . $propertyMapping->fieldNamePrefix . $name . ' = ' . $tableAlias . '.' . $name;
+                    }
+                }
+
+                $selectBuilder->addJoin(
+                    $propertyMapping->isNullable() ? 'LEFT' : 'INNER',
+                    $currentClassMetadata->tableName,
+                    $tableAlias,
+                    $joinConditions
+                );
             }
         }
 
-        $previousJoinProp = implode('.', array_slice($properties, 0, count($properties) - 1));
-        $tableAlias = ($previousJoinProp !== '') ? $tableAliases[$previousJoinProp] : $mainTableAlias;
+        // Loop from the next-to-last dotted property, up to the root property, until we find a table alias:
+        // we might have embeddabled in between, that must use the parent table.
+        for ($i = 1; ; $i++) {
+            $previousJoinProp = implode('.', array_slice($properties, 0, count($properties) - $i));
+            if ($previousJoinProp === '') {
+                $tableAlias = $mainTableAlias;
+                break;
+            }
+
+            if (isset($tableAliases[$previousJoinProp])) {
+                $tableAlias = $tableAliases[$previousJoinProp];
+                break;
+            }
+        }
 
         return [$tableAlias, $propertyMapping];
     }
@@ -694,7 +712,7 @@ class Gateway
         $outputValues = [];
 
         foreach ($classMetadata->nonIdProperties as $prop) {
-            if (isset($propValues[$prop])) {
+            if (array_key_exists($prop, $propValues)) {
                 $propertyMapping = $classMetadata->propertyMappings[$prop];
                 $expressionsAndOutputValues = $propertyMapping->convertPropToFields($propValues[$prop]);
 

@@ -6,27 +6,12 @@ namespace Brick\ORM;
 
 use Brick\ORM\Reflection\PropertyTypeChecker;
 
-class EntityConfiguration
+class EntityConfiguration extends ClassConfiguration
 {
-    /**
-     * @var Configuration
-     */
-    private $configuration;
-
-    /**
-     * @var \ReflectionClass
-     */
-    private $reflectionClass;
-
     /**
      * @var string|null
      */
     private $belongsTo;
-
-    /**
-     * @var PropertyTypeChecker
-     */
-    private $propertyTypeChecker;
 
     /**
      * @var string|null
@@ -58,33 +43,6 @@ class EntityConfiguration
      * @var string[]
      */
     private $discriminatorMap = [];
-
-    /**
-     * @param Configuration $configuration
-     * @param string        $className
-     *
-     * @throws \InvalidArgumentException
-     */
-    public function __construct(Configuration $configuration, string $className)
-    {
-        $this->configuration = $configuration;
-
-        try {
-            $this->reflectionClass = new \ReflectionClass($className);
-        } catch (\ReflectionException $e) {
-            throw new \InvalidArgumentException(sprintf('%s does not exist.', $className), 0, $e);
-        }
-
-        $this->propertyTypeChecker = new PropertyTypeChecker();
-    }
-
-    /**
-     * @return string
-     */
-    public function getClassName() : string
-    {
-        return $this->reflectionClass->getName();
-    }
 
     /**
      * Sets the root entity of the aggregate this entity belongs to.
@@ -218,48 +176,6 @@ class EntityConfiguration
     }
 
     /**
-     * @param string          $className     The entity class name.
-     * @param string          $propertyName  The property name.
-     * @param ClassMetadata[] $classMetadata A map of FQCN to ClassMetadata instances for all entities.
-     *
-     * @return PropertyMapping
-     *
-     * @throws \LogicException
-     */
-    public function getPropertyMapping(string $className, string $propertyName, array $classMetadata) : PropertyMapping
-    {
-        if (! in_array($propertyName, $this->getPersistentProperties($className))) {
-            throw new \InvalidArgumentException(sprintf('Cannot return property mapping for unknown or non-persistent property %s::$%s.', $className, $property));
-        }
-
-        $propertyType = $this->propertyTypeChecker->getPropertyType(new \ReflectionProperty($className, $propertyName));
-
-        $fieldName = $propertyName; // @todo make configurable
-
-        if ($propertyType->isBuiltin) {
-            switch ($propertyType->type) {
-                case 'int':
-                    return new PropertyMapping\IntMapping($fieldName, $propertyType->isNullable);
-
-                case 'string':
-                    return new PropertyMapping\StringMapping($fieldName, $propertyType->isNullable);
-
-                case 'bool':
-                    return new PropertyMapping\BoolMapping($fieldName, $propertyType->isNullable);
-
-                default:
-                    throw new \LogicException(sprintf('Cannot persist type "%s" in %s::$%s.', $propertyType->type, $className, $propertyName));
-            }
-        }
-
-        if (! isset($this->configuration->getEntities()[$propertyType->type])) {
-            throw new \LogicException(sprintf('Type %s of %s::$%s is not an entity.', $propertyType->type, $className, $propertyName));
-        }
-
-        return new PropertyMapping\EntityMapping($classMetadata[$propertyType->type], $fieldName . '_', $propertyType->isNullable);
-    }
-
-    /**
      * Sets the inheritance mapping for this entity.
      *
      * Every persistable class in the hierarchy must have an entry in the discriminator map. This excludes abstract
@@ -361,54 +277,6 @@ class EntityConfiguration
         }
 
         return array_values(array_unique($classes));
-    }
-
-    /**
-     * @param string|null $className The entity class name, or null to use the root entity (this entity)'s class name.
-     *
-     * @return string[]
-     *
-     * @throws \LogicException
-     */
-    public function getPersistentProperties(?string $className = null) : array
-    {
-        if ($className === null) {
-            $reflectionClass = $this->reflectionClass;
-        } else {
-            $reflectionClass = new \ReflectionClass($className);
-        }
-
-        $persistableProperties = [];
-
-        foreach ($reflectionClass->getProperties() as $reflectionProperty) {
-            if ($reflectionProperty->isStatic()) {
-                continue;
-            }
-
-            $propertyName = $reflectionProperty->getName();
-
-            if (in_array($propertyName, $this->configuration->getTransientProperties($reflectionClass->getName()))) {
-                continue;
-            }
-
-            if ($reflectionProperty->isPrivate()) {
-                throw new \LogicException(sprintf('%s::$%s is private; private properties are not supported. Make the property protected, or add it to transient properties if it should not be persistent.', $className, $propertyName));
-            }
-
-            $propertyType = $this->propertyTypeChecker->getPropertyType($reflectionProperty);
-
-            if ($propertyType === null) {
-                throw new \LogicException(sprintf('%s::$%s is not typed. Add a type to the property, or add it to transient properties if it should not be persistent.', $className, $propertyName));
-            }
-
-            $persistableProperties[] = $propertyName;
-        }
-
-        if (count($persistableProperties) === 0) {
-            throw new \LogicException(sprintf('%s has not persistable properties.', $className));
-        }
-
-        return $persistableProperties;
     }
 
     /**

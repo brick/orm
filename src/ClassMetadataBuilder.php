@@ -34,19 +34,28 @@ class ClassMetadataBuilder
     {
         $this->classMetadata = [];
 
-        $entityConfigurations = $this->configuration->getEntities();
+        $classConfigurations = $this->configuration->getClasses();
 
-        foreach ($entityConfigurations as $entityConfiguration) {
-            foreach ($entityConfiguration->getClassHierarchy() as $className) {
-                $this->classMetadata[$className] = new ClassMetadata();
+        foreach ($classConfigurations as $classConfiguration) {
+            if ($classConfiguration instanceof EntityConfiguration) {
+                foreach ($classConfiguration->getClassHierarchy() as $className) {
+                    $this->classMetadata[$className] = new EntityMetadata();
+                }
+            } elseif ($classConfiguration instanceof EmbeddableConfiguration) {
+                $this->classMetadata[$classConfiguration->getClassName()] = new EmbeddableMetadata();
             }
         }
 
         // This needs to be done in 2 steps, as references to all ClassMetadata instances must be available below.
 
-        foreach ($entityConfigurations as $entityConfiguration) {
-            foreach ($entityConfiguration->getClassHierarchy() as $className) {
-                $this->fillClassMetadata($this->classMetadata[$className], $className, $entityConfiguration);
+        foreach ($classConfigurations as $classConfiguration) {
+            if ($classConfiguration instanceof EntityConfiguration) {
+                foreach ($classConfiguration->getClassHierarchy() as $className) {
+                    $this->fillEntityMetadata($this->classMetadata[$className], $className, $classConfiguration);
+                }
+            } elseif ($classConfiguration instanceof EmbeddableConfiguration) {
+                $className = $classConfiguration->getClassName();
+                $this->fillEmbeddableMetadata($this->classMetadata[$className], $className, $classConfiguration);
             }
         }
 
@@ -54,13 +63,13 @@ class ClassMetadataBuilder
     }
 
     /**
-     * @param ClassMetadata       $classMetadata
+     * @param EntityMetadata      $classMetadata
      * @param string              $className
      * @param EntityConfiguration $entityConfiguration
      *
      * @return void
      */
-    private function fillClassMetadata(ClassMetadata $classMetadata, string $className, EntityConfiguration $entityConfiguration) : void
+    private function fillEntityMetadata(EntityMetadata $classMetadata, string $className, EntityConfiguration $entityConfiguration) : void
     {
         $reflectionClass = new \ReflectionClass($className);
 
@@ -98,6 +107,31 @@ class ClassMetadataBuilder
 
         foreach ($persistentProperties as $propertyName) {
             $propertyMapping = $entityConfiguration->getPropertyMapping($className, $propertyName, $this->classMetadata);
+            $classMetadata->propertyMappings[$propertyName] = $propertyMapping;
+        }
+    }
+
+    /**
+     * @param EmbeddableMetadata      $classMetadata
+     * @param string                  $className
+     * @param EmbeddableConfiguration $embeddableConfiguration
+     *
+     * @return void
+     */
+    private function fillEmbeddableMetadata(EmbeddableMetadata $classMetadata, string $className, EmbeddableConfiguration $embeddableConfiguration) : void
+    {
+        $reflectionClass = new \ReflectionClass($className);
+
+        $classMetadata->className = $className;
+
+        $persistentProperties = $embeddableConfiguration->getPersistentProperties($className);
+
+        $classMetadata->properties = $persistentProperties;
+
+        $classMetadata->propertyMappings = [];
+
+        foreach ($persistentProperties as $propertyName) {
+            $propertyMapping = $embeddableConfiguration->getPropertyMapping($className, $propertyName, $this->classMetadata);
             $classMetadata->propertyMappings[$propertyName] = $propertyMapping;
         }
     }
