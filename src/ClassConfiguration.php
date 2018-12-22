@@ -65,6 +65,8 @@ abstract class ClassConfiguration
             $reflectionClass = new \ReflectionClass($className);
         }
 
+        $className = $reflectionClass->getName();
+
         $persistableProperties = [];
 
         foreach ($reflectionClass->getProperties() as $reflectionProperty) {
@@ -74,7 +76,7 @@ abstract class ClassConfiguration
 
             $propertyName = $reflectionProperty->getName();
 
-            if (in_array($propertyName, $this->configuration->getTransientProperties($reflectionClass->getName()))) {
+            if (in_array($propertyName, $this->configuration->getTransientProperties($className))) {
                 continue;
             }
 
