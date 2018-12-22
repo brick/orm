@@ -120,8 +120,6 @@ class ClassMetadataBuilder
      */
     private function fillEmbeddableMetadata(EmbeddableMetadata $classMetadata, string $className, EmbeddableConfiguration $embeddableConfiguration) : void
     {
-        $reflectionClass = new \ReflectionClass($className);
-
         $classMetadata->className = $className;
 
         $persistentProperties = $embeddableConfiguration->getPersistentProperties($className);
