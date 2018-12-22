@@ -514,7 +514,7 @@ class Gateway
      */
     public function findOne(Query $query, int $lockMode = LockMode::NONE) : ?object
     {
-        $entities = $this->find($query);
+        $entities = $this->find($query, $lockMode);
         $count = count($entities);
 
         if ($count === 0) {
