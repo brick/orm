@@ -63,6 +63,13 @@ class Configuration
     private $fieldNamePrefixes = [];
 
     /**
+     * A map of class names to custom property mapping classes.
+     *
+     * @var PropertyMapping[]
+     */
+    private $customMappings = [];
+
+    /**
      * @param string $proxyNamespace
      *
      * @return Configuration
@@ -362,6 +369,27 @@ class Configuration
         $this->classes[$className] = $embeddableConfiguration;
 
         return $embeddableConfiguration;
+    }
+
+    /**
+     * @param string $className       The mapped class name.
+     * @param string $propertyMapping The PropertyMapping implementation class name.
+     *
+     * @return Configuration
+     */
+    public function addCustomMapping(string $className, string $propertyMapping) : Configuration
+    {
+        $this->customMappings[$className] = $propertyMapping;
+
+        return $this;
+    }
+
+    /**
+     * @return PropertyMapping[}
+     */
+    public function getCustomMappings() : array
+    {
+        return $this->customMappings;
     }
 
     /**

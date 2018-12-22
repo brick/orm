@@ -134,6 +134,13 @@ abstract class ClassConfiguration
             }
         }
 
+        $customPropertyMappings = $this->configuration->getCustomMappings();
+
+        if (isset($customPropertyMappings[$propertyType->type])) {
+            // @todo for now this only works with a single field name/prefix, and fixed constructor
+            return new $customPropertyMappings[$propertyType->type]($fieldName, $propertyType->isNullable);
+        }
+
         if (! isset($classMetadata[$propertyType->type])) {
             throw new \LogicException(sprintf('Type %s of %s::$%s is not an entity or embeddable.', $propertyType->type, $className, $propertyName));
         }
