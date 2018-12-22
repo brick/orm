@@ -110,7 +110,7 @@ abstract class ClassConfiguration
     public function getPropertyMapping(string $className, string $propertyName, array $classMetadata) : PropertyMapping
     {
         if (! in_array($propertyName, $this->getPersistentProperties($className))) {
-            throw new \InvalidArgumentException(sprintf('Cannot return property mapping for unknown or non-persistent property %s::$%s.', $className, $property));
+            throw new \InvalidArgumentException(sprintf('Cannot return property mapping for unknown or non-persistent property %s::$%s.', $className, $propertyName));
         }
 
         $propertyType = $this->propertyTypeChecker->getPropertyType(new \ReflectionProperty($className, $propertyName));

@@ -161,7 +161,7 @@ class EntityConfiguration extends ClassConfiguration
     public function getIdentityProperties() : array
     {
         if ($this->identityProperties === null) {
-            throw new \LogicException(sprintf('No identity properties have been set for class %s.', $this->className));
+            throw new \LogicException(sprintf('No identity properties have been set for class %s.', $this->getClassName()));
         }
 
         foreach ($this->identityProperties as $identityProperty) {
@@ -208,7 +208,7 @@ class EntityConfiguration extends ClassConfiguration
             }
 
             if ($reflectionClass->getName() !== $rootEntityClassName && ! $reflectionClass->isSubclassOf($rootEntityClassName)) {
-                throw new \InvalidArgumentException(sprintf('%s is not a subclass of %s and cannot be part of its discriminator map.'));
+                throw new \InvalidArgumentException(sprintf('%s is not a subclass of %s and cannot be part of its discriminator map.', $reflectionClass->getName(), $rootEntityClassName));
             }
 
             // Override to fix potential wrong case
