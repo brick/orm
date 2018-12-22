@@ -4,10 +4,8 @@ declare(strict_types=1);
 
 namespace Brick\ORM\PropertyMapping;
 
-use Brick\ORM\ClassMetadata;
 use Brick\ORM\EmbeddableMetadata;
 use Brick\ORM\ObjectFactory;
-use Brick\ORM\PropertyMapping;
 use Brick\ORM\Gateway;
 
 /**
