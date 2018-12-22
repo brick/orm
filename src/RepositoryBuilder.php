@@ -157,7 +157,7 @@ class RepositoryBuilder
         $upperLength = 0;
 
         for ($i = 0; $i < $length; $i++) {
-            if (ctype_upper($className[$i])) {
+            if ($this->isUppercase($className[$i])) {
                 $upperLength++;
             } else {
                 break;
@@ -173,5 +173,19 @@ class RepositoryBuilder
         }
 
         return strtolower(substr($className, 0, $upperLength)) . substr($className, $upperLength);
+    }
+
+    /**
+     * Checks if an ASCII letter is uppercase.
+     *
+     * @param string $letter
+     *
+     * @return bool
+     */
+    private function isUppercase(string $letter) : bool
+    {
+        $ord = ord($letter);
+
+        return ($ord >= 65) && ($ord <= 90);
     }
 }
