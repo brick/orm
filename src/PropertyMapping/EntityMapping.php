@@ -136,7 +136,10 @@ class EntityMapping implements PropertyMapping
         $result = [];
 
         $entity = $propValue;
-        $r = new \ReflectionObject($entity);
+
+        if ($entity !== null) {
+            $r = new \ReflectionObject($entity);
+        }
 
         foreach ($this->classMetadata->idProperties as $prop) {
             if ($entity === null) {

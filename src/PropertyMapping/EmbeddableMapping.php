@@ -139,7 +139,10 @@ class EmbeddableMapping extends EntityMapping
         $result = [];
 
         $entity = $propValue;
-        $r = new \ReflectionObject($entity);
+
+        if ($entity !== null) {
+            $r = new \ReflectionObject($entity);
+        }
 
         foreach ($this->classMetadata->properties as $prop) {
             if ($entity === null) {
