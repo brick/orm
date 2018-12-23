@@ -116,11 +116,18 @@ class EntityMapping implements PropertyMapping
      */
     public function convertInputValuesToProp(Gateway $gateway, array $values)
     {
-        $id = [];
-        $index = 0;
+        $currentIndex = 0;
 
-        foreach ($this->classMetadata->idProperties as $idProperty) {
-            $id[$idProperty] = $values[$index++];
+        $id = [];
+
+        foreach ($this->classMetadata->idProperties as $prop) {
+            $propertyMapping = $this->classMetadata->propertyMappings[$prop];
+            $readFieldCount = $propertyMapping->getInputValuesCount();
+
+            $currentInputValues = array_slice($values, $currentIndex, $readFieldCount);
+            $currentIndex += $readFieldCount;
+
+            $id[$prop] = $propertyMapping->convertInputValuesToProp($gateway, $currentInputValues);
         }
 
         return $gateway->getProxy($this->classMetadata->className, $id);

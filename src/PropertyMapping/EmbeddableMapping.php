@@ -116,10 +116,18 @@ class EmbeddableMapping extends EntityMapping
      */
     public function convertInputValuesToProp(Gateway $gateway, array $values)
     {
+        $currentIndex = 0;
+
         $propValues = [];
 
-        foreach ($this->classMetadata->properties as $index => $property) {
-            $propValues[$property] = $values[$index];
+        foreach ($this->classMetadata->properties as $prop) {
+            $propertyMapping = $this->classMetadata->propertyMappings[$prop];
+            $readFieldCount = $propertyMapping->getInputValuesCount();
+
+            $currentInputValues = array_slice($values, $currentIndex, $readFieldCount);
+            $currentIndex += $readFieldCount;
+
+            $propValues[$prop] = $propertyMapping->convertInputValuesToProp($gateway, $currentInputValues);
         }
 
         $objectFactory = new ObjectFactory();
