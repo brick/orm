@@ -54,12 +54,12 @@ class CLASS_NAMERepository
 
     public function save(CLASS_NAME $ENTITY_PROP_NAME) : void
     {
-        $this->gateway->save(CLASS_NAME::class, $ENTITY_PROP_NAME);
+        $this->gateway->save($ENTITY_PROP_NAME);
     }
 
     public function update(CLASS_NAME $ENTITY_PROP_NAME) : void
     {
-        $this->gateway->update(CLASS_NAME::class, $ENTITY_PROP_NAME);
+        $this->gateway->update($ENTITY_PROP_NAME);
     }
 
     public function remove(CLASS_NAME $ENTITY_PROP_NAME) : void

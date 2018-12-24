@@ -54,12 +54,12 @@ class UserRepository
 
     public function save(User $user) : void
     {
-        $this->gateway->save(User::class, $user);
+        $this->gateway->save($user);
     }
 
     public function update(User $user) : void
     {
-        $this->gateway->update(User::class, $user);
+        $this->gateway->update($user);
     }
 
     public function remove(User $user) : void

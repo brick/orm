@@ -600,7 +600,6 @@ class Gateway
      *
      * This results in an immediate INSERT statement being executed against the database.
      *
-     * @param string $class  The entity class name. @todo unused now.
      * @param object $entity The entity to save.
      *
      * @return void
@@ -608,7 +607,7 @@ class Gateway
      * @throws \RuntimeException
      * @throws \Brick\Db\DbException If a database error occurs.
      */
-    public function save(string $class, object $entity) : void
+    public function save(object $entity) : void
     {
         $class = get_class($entity);
 
@@ -685,14 +684,13 @@ class Gateway
      *
      * This results in an immediate UPDATE statement being executed against the database.
      *
-     * @param string $class  The entity class name. @todo unused now.
      * @param object $entity The entity to update.
      *
      * @return void
      *
      * @throws \RuntimeException
      */
-    public function update(string $class, object $entity) : void
+    public function update(object $entity) : void
     {
         $class = get_class($entity);
 

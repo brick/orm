@@ -55,12 +55,12 @@ class FollowRepository
 
     public function save(Follow $follow) : void
     {
-        $this->gateway->save(Follow::class, $follow);
+        $this->gateway->save($follow);
     }
 
     public function update(Follow $follow) : void
     {
-        $this->gateway->update(Follow::class, $follow);
+        $this->gateway->update($follow);
     }
 
     public function remove(Follow $follow) : void

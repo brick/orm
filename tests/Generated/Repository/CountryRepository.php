@@ -54,12 +54,12 @@ class CountryRepository
 
     public function save(Country $country) : void
     {
-        $this->gateway->save(Country::class, $country);
+        $this->gateway->save($country);
     }
 
     public function update(Country $country) : void
     {
-        $this->gateway->update(Country::class, $country);
+        $this->gateway->update($country);
     }
 
     public function remove(Country $country) : void
