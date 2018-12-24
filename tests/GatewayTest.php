@@ -119,9 +119,9 @@ class GatewayTest extends AbstractTestCase
      *
      * @param int $userId
      *
-     * @return void
+     * @return User
      */
-    public function testLoadUser(int $userId) : void
+    public function testLoadUser(int $userId) : User
     {
         $user = self::$userRepository->load($userId);
 
@@ -146,5 +146,50 @@ class GatewayTest extends AbstractTestCase
         $this->assertSame('GB', $user->getDeliveryAddress()->getAddress()->getCountry()->getCode());
         $this->assertSame('POINT(51 0)', $user->getDeliveryAddress()->getLocation()->getWKT());
         $this->assertSame(4326, $user->getDeliveryAddress()->getLocation()->getSRID());
+
+        return $user;
+    }
+
+    /**
+     * @depends testLoadUser
+     *
+     * @param User $user
+     *
+     * @return int
+     */
+    public function testRemoveUser(User $user) : int
+    {
+        self::$userRepository->remove($user);
+
+        $this->assertDebugStatementCount(1);
+        $this->assertDebugStatement(0,
+            'DELETE FROM User WHERE id = ?',
+            [$user->getId()]
+        );
+
+        return $user->getId();
+    }
+
+    /**
+     * @depends testRemoveUser
+     *
+     * @param int $userId
+     *
+     * @return void
+     */
+    public function testLoadRemovedUser(int $userId) : void
+    {
+        $user = self::$userRepository->load($userId);
+        $this->assertNull($user);
+
+        $this->assertDebugStatementCount(1);
+        $this->assertDebugStatement(0,
+            'SELECT name, street, city, zipcode, country_code, isPoBox, ' .
+            'deliveryAddress_address_street, deliveryAddress_address_city, deliveryAddress_address_zipcode, ' .
+            'deliveryAddress_address_country_code, deliveryAddress_address_isPoBox, ' .
+            'ST_AsText(deliveryAddress_location), ST_SRID(deliveryAddress_location) ' .
+            'FROM User WHERE id = ?',
+            [$userId]
+        );
     }
 }
