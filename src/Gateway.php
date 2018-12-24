@@ -649,6 +649,13 @@ class Gateway
 
             $propertyMapping = $classMetadata->propertyMappings[$prop];
 
+            // @todo workaround to avoid sending NULL values for non-initialized properties,
+            // such as an auto-increment id in a new object. Remove for PHP 7.4 when these fields will be
+            // uninitialized instead of null, and will be naturally skipped.
+            if ($value === null && ! $propertyMapping->isNullable()) {
+                continue;
+            }
+
             $expressionsAndOutputValues = $propertyMapping->convertPropToFields($value);
 
             foreach ($propertyMapping->getFieldNames() as $fieldNameIndex => $fieldName) {

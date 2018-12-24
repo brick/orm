@@ -68,10 +68,10 @@ class GatewayTest extends AbstractTestCase
 
         $this->assertDebugStatementCount(1);
         $this->assertDebugStatement(0,
-            'INSERT INTO User (id, name, street, city, zipcode, country_code, isPoBox, ' .
+            'INSERT INTO User (name, street, city, zipcode, country_code, isPoBox, ' .
             'deliveryAddress_address_street, deliveryAddress_address_city, deliveryAddress_address_zipcode, ' .
             'deliveryAddress_address_country_code, deliveryAddress_address_isPoBox, deliveryAddress_location) ' .
-            'VALUES (NULL, ?, ?, ?, ?, ?, ?, NULL, NULL, NULL, NULL, NULL, NULL)',
+            'VALUES (?, ?, ?, ?, ?, ?, NULL, NULL, NULL, NULL, NULL, NULL)',
             ['John Smith', '123 Unknown Road', 'London', 'WC2E9XX', 'GB', false]
         );
 
