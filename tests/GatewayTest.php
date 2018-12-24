@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Brick\ORM\Tests;
 
+use Brick\ORM\LockMode;
 use Brick\ORM\Tests\Resources\Models\Address;
 use Brick\ORM\Tests\Resources\Models\Country;
 use Brick\ORM\Tests\Resources\Models\GeoAddress;
@@ -77,6 +78,7 @@ class GatewayTest extends AbstractTestCase
 
         // User ID must be set after saving
         $this->assertIsInt($user->getId());
+        $this->assertGreaterThan(0, $user->getId());
 
         return $user;
     }
@@ -119,6 +121,39 @@ class GatewayTest extends AbstractTestCase
      *
      * @param int $userId
      *
+     * @return int
+     */
+    public function testLoadPartialUser(int $userId) : int
+    {
+        $user = self::$userRepository->load($userId, LockMode::NONE, ['name']);
+
+        $this->assertDebugStatementCount(1);
+        $this->assertDebugStatement(0,
+            'SELECT name FROM User WHERE id = ?',
+            [$userId]
+        );
+
+        $this->assertSame('John Smith', $user->getName());
+        $this->assertSame([], $user->getTransient());
+
+        try {
+            $user->getBillingAddress();
+        } catch (\PHPUnit\Framework\Error\Notice $notice) {
+            goto ok;
+        }
+
+        $this->fail('This property should not be set in partial object.');
+
+        ok:
+
+        return $userId;
+    }
+
+    /**
+     * @depends testLoadPartialUser
+     *
+     * @param int $userId
+     *
      * @return User
      */
     public function testLoadUser(int $userId) : User
@@ -132,7 +167,7 @@ class GatewayTest extends AbstractTestCase
             'deliveryAddress_address_country_code, deliveryAddress_address_isPoBox, ' .
             'ST_AsText(deliveryAddress_location), ST_SRID(deliveryAddress_location) ' .
             'FROM User WHERE id = ?',
-            [1]
+            [$userId]
         );
 
         $this->assertSame('John Smith', $user->getName());
