@@ -18,7 +18,6 @@ class GatewayTest extends AbstractTestCase
         self::$countryRepository->save($country);
 
         $this->assertDebugStatementCount(1);
-
         $this->assertDebugStatement(0, 'INSERT INTO Country (code, name) VALUES (?, ?)', ['GB', 'United Kingdom']);
     }
 
@@ -28,6 +27,9 @@ class GatewayTest extends AbstractTestCase
     public function testLoadUnknownCountry() : void
     {
         $this->assertNull(self::$countryRepository->load('XX'));
+
+        $this->assertDebugStatementCount(1);
+        $this->assertDebugStatement(0, 'SELECT name FROM Country WHERE code = ?', ['XX']);
     }
 
     /**
@@ -39,12 +41,10 @@ class GatewayTest extends AbstractTestCase
     {
         $country = self::$countryRepository->load('GB');
 
-        $this->assertInstanceOf(Country::class, $country);
         $this->assertSame('GB', $country->getCode());
         $this->assertSame('United Kingdom', $country->getName());
 
         $this->assertDebugStatementCount(1);
-
         $this->assertDebugStatement(0, 'SELECT name FROM Country WHERE code = ?', ['GB']);
 
         return $country;
@@ -67,7 +67,6 @@ class GatewayTest extends AbstractTestCase
         self::$userRepository->save($user);
 
         $this->assertDebugStatementCount(1);
-
         $this->assertDebugStatement(0,
             'INSERT INTO User (id, name, street, city, zipcode, country_code, isPoBox, ' .
             'deliveryAddress_address_street, deliveryAddress_address_city, deliveryAddress_address_zipcode, ' .
@@ -98,7 +97,6 @@ class GatewayTest extends AbstractTestCase
         self::$userRepository->update($user);
 
         $this->assertDebugStatementCount(1);
-
         $this->assertDebugStatement(0,
             'UPDATE User SET name = ?, street = ?, city = ?, zipcode = ?, country_code = ?, isPoBox = ?, ' .
             'deliveryAddress_address_street = ?, deliveryAddress_address_city = ?, ' .
@@ -128,7 +126,6 @@ class GatewayTest extends AbstractTestCase
         $user = self::$userRepository->load($userId);
 
         $this->assertDebugStatementCount(1);
-
         $this->assertDebugStatement(0,
             'SELECT name, street, city, zipcode, country_code, isPoBox, ' .
             'deliveryAddress_address_street, deliveryAddress_address_city, deliveryAddress_address_zipcode, ' .
