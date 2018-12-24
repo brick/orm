@@ -50,7 +50,7 @@ abstract class BuiltinTypeMapping implements PropertyMapping
     /**
      * {@inheritdoc}
      */
-    public function getInputValuesCount(): int
+    public function getInputValuesCount() : int
     {
         return 1;
     }

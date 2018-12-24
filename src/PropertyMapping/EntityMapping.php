@@ -81,7 +81,7 @@ class EntityMapping implements PropertyMapping
      *
      * {@inheritdoc}
      */
-    public function getInputValuesCount(): int
+    public function getInputValuesCount() : int
     {
         return count($this->getFieldToInputValuesSQL($this->getFieldNames()));
     }

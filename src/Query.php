@@ -146,7 +146,7 @@ class Query
     /**
      * @return int|null
      */
-    public function getOffset(): ?int
+    public function getOffset() : ?int
     {
         return $this->offset;
     }
