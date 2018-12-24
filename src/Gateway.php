@@ -30,9 +30,9 @@ class Gateway
     private $connection;
 
     /**
-     * The class metadata, indexed by class name.
+     * The entity metadata, indexed by class name.
      *
-     * @var ClassMetadata[]
+     * @var EntityMetadata[]
      */
     private $classMetadata;
 

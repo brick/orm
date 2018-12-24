@@ -101,15 +101,16 @@ abstract class ClassConfiguration
     }
 
     /**
-     * @param string          $className     The entity class name.
-     * @param string          $propertyName  The property name.
-     * @param ClassMetadata[] $classMetadata A map of FQCN to ClassMetadata instances for all entities.
+     * @param string               $className          The entity class name.
+     * @param string               $propertyName       The property name.
+     * @param EntityMetadata[]     $entityMetadata     A map of FQCN to EntityMetadata instances.
+     * @maram EmbeddableMetadata[] $embeddableMetadata A map of FQCN to EmbeddableMetadata instances.
      *
      * @return PropertyMapping
      *
      * @throws \LogicException
      */
-    public function getPropertyMapping(string $className, string $propertyName, array $classMetadata) : PropertyMapping
+    public function getPropertyMapping(string $className, string $propertyName, array $entityMetadata, array $embeddableMetadata) : PropertyMapping
     {
         if (! in_array($propertyName, $this->getPersistentProperties($className))) {
             throw new \InvalidArgumentException(sprintf('Cannot return property mapping for unknown or non-persistent property %s::$%s.', $className, $propertyName));
@@ -143,23 +144,17 @@ abstract class ClassConfiguration
             return new $customPropertyMappings[$propertyType->type]($fieldName, $propertyType->isNullable);
         }
 
-        if (! isset($classMetadata[$propertyType->type])) {
-            throw new \LogicException(sprintf('Type %s of %s::$%s is not an entity or embeddable.', $propertyType->type, $className, $propertyName));
-        }
-
-        $classMetadata = $classMetadata[$propertyType->type];
-
         $fieldNamePrefixes = $this->configuration->getFieldNamePrefixes();
         $fieldNamePrefix = $fieldNamePrefixes[$className][$propertyName] ?? $propertyName . '_';
 
-        if ($classMetadata instanceof EntityMetadata) {
-            return new PropertyMapping\EntityMapping($classMetadata, $fieldNamePrefix, $propertyType->isNullable);
+        if (isset($entityMetadata[$propertyType->type])) {
+            return new PropertyMapping\EntityMapping($entityMetadata[$propertyType->type], $fieldNamePrefix, $propertyType->isNullable);
         }
 
-        if ($classMetadata instanceof EmbeddableMetadata) {
-            return new PropertyMapping\EmbeddableMapping($classMetadata, $fieldNamePrefix, $propertyType->isNullable);
+        if (isset($embeddableMetadata[$propertyType->type])) {
+            return new PropertyMapping\EmbeddableMapping($embeddableMetadata[$propertyType->type], $fieldNamePrefix, $propertyType->isNullable);
         }
 
-        throw new \LogicException('Unknown metadata class.');
+        throw new \LogicException(sprintf('Type %s of %s::$%s is not an entity or embeddable.', $propertyType->type, $className, $propertyName));
     }
 }

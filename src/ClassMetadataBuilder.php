@@ -15,9 +15,14 @@ class ClassMetadataBuilder
     private $configuration;
 
     /**
-     * @var ClassMetadata[]
+     * @var EntityMetadata[]
      */
-    private $classMetadata;
+    private $entityMetadata;
+
+    /**
+     * @var EmbeddableMetadata[]
+     */
+    private $embeddableMetadata;
 
     /**
      * @param Configuration $configuration
@@ -28,21 +33,22 @@ class ClassMetadataBuilder
     }
 
     /**
-     * @return ClassMetadata[] A map of FQCN to ClassMetadata instances for all entities.
+     * @return EntityMetadata[] A map of FQCN to EntityMetadata instances for all entities.
      */
     public function build() : array
     {
-        $this->classMetadata = [];
+        $this->entityMetadata = [];
+        $this->embeddableMetadata = [];
 
         $classConfigurations = $this->configuration->getClasses();
 
         foreach ($classConfigurations as $classConfiguration) {
             if ($classConfiguration instanceof EntityConfiguration) {
                 foreach ($classConfiguration->getClassHierarchy() as $className) {
-                    $this->classMetadata[$className] = new EntityMetadata();
+                    $this->entityMetadata[$className] = new EntityMetadata();
                 }
             } elseif ($classConfiguration instanceof EmbeddableConfiguration) {
-                $this->classMetadata[$classConfiguration->getClassName()] = new EmbeddableMetadata();
+                $this->embeddableMetadata[$classConfiguration->getClassName()] = new EmbeddableMetadata();
             }
         }
 
@@ -51,15 +57,15 @@ class ClassMetadataBuilder
         foreach ($classConfigurations as $classConfiguration) {
             if ($classConfiguration instanceof EntityConfiguration) {
                 foreach ($classConfiguration->getClassHierarchy() as $className) {
-                    $this->fillEntityMetadata($this->classMetadata[$className], $className, $classConfiguration);
+                    $this->fillEntityMetadata($this->entityMetadata[$className], $className, $classConfiguration);
                 }
             } elseif ($classConfiguration instanceof EmbeddableConfiguration) {
                 $className = $classConfiguration->getClassName();
-                $this->fillEmbeddableMetadata($this->classMetadata[$className], $className, $classConfiguration);
+                $this->fillEmbeddableMetadata($this->embeddableMetadata[$className], $className, $classConfiguration);
             }
         }
 
-        return $this->classMetadata;
+        return $this->entityMetadata;
     }
 
     /**
@@ -106,7 +112,7 @@ class ClassMetadataBuilder
         $classMetadata->propertyMappings = [];
 
         foreach ($persistentProperties as $propertyName) {
-            $propertyMapping = $entityConfiguration->getPropertyMapping($className, $propertyName, $this->classMetadata);
+            $propertyMapping = $entityConfiguration->getPropertyMapping($className, $propertyName, $this->entityMetadata, $this->embeddableMetadata);
             $classMetadata->propertyMappings[$propertyName] = $propertyMapping;
         }
     }
@@ -129,7 +135,7 @@ class ClassMetadataBuilder
         $classMetadata->propertyMappings = [];
 
         foreach ($persistentProperties as $propertyName) {
-            $propertyMapping = $embeddableConfiguration->getPropertyMapping($className, $propertyName, $this->classMetadata);
+            $propertyMapping = $embeddableConfiguration->getPropertyMapping($className, $propertyName, $this->entityMetadata, $this->embeddableMetadata);
             $classMetadata->propertyMappings[$propertyName] = $propertyMapping;
         }
     }
