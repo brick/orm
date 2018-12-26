@@ -44,8 +44,8 @@ class Gateway
     /**
      * Gateway constructor.
      *
-     * @param Connection      $connection
-     * @param ClassMetadata[] $classMetadata
+     * @param Connection       $connection
+     * @param EntityMetadata[] $classMetadata
      */
     public function __construct(Connection $connection, array $classMetadata)
     {
@@ -421,7 +421,7 @@ class Gateway
      *
      * @todo Quick & dirty. Refactor.
      */
-    private function addJoins(ClassMetadata $classMetadata, SelectQueryBuilder $selectBuilder, TableAliasGenerator $tableAliasGenerator, string $mainTableAlias, array & $tableAliases, string $dottedProperty) : array
+    private function addJoins(EntityMetadata $classMetadata, SelectQueryBuilder $selectBuilder, TableAliasGenerator $tableAliasGenerator, string $mainTableAlias, array & $tableAliases, string $dottedProperty) : array
     {
         $properties = explode('.', $dottedProperty);
         $count = count($properties);
