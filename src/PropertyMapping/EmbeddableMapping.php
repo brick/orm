@@ -7,11 +7,12 @@ namespace Brick\ORM\PropertyMapping;
 use Brick\ORM\EmbeddableMetadata;
 use Brick\ORM\ObjectFactory;
 use Brick\ORM\Gateway;
+use Brick\ORM\PropertyMapping;
 
 /**
  * @internal
  */
-class EmbeddableMapping extends EntityMapping
+class EmbeddableMapping implements PropertyMapping
 {
     /**
      * The class metadata of the target entity.
