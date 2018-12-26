@@ -77,13 +77,20 @@ class EntityMapping implements PropertyMapping
     }
 
     /**
-     * @todo quick&dirty; precompute for better performance
+     * @todo precompute for better performance
      *
      * {@inheritdoc}
      */
     public function getInputValuesCount() : int
     {
-        return count($this->getFieldToInputValuesSQL($this->getFieldNames()));
+        $count = 0;
+
+        foreach ($this->classMetadata->idProperties as $prop) {
+            $propertyMapping = $this->classMetadata->propertyMappings[$prop];
+            $count += $propertyMapping->getInputValuesCount();
+        }
+
+        return $count;
     }
 
     /**
