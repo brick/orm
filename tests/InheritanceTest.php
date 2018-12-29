@@ -7,11 +7,12 @@ namespace Brick\ORM\Tests;
 use Brick\ORM\LockMode;
 use Brick\ORM\Tests\Resources\Models\Country;
 use Brick\ORM\Tests\Resources\Models\Event;
+use Brick\ORM\Tests\Resources\Models\User;
 
 class InheritanceTest extends AbstractTestCase
 {
     /**
-     * The full SQL to load an Event whose type is unknown.
+     * The full SQL to load an Event or one of its subclasses.
      */
     private const LOAD_EVENT_SQL =
         'SELECT type, time, country_code, newName, user_id, ' .
@@ -19,6 +20,15 @@ class InheritanceTest extends AbstractTestCase
         'newAddress_address_street, newAddress_address_city, newAddress_address_zipcode, ' .
         'newAddress_address_country_code, newAddress_address_isPoBox, ST_AsText(newAddress_location), ' .
         'ST_SRID(newAddress_location), newName, follower_id, followee_id, isFollow FROM Event WHERE id = ?';
+
+    /**
+     * The full SQL to load a UserEvent or one of its subclasses.
+     */
+    private const LOAD_USER_EVENT_SQL =
+        'SELECT type, user_id, time, newAddress_street, newAddress_city, newAddress_zipcode, ' .
+        'newAddress_country_code, newAddress_isPoBox, newAddress_address_street, newAddress_address_city, ' .
+        'newAddress_address_zipcode, newAddress_address_country_code, newAddress_address_isPoBox, ' .
+        'ST_AsText(newAddress_location), ST_SRID(newAddress_location), newName FROM Event WHERE id = ?';
 
     /**
      * @return int
@@ -245,6 +255,251 @@ class InheritanceTest extends AbstractTestCase
             [Event\UserEvent\EditUserBillingAddressEvent::class],
             [Event\UserEvent\EditUserDeliveryAddressEvent::class],
             [Event\UserEvent\EditUserNameEvent::class],
+            [Event\FollowUserEvent::class],
+        ];
+    }
+
+    /**
+     * @return int[]
+     */
+    public function testSaveCreateUserEvent() : array
+    {
+        $user = new User('John');
+        self::$userRepository->save($user);
+        self::$logger->reset();
+
+        $event = new Event\UserEvent\CreateUserEvent($user);
+        self::$eventRepository->save($event);
+
+        $this->assertDebugStatementCount(1);
+        $this->assertDebugStatement(0,
+            'INSERT INTO Event (type, user_id, time) VALUES (?, ?, ?)',
+            'CreateUser', $user->getId(), 1234567890
+        );
+
+        return [$user->getId(), $event->getId()];
+    }
+
+    /**
+     * @depends testSaveCreateUserEvent
+     *
+     * @param int[] $ids The user and event IDs.
+     *
+     * @return void
+     */
+    public function testLoadCreateUserEvent(array $ids) : void
+    {
+        [$userId, $eventId] = $ids;
+
+        $event = self::$eventRepository->load($eventId);
+
+        $this->assertSame(Event\UserEvent\CreateUserEvent::class, get_class($event));
+
+        /** @var Event\UserEvent\CreateUserEvent $event */
+        $this->assertSame($eventId, $event->getId());
+        $this->assertSame(1234567890, $event->getTime());
+        $this->assertSame($userId, $event->getUser()->getId());
+
+        $this->assertDebugStatementCount(1);
+        $this->assertDebugStatement(0, self::LOAD_EVENT_SQL, $eventId);
+    }
+
+    /**
+     * @depends testSaveCreateUserEvent
+     * @dataProvider providerLoadCreateUserEventUsingClass
+     *
+     * @param string $class The class name to request.
+     * @param string $sql   The expected SQL query.
+     * @param int[]  $ids   The User and Event IDs.
+     *
+     * @return void
+     */
+    public function testLoadCreateUserEventUsingClass(string $class, string $sql, array $ids) : void
+    {
+        [$userId, $eventId] = $ids;
+
+        $event = self::$gateway->load($class, ['id' => $eventId], LockMode::NONE, null);
+
+        $this->assertSame(Event\UserEvent\CreateUserEvent::class, get_class($event));
+
+        /** @var Event\UserEvent\CreateUserEvent $event */
+        $this->assertSame($eventId, $event->getId());
+        $this->assertSame(1234567890, $event->getTime());
+        $this->assertSame($userId, $event->getUser()->getId());
+
+        $this->assertDebugStatementCount(1);
+        $this->assertDebugStatement(0, $sql, $eventId);
+    }
+
+    /**
+     * @return array
+     */
+    public function providerLoadCreateUserEventUsingClass() : array
+    {
+        return [
+            [Event::class, self::LOAD_EVENT_SQL],
+            [Event\UserEvent::class, self::LOAD_USER_EVENT_SQL],
+            [Event\UserEvent\CreateUserEvent::class, 'SELECT type, user_id, time FROM Event WHERE id = ?'],
+        ];
+    }
+
+    /**
+     * @depends testSaveCreateUserEvent
+     * @dataProvider providerLoadCreateUserEventUsingWrongClass
+     *
+     * @param string $class The class name to request.
+     * @param int[]  $ids   The User and Event IDs.
+     *
+     * @return void
+     */
+    public function testLoadCreateUserEventUsingWrongClass(string $class, array $ids) : void
+    {
+        [$userId, $eventId] = $ids;
+
+        $this->expectException(\Exception::class);
+        $this->expectExceptionMessage(sprintf('Expected instance of %s, got %s.', $class, Event\UserEvent\CreateUserEvent::class));
+
+        self::$gateway->load($class, ['id' => $eventId], LockMode::NONE, null);
+    }
+
+    /**
+     * @return array
+     */
+    public function providerLoadCreateUserEventUsingWrongClass() : array
+    {
+        return [
+            [Event\CountryEvent::class],
+            [Event\CountryEvent\CreateCountryEvent::class],
+            [Event\CountryEvent\EditCountryNameEvent::class],
+            [Event\UserEvent\EditUserNameEvent::class],
+            [Event\UserEvent\EditUserBillingAddressEvent::class],
+            [Event\UserEvent\EditUserDeliveryAddressEvent::class],
+            [Event\FollowUserEvent::class],
+        ];
+    }
+
+    /**
+     * @depends testSaveCreateUserEvent
+     *
+     * @param int[] $ids The User and (unused here) Event IDs.
+     *
+     * @return int[]
+     */
+    public function testSaveEditUserNameEvent(array $ids) : array
+    {
+        [$userId] = $ids;
+
+        $user = self::$userRepository->load($userId);
+        self::$logger->reset();
+
+        $event = new Event\UserEvent\EditUserNameEvent($user, 'Ben');
+        self::$eventRepository->save($event);
+
+        $this->assertDebugStatementCount(1);
+        $this->assertDebugStatement(0,
+            'INSERT INTO Event (type, newName, user_id, time) VALUES (?, ?, ?, ?)',
+            'EditUserName', 'Ben', $userId, 1234567890
+        );
+
+        return [$userId, $event->getId()];
+    }
+
+    /**
+     * @depends testSaveEditUserNameEvent
+     *
+     * @param int[] $ids The User and Event IDs.
+     *
+     * @return void
+     */
+    public function testLoadEditUserNameEvent(array $ids) : void
+    {
+        [$userId, $eventId] = $ids;
+
+        $event = self::$eventRepository->load($eventId);
+
+        $this->assertSame(Event\UserEvent\EditUserNameEvent::class, get_class($event));
+
+        /** @var Event\UserEvent\EditUserNameEvent $event */
+        $this->assertSame($eventId, $event->getId());
+        $this->assertSame(1234567890, $event->getTime());
+        $this->assertSame('Ben', $event->getNewName());
+        $this->assertSame($userId, $event->getUser()->getId());
+
+        $this->assertDebugStatementCount(1);
+        $this->assertDebugStatement(0, self::LOAD_EVENT_SQL, $eventId);
+    }
+
+    /**
+     * @depends testSaveEditUserNameEvent
+     * @dataProvider providerLoadEditUserNameEventUsingClass
+     *
+     * @param string $class The class name to request.
+     * @param string $sql   The expected SQL query.
+     * @param int[]  $ids   The User and Event IDs.
+     *
+     * @return void
+     */
+    public function testLoadEditUserNameEventUsingClass(string $class, string $sql, array $ids) : void
+    {
+        [$userId, $eventId] = $ids;
+
+        $event = self::$gateway->load($class, ['id' => $eventId], LockMode::NONE, null);
+
+        $this->assertSame(Event\UserEvent\EditUserNameEvent::class, get_class($event));
+
+        /** @var Event\UserEvent\EditUserNameEvent $event */
+        $this->assertSame($eventId, $event->getId());
+        $this->assertSame(1234567890, $event->getTime());
+        $this->assertSame('Ben', $event->getNewName());
+        $this->assertSame($userId, $event->getUser()->getId());
+
+        $this->assertDebugStatementCount(1);
+        $this->assertDebugStatement(0, $sql, $eventId);
+    }
+
+    /**
+     * @return array
+     */
+    public function providerLoadEditUserNameEventUsingClass() : array
+    {
+        return [
+            [Event::class, self::LOAD_EVENT_SQL],
+            [Event\UserEvent::class, self::LOAD_USER_EVENT_SQL],
+            [Event\UserEvent\EditUserNameEvent::class, 'SELECT type, newName, user_id, time FROM Event WHERE id = ?'],
+        ];
+    }
+
+    /**
+     * @depends testSaveEditUserNameEvent
+     * @dataProvider providerLoadEditUserNameEventUsingWrongClass
+     *
+     * @param string $class The class name to request.
+     * @param int[]  $ids   The User and Event IDs.
+     *
+     * @return void
+     */
+    public function testLoadEditUserNameEventUsingWrongClass(string $class, array $ids) : void
+    {
+        [$userId, $eventId] = $ids;
+
+        $this->expectException(\Exception::class);
+        $this->expectExceptionMessage(sprintf('Expected instance of %s, got %s.', $class, Event\UserEvent\EditUserNameEvent::class));
+
+        self::$gateway->load($class, ['id' => $eventId], LockMode::NONE, null);
+    }
+
+    /**
+     * @return array
+     */
+    public function providerLoadEditUserNameEventUsingWrongClass() : array
+    {
+        return [
+            [Event\CountryEvent::class],
+            [Event\CountryEvent\CreateCountryEvent::class],
+            [Event\CountryEvent\EditCountryNameEvent::class],
+            [Event\UserEvent\CreateUserEvent::class],
+            [Event\UserEvent\EditUserBillingAddressEvent::class],
+            [Event\UserEvent\EditUserDeliveryAddressEvent::class],
             [Event\FollowUserEvent::class],
         ];
     }
