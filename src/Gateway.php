@@ -189,6 +189,8 @@ class Gateway
             }
         }
 
+        // @todo child class properties should not be loaded when requesting a partial object?
+
         foreach ($classMetadata->childClasses as $childClass) {
             $childClassMetadata = $this->classMetadata[$childClass];
 
