@@ -19,7 +19,7 @@ class GatewayTest extends AbstractTestCase
         self::$countryRepository->save($country);
 
         $this->assertDebugStatementCount(1);
-        $this->assertDebugStatement(0, 'INSERT INTO Country (code, name) VALUES (?, ?)', ['GB', 'United Kingdom']);
+        $this->assertDebugStatement(0, 'INSERT INTO Country (code, name) VALUES (?, ?)', 'GB', 'United Kingdom');
     }
 
     /**
@@ -30,7 +30,7 @@ class GatewayTest extends AbstractTestCase
         $this->assertNull(self::$countryRepository->load('XX'));
 
         $this->assertDebugStatementCount(1);
-        $this->assertDebugStatement(0, 'SELECT name FROM Country WHERE code = ?', ['XX']);
+        $this->assertDebugStatement(0, 'SELECT name FROM Country WHERE code = ?', 'XX');
     }
 
     /**
@@ -46,7 +46,7 @@ class GatewayTest extends AbstractTestCase
         $this->assertSame('United Kingdom', $country->getName());
 
         $this->assertDebugStatementCount(1);
-        $this->assertDebugStatement(0, 'SELECT name FROM Country WHERE code = ?', ['GB']);
+        $this->assertDebugStatement(0, 'SELECT name FROM Country WHERE code = ?', 'GB');
 
         return $country;
     }
@@ -73,7 +73,7 @@ class GatewayTest extends AbstractTestCase
             'deliveryAddress_address_street, deliveryAddress_address_city, deliveryAddress_address_zipcode, ' .
             'deliveryAddress_address_country_code, deliveryAddress_address_isPoBox, deliveryAddress_location) ' .
             'VALUES (?, ?, ?, ?, ?, ?, NULL, NULL, NULL, NULL, NULL, NULL)',
-            ['John Smith', '123 Unknown Road', 'London', 'WC2E9XX', 'GB', false]
+            'John Smith', '123 Unknown Road', 'London', 'WC2E9XX', 'GB', false
         );
 
         // User ID must be set after saving
@@ -105,12 +105,10 @@ class GatewayTest extends AbstractTestCase
             'deliveryAddress_address_zipcode = ?, deliveryAddress_address_country_code = ?, ' .
             'deliveryAddress_address_isPoBox = ?, deliveryAddress_location = ST_GeomFromText(?, ?) ' .
             'WHERE id = ?',
-            [
-                'John Smith',
-                '123 Unknown Road', 'London', 'WC2E9XX', 'GB', false,
-                '123 Unknown Road', 'London', 'WC2E9XX', 'GB', false,
-                'POINT (51 0)', 4326, $user->getId()
-            ]
+            'John Smith',
+            '123 Unknown Road', 'London', 'WC2E9XX', 'GB', false,
+            '123 Unknown Road', 'London', 'WC2E9XX', 'GB', false,
+            'POINT (51 0)', 4326, $user->getId()
         );
 
         return $user->getId();
@@ -128,10 +126,7 @@ class GatewayTest extends AbstractTestCase
         $user = self::$userRepository->load($userId, LockMode::NONE, ['name']);
 
         $this->assertDebugStatementCount(1);
-        $this->assertDebugStatement(0,
-            'SELECT name FROM User WHERE id = ?',
-            [$userId]
-        );
+        $this->assertDebugStatement(0, 'SELECT name FROM User WHERE id = ?', $userId);
 
         $this->assertSame('John Smith', $user->getName());
         $this->assertSame([], $user->getTransient());
@@ -167,7 +162,7 @@ class GatewayTest extends AbstractTestCase
             'deliveryAddress_address_country_code, deliveryAddress_address_isPoBox, ' .
             'ST_AsText(deliveryAddress_location), ST_SRID(deliveryAddress_location) ' .
             'FROM User WHERE id = ?',
-            [$userId]
+            $userId
         );
 
         $this->assertSame('John Smith', $user->getName());
@@ -197,10 +192,7 @@ class GatewayTest extends AbstractTestCase
         self::$userRepository->remove($user);
 
         $this->assertDebugStatementCount(1);
-        $this->assertDebugStatement(0,
-            'DELETE FROM User WHERE id = ?',
-            [$user->getId()]
-        );
+        $this->assertDebugStatement(0, 'DELETE FROM User WHERE id = ?', $user->getId());
 
         return $user->getId();
     }
@@ -224,7 +216,7 @@ class GatewayTest extends AbstractTestCase
             'deliveryAddress_address_country_code, deliveryAddress_address_isPoBox, ' .
             'ST_AsText(deliveryAddress_location), ST_SRID(deliveryAddress_location) ' .
             'FROM User WHERE id = ?',
-            [$userId]
+            $userId
         );
     }
 }

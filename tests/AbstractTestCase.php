@@ -135,11 +135,11 @@ abstract class AbstractTestCase extends TestCase
     /**
      * @param int    $index
      * @param string $statement
-     * @param array  $parameters
+     * @param mixed  ...$parameters
      *
      * @return void
      */
-    protected function assertDebugStatement(int $index, string $statement, array $parameters) : void
+    protected function assertDebugStatement(int $index, string $statement, ...$parameters) : void
     {
         $debugStatement = self::$logger->getDebugStatement($index);
 

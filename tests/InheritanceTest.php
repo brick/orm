@@ -35,7 +35,7 @@ class InheritanceTest extends AbstractTestCase
         $this->assertDebugStatementCount(1);
         $this->assertDebugStatement(0,
             'INSERT INTO Event (type, country_code, time) VALUES (?, ?, ?)',
-            ['CreateCountry', 'FR', 1234567890]
+            'CreateCountry', 'FR', 1234567890
         );
 
         return $event->getId();
@@ -60,7 +60,7 @@ class InheritanceTest extends AbstractTestCase
         $this->assertSame('FR', $event->getCountry()->getCode());
 
         $this->assertDebugStatementCount(1);
-        $this->assertDebugStatement(0, self::LOAD_EVENT_SQL, [$eventId]);
+        $this->assertDebugStatement(0, self::LOAD_EVENT_SQL, $eventId);
     }
 
     /**
@@ -85,7 +85,7 @@ class InheritanceTest extends AbstractTestCase
         $this->assertSame('FR', $event->getCountry()->getCode());
 
         $this->assertDebugStatementCount(1);
-        $this->assertDebugStatement(0, $sql, [$eventId]);
+        $this->assertDebugStatement(0, $sql, $eventId);
     }
 
     /**
@@ -149,7 +149,7 @@ class InheritanceTest extends AbstractTestCase
         $this->assertDebugStatementCount(1);
         $this->assertDebugStatement(0,
             'INSERT INTO Event (type, newName, country_code, time) VALUES (?, ?, ?, ?)',
-            ['EditCountryName', 'République Française', 'FR', 1234567890]
+            'EditCountryName', 'République Française', 'FR', 1234567890
         );
 
         return $event->getId();
@@ -175,7 +175,7 @@ class InheritanceTest extends AbstractTestCase
         $this->assertSame('FR', $event->getCountry()->getCode());
 
         $this->assertDebugStatementCount(1);
-        $this->assertDebugStatement(0, self::LOAD_EVENT_SQL, [$eventId]);
+        $this->assertDebugStatement(0, self::LOAD_EVENT_SQL, $eventId);
     }
 
     /**
@@ -201,7 +201,7 @@ class InheritanceTest extends AbstractTestCase
         $this->assertSame('FR', $event->getCountry()->getCode());
 
         $this->assertDebugStatementCount(1);
-        $this->assertDebugStatement(0, $sql, [$eventId]);
+        $this->assertDebugStatement(0, $sql, $eventId);
     }
 
     /**
