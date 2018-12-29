@@ -146,6 +146,71 @@ class InheritanceTest extends AbstractTestCase
     /**
      * @depends testSaveCreateCountryEvent
      *
+     * @param int $eventId The ID of the event to load.
+     *
+     * @return void
+     */
+    public function testLoadPartialCreateCountryEvent(int $eventId) : void
+    {
+        $event = self::$eventRepository->load($eventId, LockMode::NONE, ['time']);
+
+        $this->assertDebugStatementCount(1);
+        $this->assertDebugStatement(0, 'SELECT type, time FROM Event WHERE id = ?', $eventId);
+
+        $this->assertSame(Event\CountryEvent\CreateCountryEvent::class, get_class($event));
+
+        /** @var Event\CountryEvent\CreateCountryEvent $event */
+        $this->assertSame($eventId, $event->getId());
+        $this->assertSame(1234567890, $event->getTime());
+
+        try {
+            $event->getCountry();
+        } catch (\PHPUnit\Framework\Error\Notice $notice) {
+            return;
+        }
+
+        $this->fail('This property should not be set in partial object.');
+    }
+
+    /**
+     * @depends testSaveCreateCountryEvent
+     * @expectedException \RuntimeException
+     * @expectedExceptionMessage The Brick\ORM\Tests\Resources\Models\Event::$country property does not exist.
+     *
+     * @param int $eventId The ID of the event to load.
+     *
+     * @return void
+     */
+    public function testLoadPartialCreateCountryEventUsingPropertyFromChildClass(int $eventId) : void
+    {
+        self::$eventRepository->load($eventId, LockMode::NONE, ['time', 'country']);
+    }
+
+    /**
+     * @depends testSaveCreateCountryEvent
+     *
+     * @param int $eventId The ID of the event to load.
+     *
+     * @return void
+     */
+    public function testLoadPartialCreateCountryEventUsingClass(int $eventId) : void
+    {
+        $event = self::$gateway->load(Event\CountryEvent::class, ['id' => $eventId], LockMode::NONE, ['time', 'country']);
+
+        $this->assertDebugStatementCount(1);
+        $this->assertDebugStatement(0, 'SELECT type, time, country_code FROM Event WHERE id = ?', $eventId);
+
+        $this->assertSame(Event\CountryEvent\CreateCountryEvent::class, get_class($event));
+
+        /** @var Event\CountryEvent\CreateCountryEvent $event */
+        $this->assertSame($eventId, $event->getId());
+        $this->assertSame(1234567890, $event->getTime());
+        $this->assertSame('FR', $event->getCountry()->getCode());
+    }
+
+    /**
+     * @depends testSaveCreateCountryEvent
+     *
      * @return int
      */
     public function testSaveEditCountryNameEvent() : int
@@ -257,6 +322,36 @@ class InheritanceTest extends AbstractTestCase
             [Event\UserEvent\EditUserNameEvent::class],
             [Event\FollowUserEvent::class],
         ];
+    }
+
+    /**
+     * @depends testSaveEditCountryNameEvent
+     *
+     * @param int $eventId The ID of the event to load.
+     *
+     * @return void
+     */
+    public function testLoadPartialEditCountryNameEventUsingClass(int $eventId) : void
+    {
+        $event = self::$gateway->load(Event\CountryEvent::class, ['id' => $eventId], LockMode::NONE, ['time', 'country']);
+
+        $this->assertDebugStatementCount(1);
+        $this->assertDebugStatement(0, 'SELECT type, time, country_code FROM Event WHERE id = ?', $eventId);
+
+        $this->assertSame(Event\CountryEvent\EditCountryNameEvent::class, get_class($event));
+
+        /** @var Event\CountryEvent\EditCountryNameEvent $event */
+        $this->assertSame($eventId, $event->getId());
+        $this->assertSame(1234567890, $event->getTime());
+        $this->assertSame('FR', $event->getCountry()->getCode());
+
+        try {
+            $event->getNewName();
+        } catch (\PHPUnit\Framework\Error\Notice $notice) {
+            return;
+        }
+
+        $this->fail('This property should not be set in partial object.');
     }
 
     /**

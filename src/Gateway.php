@@ -158,6 +158,8 @@ class Gateway
     {
         $classMetadata = $this->classMetadata[$class];
 
+        $isFullObject = ($props === null);
+
         if ($props === null) {
             $props = $classMetadata->nonIdProperties;
         } else {
@@ -189,20 +191,20 @@ class Gateway
             }
         }
 
-        // @todo child class properties should not be loaded when requesting a partial object?
+        if ($isFullObject) {
+            foreach ($classMetadata->childClasses as $childClass) {
+                $childClassMetadata = $this->classMetadata[$childClass];
 
-        foreach ($classMetadata->childClasses as $childClass) {
-            $childClassMetadata = $this->classMetadata[$childClass];
+                foreach ($childClassMetadata->selfNonIdProperties as $prop) {
+                    $propertyMapping = $childClassMetadata->propertyMappings[$prop];
 
-            foreach ($childClassMetadata->selfNonIdProperties as $prop) {
-                $propertyMapping = $childClassMetadata->propertyMappings[$prop];
+                    // @todo quote field names
+                    $fieldNames = $propertyMapping->getFieldNames();
+                    $fieldToInputValuesSQL = $propertyMapping->getFieldToInputValuesSQL($fieldNames);
 
-                // @todo quote field names
-                $fieldNames = $propertyMapping->getFieldNames();
-                $fieldToInputValuesSQL = $propertyMapping->getFieldToInputValuesSQL($fieldNames);
-
-                foreach ($fieldToInputValuesSQL as $selectField) {
-                    $selectFields[] = $selectField;
+                    foreach ($fieldToInputValuesSQL as $selectField) {
+                        $selectFields[] = $selectField;
+                    }
                 }
             }
         }
@@ -268,23 +270,25 @@ class Gateway
             $propValues[$prop] = $propertyMapping->convertInputValuesToProp($this, $propInputValues);
         }
 
-        foreach ($classMetadata->childClasses as $childClass) {
-            $childClassMetadata = $this->classMetadata[$childClass];
+        if ($isFullObject) {
+            foreach ($classMetadata->childClasses as $childClass) {
+                $childClassMetadata = $this->classMetadata[$childClass];
 
-            foreach ($childClassMetadata->selfNonIdProperties as $prop) {
-                $propertyMapping = $childClassMetadata->propertyMappings[$prop];
-                $valuesCount = $propertyMapping->getInputValuesCount();
+                foreach ($childClassMetadata->selfNonIdProperties as $prop) {
+                    $propertyMapping = $childClassMetadata->propertyMappings[$prop];
+                    $valuesCount = $propertyMapping->getInputValuesCount();
 
-                if ($childClass === $class || is_subclass_of($class, $childClass)) {
-                    $propInputValues = array_slice($inputValues, $index, $valuesCount);
-                    $propValues[$prop] = $propertyMapping->convertInputValuesToProp($this, $propInputValues);
+                    if ($childClass === $class || is_subclass_of($class, $childClass)) {
+                        $propInputValues = array_slice($inputValues, $index, $valuesCount);
+                        $propValues[$prop] = $propertyMapping->convertInputValuesToProp($this, $propInputValues);
+                    }
+
+                    $index += $valuesCount;
                 }
-
-                $index += $valuesCount;
             }
         }
 
-        $object = $this->objectFactory->instantiate($class, $classMetadata->properties);
+        $object = $this->objectFactory->instantiate($class, $this->classMetadata[$class]->properties);
         $this->objectFactory->write($object, $propValues + $id);
 
         return $object;
