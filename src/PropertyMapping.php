@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Brick\ORM;
 
 /**
- * Maps a property to database fields.
+ * Maps a property to one or more database fields.
  */
 interface PropertyMapping
 {
@@ -24,7 +24,7 @@ interface PropertyMapping
     public function isNullable() : bool;
 
     /**
-     * Returns the list of database field names required to compute the property value.
+     * Returns the list of database field names the property maps to.
      *
      * @return string[]
      */
