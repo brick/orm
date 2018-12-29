@@ -5,18 +5,14 @@ declare(strict_types=1);
 namespace Brick\ORM\Tests;
 
 use Brick\ORM\LockMode;
-use Brick\ORM\Tests\Resources\Models\Address;
 use Brick\ORM\Tests\Resources\Models\Country;
-use Brick\ORM\Tests\Resources\Models\Event\CountryEvent;
-use Brick\ORM\Tests\Resources\Models\Event\CountryEvent\CreateCountryEvent;
-use Brick\ORM\Tests\Resources\Models\Event\CountryEvent\EditCountryNameEvent;
-use Brick\ORM\Tests\Resources\Models\Event\UserEvent\CreateUserEvent;
-use Brick\ORM\Tests\Resources\Models\GeoAddress;
-use Brick\ORM\Tests\Resources\Models\User;
-use Brick\ORM\Tests\Resources\Objects\Geometry;
+use Brick\ORM\Tests\Resources\Models\Event;
 
 class InheritanceTest extends AbstractTestCase
 {
+    /**
+     * The full SQL to load an Event whose type is unknown.
+     */
     private const LOAD_EVENT_SQL =
         'SELECT type, time, country_code, newName, user_id, ' .
         'newAddress_street, newAddress_city, newAddress_zipcode, newAddress_country_code, newAddress_isPoBox, ' .
@@ -33,7 +29,7 @@ class InheritanceTest extends AbstractTestCase
         self::$countryRepository->save($country);
         self::$logger->reset();
 
-        $event = new CreateCountryEvent($country);
+        $event = new Event\CountryEvent\CreateCountryEvent($country);
         self::$eventRepository->save($event);
 
         $this->assertDebugStatementCount(1);
@@ -56,9 +52,9 @@ class InheritanceTest extends AbstractTestCase
     {
         $event = self::$eventRepository->load($eventId);
 
-        $this->assertSame(CreateCountryEvent::class, get_class($event));
+        $this->assertSame(Event\CountryEvent\CreateCountryEvent::class, get_class($event));
 
-        /** @var CreateCountryEvent $event */
+        /** @var Event\CountryEvent\CreateCountryEvent $event */
         $this->assertSame($eventId, $event->getId());
         $this->assertSame(1234567890, $event->getTime());
         $this->assertSame('FR', $event->getCountry()->getCode());
@@ -69,64 +65,72 @@ class InheritanceTest extends AbstractTestCase
 
     /**
      * @depends testSaveCreateCountryEvent
+     * @dataProvider providerLoadCreateCountryEventUsingClass
      *
-     * @param int $eventId
+     * @param string $class   The class name to request.
+     * @param string $sql     The expected SQL query.
+     * @param int    $eventId The ID of the event to load.
      *
      * @return void
      */
-    public function testLoadCountryEvent(int $eventId) : void
+    public function testLoadCreateCountryEventUsingClass(string $class, string $sql, int $eventId) : void
     {
-        $event = self::$gateway->load(CountryEvent::class, ['id' => $eventId], LockMode::NONE, null);
+        $event = self::$gateway->load($class, ['id' => $eventId], LockMode::NONE, null);
 
-        $this->assertSame(CreateCountryEvent::class, get_class($event));
+        $this->assertSame(Event\CountryEvent\CreateCountryEvent::class, get_class($event));
 
-        /** @var CreateCountryEvent $event */
+        /** @var Event\CountryEvent\CreateCountryEvent $event */
         $this->assertSame($eventId, $event->getId());
         $this->assertSame(1234567890, $event->getTime());
         $this->assertSame('FR', $event->getCountry()->getCode());
 
         $this->assertDebugStatementCount(1);
-        $this->assertDebugStatement(0, 'SELECT type, country_code, time, newName FROM Event WHERE id = ?', [$eventId]);
+        $this->assertDebugStatement(0, $sql, [$eventId]);
     }
 
     /**
-     * @depends testSaveCreateCountryEvent
-     *
-     * @param int $eventId
-     *
-     * @return void
+     * @return array
      */
-    public function testLoadCreateCountryEventUsingClass(int $eventId) : void
+    public function providerLoadCreateCountryEventUsingClass() : array
     {
-        $event = self::$gateway->load(CreateCountryEvent::class, ['id' => $eventId], LockMode::NONE, null);
-
-        $this->assertSame(CreateCountryEvent::class, get_class($event));
-
-        /** @var CreateCountryEvent $event */
-        $this->assertSame($eventId, $event->getId());
-        $this->assertSame(1234567890, $event->getTime());
-        $this->assertSame('FR', $event->getCountry()->getCode());
-
-        $this->assertDebugStatementCount(1);
-        $this->assertDebugStatement(0, 'SELECT type, country_code, time FROM Event WHERE id = ?', [$eventId]);
+        return [
+            [Event::class, self::LOAD_EVENT_SQL],
+            [Event\CountryEvent::class, 'SELECT type, country_code, time, newName FROM Event WHERE id = ?'],
+            [Event\CountryEvent\CreateCountryEvent::class, 'SELECT type, country_code, time FROM Event WHERE id = ?'],
+        ];
     }
 
     /**
      * @depends testSaveCreateCountryEvent
+     * @dataProvider providerLoadCreateCountryEventUsingWrongClass
      *
-     * @param int $eventId
+     * @param string $class   The class name to request.
+     * @param int    $eventId The ID of the event to load.
      *
      * @return void
      */
-    public function testLoadCreateCountryEventUsingWrongClass(int $eventId) : void
+    public function testLoadCreateCountryEventUsingWrongClass(string $class, int $eventId) : void
     {
         $this->expectException(\Exception::class);
-        $this->expectExceptionMessage(
-            'Expected instance of Brick\ORM\Tests\Resources\Models\Event\UserEvent\CreateUserEvent, ' .
-            'got Brick\ORM\Tests\Resources\Models\Event\CountryEvent\CreateCountryEvent.'
-        );
+        $this->expectExceptionMessage(sprintf('Expected instance of %s, got %s.', $class, Event\CountryEvent\CreateCountryEvent::class));
 
-        self::$gateway->load(CreateUserEvent::class, ['id' => $eventId], LockMode::NONE, null);
+        self::$gateway->load($class, ['id' => $eventId], LockMode::NONE, null);
+    }
+
+    /**
+     * @return array
+     */
+    public function providerLoadCreateCountryEventUsingWrongClass() : array
+    {
+        return [
+            [Event\CountryEvent\EditCountryNameEvent::class],
+            [Event\UserEvent::class],
+            [Event\UserEvent\CreateUserEvent::class],
+            [Event\UserEvent\EditUserBillingAddressEvent::class],
+            [Event\UserEvent\EditUserDeliveryAddressEvent::class],
+            [Event\UserEvent\EditUserNameEvent::class],
+            [Event\FollowUserEvent::class],
+        ];
     }
 
     /**
@@ -139,7 +143,7 @@ class InheritanceTest extends AbstractTestCase
         $country = self::$countryRepository->load('FR');
         self::$logger->reset();
 
-        $event = new EditCountryNameEvent($country, 'République Française');
+        $event = new Event\CountryEvent\EditCountryNameEvent($country, 'République Française');
         self::$eventRepository->save($event);
 
         $this->assertDebugStatementCount(1);
@@ -162,9 +166,9 @@ class InheritanceTest extends AbstractTestCase
     {
         $event = self::$eventRepository->load($eventId);
 
-        $this->assertSame(EditCountryNameEvent::class, get_class($event));
+        $this->assertSame(Event\CountryEvent\EditCountryNameEvent::class, get_class($event));
 
-        /** @var EditCountryNameEvent $event */
+        /** @var Event\CountryEvent\EditCountryNameEvent $event */
         $this->assertSame($eventId, $event->getId());
         $this->assertSame(1234567890, $event->getTime());
         $this->assertSame('République Française', $event->getNewName());
