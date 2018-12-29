@@ -177,4 +177,75 @@ class InheritanceTest extends AbstractTestCase
         $this->assertDebugStatementCount(1);
         $this->assertDebugStatement(0, self::LOAD_EVENT_SQL, [$eventId]);
     }
+
+    /**
+     * @depends testSaveEditCountryNameEvent
+     * @dataProvider providerLoadEditCountryNameEventUsingClass
+     *
+     * @param string $class   The class name to request.
+     * @param string $sql     The expected SQL query.
+     * @param int    $eventId The ID of the event to load.
+     *
+     * @return void
+     */
+    public function testLoadEditCountryNameEventUsingClass(string $class, string $sql, int $eventId) : void
+    {
+        $event = self::$gateway->load($class, ['id' => $eventId], LockMode::NONE, null);
+
+        $this->assertSame(Event\CountryEvent\EditCountryNameEvent::class, get_class($event));
+
+        /** @var Event\CountryEvent\EditCountryNameEvent $event */
+        $this->assertSame($eventId, $event->getId());
+        $this->assertSame(1234567890, $event->getTime());
+        $this->assertSame('République Française', $event->getNewName());
+        $this->assertSame('FR', $event->getCountry()->getCode());
+
+        $this->assertDebugStatementCount(1);
+        $this->assertDebugStatement(0, $sql, [$eventId]);
+    }
+
+    /**
+     * @return array
+     */
+    public function providerLoadEditCountryNameEventUsingClass() : array
+    {
+        return [
+            [Event::class, self::LOAD_EVENT_SQL],
+            [Event\CountryEvent::class, 'SELECT type, country_code, time, newName FROM Event WHERE id = ?'],
+            [Event\CountryEvent\EditCountryNameEvent::class, 'SELECT type, newName, country_code, time FROM Event WHERE id = ?'],
+        ];
+    }
+
+    /**
+     * @depends testSaveEditCountryNameEvent
+     * @dataProvider providerLoadEditCountryNameEventUsingWrongClass
+     *
+     * @param string $class   The class name to request.
+     * @param int    $eventId The ID of the event to load.
+     *
+     * @return void
+     */
+    public function testLoadEditCountryNameEventUsingWrongClass(string $class, int $eventId) : void
+    {
+        $this->expectException(\Exception::class);
+        $this->expectExceptionMessage(sprintf('Expected instance of %s, got %s.', $class, Event\CountryEvent\EditCountryNameEvent::class));
+
+        self::$gateway->load($class, ['id' => $eventId], LockMode::NONE, null);
+    }
+
+    /**
+     * @return array
+     */
+    public function providerLoadEditCountryNameEventUsingWrongClass() : array
+    {
+        return [
+            [Event\CountryEvent\CreateCountryEvent::class],
+            [Event\UserEvent::class],
+            [Event\UserEvent\CreateUserEvent::class],
+            [Event\UserEvent\EditUserBillingAddressEvent::class],
+            [Event\UserEvent\EditUserDeliveryAddressEvent::class],
+            [Event\UserEvent\EditUserNameEvent::class],
+            [Event\FollowUserEvent::class],
+        ];
+    }
 }
