@@ -83,6 +83,8 @@ class EntityMetadata extends ClassMetadata
     public $selfNonIdProperties;
 
     /**
+     * The list of child entity class names, if any.
+     *
      * @var string[]
      */
     public $childClasses;
