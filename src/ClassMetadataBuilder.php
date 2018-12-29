@@ -93,6 +93,14 @@ class ClassMetadataBuilder
 
         $classMetadata->discriminatorMap = $entityConfiguration->getDiscriminatorMap();
 
+        $classMetadata->childClasses = [];
+
+        foreach ($entityConfiguration->getClassHierarchy() as $hClassName) {
+            if (is_subclass_of($hClassName, $className)) {
+                $classMetadata->childClasses[] = $hClassName;
+            }
+        }
+
         if ($reflectionClass->isAbstract()) {
             $classMetadata->proxyClassName = null;
         } else {
@@ -108,6 +116,15 @@ class ClassMetadataBuilder
         $classMetadata->properties = $persistentProperties;
         $classMetadata->idProperties = $identityProperties;
         $classMetadata->nonIdProperties = array_values(array_diff($persistentProperties, $identityProperties));
+
+        $classMetadata->selfNonIdProperties = [];
+
+        foreach ($classMetadata->nonIdProperties as $nonIdProperty) {
+            $r = new \ReflectionProperty($className, $nonIdProperty);
+            if ($r->getDeclaringClass()->getName() === $className) {
+                $classMetadata->selfNonIdProperties[] = $nonIdProperty;
+            }
+        }
 
         $classMetadata->propertyMappings = [];
 

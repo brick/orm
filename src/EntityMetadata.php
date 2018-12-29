@@ -74,6 +74,20 @@ class EntityMetadata extends ClassMetadata
     public $nonIdProperties;
 
     /**
+     * The list of persistent property names that are not part of the identity, and are declared in this class only.
+     *
+     * Properties declared in parent classes are not included here.
+     *
+     * @var array
+     */
+    public $selfNonIdProperties;
+
+    /**
+     * @var string[]
+     */
+    public $childClasses;
+
+    /**
      * Whether the table uses an auto-increment primary key.
      *
      * This is only supported on tables with a single primary key column. If this is true, there must be only one

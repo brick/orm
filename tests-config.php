@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+use Brick\ORM\Tests\Resources\Models;
+
 return (function() {
     $config = new \Brick\ORM\Configuration();
 
@@ -14,27 +16,40 @@ return (function() {
     $config->setBaseEntityNamespace('Brick\ORM\Tests\Resources\Models');
     $config->setClassMetadataFile(__DIR__ . '/tests/Generated/ClassMetadata.php');
 
-    $config->addEntity(\Brick\ORM\Tests\Resources\Models\User::class)
+    $config->addEntity(Models\User::class)
         ->setIdentityProperties('id')
         ->setAutoIncrement();
 
-    $config->addEntity(\Brick\ORM\Tests\Resources\Models\Follow::class)
+    $config->addEntity(Models\Follow::class)
         ->setIdentityProperties('follower', 'followee');
 
-    $config->addEntity(\Brick\ORM\Tests\Resources\Models\Country::class)
+    $config->addEntity(Models\Country::class)
         ->setIdentityProperties('code');
 
-    $config->addEmbeddable(\Brick\ORM\Tests\Resources\Models\Address::class);
-    $config->addEmbeddable(\Brick\ORM\Tests\Resources\Models\GeoAddress::class);
+    $config->addEntity(Brick\ORM\Tests\Resources\Models\Event::class)
+        ->setIdentityProperties('id')
+        ->setAutoIncrement()
+        ->setInheritanceMapping('type', [
+            'CreateCountry'           => Models\Event\CountryEvent\CreateCountryEvent::class,
+            'EditCountryName'         => Models\Event\CountryEvent\EditCountryNameEvent::class,
+            'CreateUser'              => Models\Event\UserEvent\CreateUserEvent::class,
+            'EditUserBillingAddress'  => Models\Event\UserEvent\EditUserBillingAddressEvent::class,
+            'EditUserDeliveryAddress' => Models\Event\UserEvent\EditUserDeliveryAddressEvent::class,
+            'EditUserName'            => Models\Event\UserEvent\EditUserNameEvent::class,
+            'FollowUser'              => Models\Event\FollowUserEvent::class
+        ]);
+
+    $config->addEmbeddable(Models\Address::class);
+    $config->addEmbeddable(Models\GeoAddress::class);
 
     $config->addCustomMapping(\Brick\ORM\Tests\Resources\Objects\Geometry::class, \Brick\ORM\Tests\Resources\Mappings\GeometryMapping::class);
 
     // Set transient properties
-    $config->setTransientProperties(\Brick\ORM\Tests\Resources\Models\User::class, 'transient');
+    $config->setTransientProperties(Models\User::class, 'transient');
 
     // Override field names / prefixes
-    $config->setFieldName(\Brick\ORM\Tests\Resources\Models\Address::class, 'postcode', 'zipcode');
-    $config->setFieldNamePrefix(\Brick\ORM\Tests\Resources\Models\User::class, 'billingAddress', '');
+    $config->setFieldName(Models\Address::class, 'postcode', 'zipcode');
+    $config->setFieldNamePrefix(Models\User::class, 'billingAddress', '');
 
     return $config;
 })();
