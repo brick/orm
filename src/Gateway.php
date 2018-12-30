@@ -409,6 +409,8 @@ class Gateway
 
         $props = $query->getProperties();
 
+        $isFullObject = ($props === null);
+
         if ($props === null) {
             $props = $classMetadata->properties;
         } else {
@@ -427,15 +429,47 @@ class Gateway
 
         $selectFields = [];
 
+        if ($classMetadata->discriminatorColumn !== null) {
+            $selectFields[] = $mainTableAlias . '.' . $classMetadata->discriminatorColumn; // @todo quote field name
+        }
+
         foreach ($props as $prop) {
             $propertyMapping = $classMetadata->propertyMappings[$prop];
 
             // @todo quote field names
             $fieldNames = $propertyMapping->getFieldNames();
+
+            foreach ($fieldNames as $key => $fieldName) {
+                $fieldNames[$key] = $mainTableAlias . '.' . $fieldName;
+            }
+
             $fieldToInputValuesSQL = $propertyMapping->getFieldToInputValuesSQL($fieldNames);
 
             foreach ($fieldToInputValuesSQL as $selectField) {
-                $selectFields[] = $mainTableAlias . '.' . $selectField;
+                $selectFields[] = $selectField;
+            }
+        }
+
+        if ($isFullObject) {
+            foreach ($classMetadata->childClasses as $childClass) {
+                $childClassMetadata = $this->classMetadata[$childClass];
+
+                foreach ($childClassMetadata->selfNonIdProperties as $prop) {
+                    $propertyMapping = $childClassMetadata->propertyMappings[$prop];
+
+                    // @todo quote field names
+                    $fieldNames = $propertyMapping->getFieldNames();
+
+                    foreach ($fieldNames as $key => $fieldName) {
+                        $fieldNames[$key] = $mainTableAlias . '.' . $fieldName;
+                    }
+
+                    $fieldToInputValuesSQL = $propertyMapping->getFieldToInputValuesSQL($fieldNames);
+
+                    foreach ($fieldToInputValuesSQL as $selectField) {
+                        $selectFields[] = $selectField;
+                    }
+                }
             }
         }
 
@@ -521,6 +555,18 @@ class Gateway
             $index = 0;
             $propValues = [];
 
+            if ($classMetadata->discriminatorColumn !== null) {
+                $discriminatorValue = $inputValues[$index++];
+                $actualClass = $classMetadata->discriminatorMap[$discriminatorValue];
+
+                if ($actualClass !== $className && ! is_subclass_of($actualClass, $className)) {
+                    // @todo custom exception
+                    throw new \Exception(sprintf('Expected instance of %s, got %s.', $className, $actualClass));
+                }
+
+                $className = $actualClass;
+            }
+
             foreach ($props as $prop) {
                 $propertyMapping = $classMetadata->propertyMappings[$prop];
                 $valuesCount = $propertyMapping->getInputValuesCount();
@@ -531,7 +577,25 @@ class Gateway
                 $propValues[$prop] = $propertyMapping->convertInputValuesToProp($this, $propInputValues);
             }
 
-            $entity = $this->objectFactory->instantiate($className, $classMetadata->properties);
+            if ($isFullObject) {
+                foreach ($classMetadata->childClasses as $childClass) {
+                    $childClassMetadata = $this->classMetadata[$childClass];
+
+                    foreach ($childClassMetadata->selfNonIdProperties as $prop) {
+                        $propertyMapping = $childClassMetadata->propertyMappings[$prop];
+                        $valuesCount = $propertyMapping->getInputValuesCount();
+
+                        if ($childClass === $className || is_subclass_of($className, $childClass)) {
+                            $propInputValues = array_slice($inputValues, $index, $valuesCount);
+                            $propValues[$prop] = $propertyMapping->convertInputValuesToProp($this, $propInputValues);
+                        }
+
+                        $index += $valuesCount;
+                    }
+                }
+            }
+
+            $entity = $this->objectFactory->instantiate($className, $this->classMetadata[$className]->properties);
             $this->objectFactory->write($entity, $propValues);
 
             $entities[] = $entity;

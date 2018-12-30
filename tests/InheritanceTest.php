@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Brick\ORM\Tests;
 
 use Brick\ORM\LockMode;
+use Brick\ORM\Query;
 use Brick\ORM\Tests\Resources\Models\Country;
 use Brick\ORM\Tests\Resources\Models\Event;
 use Brick\ORM\Tests\Resources\Models\User;
@@ -206,6 +207,66 @@ class InheritanceTest extends AbstractTestCase
         $this->assertSame($eventId, $event->getId());
         $this->assertSame(1234567890, $event->getTime());
         $this->assertSame('FR', $event->getCountry()->getCode());
+    }
+
+    /**
+     * @depends testSaveCreateCountryEvent
+     *
+     * @param int $eventId The ID of the event to load.
+     *
+     * @return void
+     */
+    public function testQueryCreateCountryEvent(int $eventId) : void
+    {
+        $query = new Query(Event::class);
+        $query->addPredicate('id', '=', $eventId);
+        $event = self::$gateway->findOne($query);
+
+        $this->assertSame(Event\CountryEvent\CreateCountryEvent::class, get_class($event));
+
+        /** @var Event\CountryEvent\CreateCountryEvent $event */
+        $this->assertSame($eventId, $event->getId());
+        $this->assertSame(1234567890, $event->getTime());
+        $this->assertSame('FR', $event->getCountry()->getCode());
+
+        $expectedQuery =
+            'SELECT a.type, a.id, a.time, a.country_code, a.newName, a.user_id, a.newAddress_street, a.newAddress_city, ' .
+            'a.newAddress_zipcode, a.newAddress_country_code, a.newAddress_isPoBox, a.newAddress_address_street, ' .
+            'a.newAddress_address_city, a.newAddress_address_zipcode, a.newAddress_address_country_code, ' .
+            'a.newAddress_address_isPoBox, ST_AsText(a.newAddress_location), ST_SRID(a.newAddress_location), ' .
+            'a.newName, a.follower_id, a.followee_id, a.isFollow FROM Event AS a WHERE a.id = ?';
+
+        $this->assertDebugStatementCount(1);
+        $this->assertDebugStatement(0, $expectedQuery, $eventId);
+    }
+
+    /**
+     * @depends testSaveCreateCountryEvent
+     *
+     * @param int $eventId The ID of the event to load.
+     *
+     * @return void
+     */
+    public function testQueryCreateCountryEventWithJoin(int $eventId) : void
+    {
+        $query = new Query(Event\CountryEvent::class);
+        $query->addPredicate('id', '=', $eventId);
+        $query->addPredicate('country.name', '=', 'France');
+        $event = self::$gateway->findOne($query);
+
+        $this->assertSame(Event\CountryEvent\CreateCountryEvent::class, get_class($event));
+
+        /** @var Event\CountryEvent\CreateCountryEvent $event */
+        $this->assertSame($eventId, $event->getId());
+        $this->assertSame(1234567890, $event->getTime());
+        $this->assertSame('FR', $event->getCountry()->getCode());
+
+        $expectedQuery =
+            'SELECT a.type, a.id, a.country_code, a.time, a.newName FROM Event AS a ' .
+            'INNER JOIN Country AS b ON a.country_code = b.code WHERE a.id = ? AND b.name = ?';
+
+        $this->assertDebugStatementCount(1);
+        $this->assertDebugStatement(0, $expectedQuery, $eventId, 'France');
     }
 
     /**
