@@ -24,7 +24,7 @@ abstract class Event
      */
     public function __construct()
     {
-        $this->time = 1234567890; // harcoded for tests
+        $this->time = 1234567890; // hardcoded for tests
     }
 
     /**
