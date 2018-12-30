@@ -182,7 +182,7 @@ class InheritanceTest extends AbstractTestCase
      *
      * @return void
      */
-    public function testLoadPartialCreateCountryEventUsingPropertyFromChildClass(int $eventId) : void
+    public function testLoadPartialEventUsingPropertyFromChildClass(int $eventId) : void
     {
         self::$eventRepository->load($eventId, LockMode::NONE, ['time', 'country']);
     }
