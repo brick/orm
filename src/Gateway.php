@@ -55,43 +55,6 @@ class Gateway
     }
 
     /**
-     * @param string   $table           The table to select from.
-     * @param string[] $selectFields    The list of field names to select.
-     * @param string[] $whereConditions The list of 'key = value' conditions.
-     * @param int      $lockMode        The lock mode, as a LockMode constant.
-     *
-     * @return string
-     *
-     * @throws \InvalidArgumentException
-     */
-    private function getSelectSQL(string $table, array $selectFields, array $whereConditions, int $lockMode) : string
-    {
-        $selectFields = implode(', ', $selectFields);
-        $whereConditions = implode(' AND ', $whereConditions);
-
-        $query = sprintf('SELECT %s FROM %s WHERE %s', $selectFields, $table, $whereConditions);
-
-        // @todo MySQL / PostgreSQL only
-        switch ($lockMode) {
-            case LockMode::NONE:
-                break;
-
-            case LockMode::READ:
-                $query .= ' FOR SHARE';
-                break;
-
-            case LockMode::WRITE:
-                $query .= ' FOR UPDATE';
-                break;
-
-            default:
-                throw new \InvalidArgumentException('Invalid lock mode.');
-        }
-
-        return $query;
-    }
-
-    /**
      * Builds an INSERT query.
      *
      * The arrays of fields and values must have the same number of elements.
@@ -182,85 +145,23 @@ class Gateway
      */
     public function loadProps(string $class, array $id, int $lockMode, ?array $props) : ?array
     {
-        $classMetadata = $this->classMetadata[$class];
+        $query = new Query($class);
 
-        if ($props === null) {
-            $props = $classMetadata->nonIdProperties;
-        } else {
-            $props = array_values(array_unique($props));
-
-            foreach ($props as $prop) {
-                if (! isset($classMetadata->propertyMappings[$prop])) {
-                    // @todo UnknownPropertyException
-                    throw new \RuntimeException(sprintf('The %s::$%s property does not exist or is transient.', $class, $prop));
-                }
-            }
+        if ($props !== null) {
+            $query->setProperties(...$props);
         }
-
-        $selectFields = [];
-
-        foreach ($props as $prop) {
-            $propertyMapping = $classMetadata->propertyMappings[$prop];
-
-            // @todo quote field names
-            $fieldNames = $propertyMapping->getFieldNames();
-            $fieldToInputValuesSQL = $propertyMapping->getFieldToInputValuesSQL($fieldNames);
-
-            foreach ($fieldToInputValuesSQL as $selectField) {
-                $selectFields[] = $selectField;
-            }
-        }
-
-        $whereConditions = [];
-        $outputValues = [];
 
         foreach ($id as $prop => $value) {
-            $propertyMapping = $classMetadata->propertyMappings[$prop];
-
-            $expressionsAndOutputValues = $propertyMapping->convertPropToFields($value);
-
-            foreach ($propertyMapping->getFieldNames() as $fieldNameIndex => $fieldName) {
-                // @todo keep an eye on https://wiki.php.net/rfc/spread_operator_for_array (maybe PHP 7.4?)
-                // this would allow for foreach (... as [$expression, ...$values])
-                foreach ($expressionsAndOutputValues[$fieldNameIndex] as $index => $expressionOrValue) {
-                    if ($index === 0) {
-                        $whereConditions[] = $fieldName . ' = ' . $expressionOrValue;
-                    } else {
-                        $outputValues[] = $expressionOrValue;
-                    }
-                }
-            }
+            $query->addPredicate($prop, '=', $value);
         }
 
-        if (! $selectFields) {
-            // no props requested, just perform a SELECT 1
-            $selectFields = ['1'];
-        }
+        $result = $this->doFind($query, $lockMode);
 
-        $sql = $this->getSelectSQL($classMetadata->tableName, $selectFields, $whereConditions, $lockMode);
-        $statement = $this->connection->prepare($sql);
-        $statement->execute($outputValues);
-
-        $inputValues = $statement->fetch();
-
-        if ($inputValues === null) {
+        if (! $result) {
             return null;
         }
 
-        $index = 0;
-        $propValues = [];
-
-        foreach ($props as $prop) {
-            $propertyMapping = $classMetadata->propertyMappings[$prop];
-            $valuesCount = $propertyMapping->getInputValuesCount();
-
-            $propInputValues = array_slice($inputValues, $index, $valuesCount);
-            $index += $valuesCount;
-
-            $propValues[$prop] = $propertyMapping->convertInputValuesToProp($this, $propInputValues);
-        }
-
-        return $propValues;
+        return $result[0][1];
     }
 
     /**
@@ -272,6 +173,26 @@ class Gateway
      * @return object[]
      */
     public function find(Query $query, int $lockMode = LockMode::NONE) : array
+    {
+        $entities = [];
+
+        foreach ($this->doFind($query, $lockMode) as [$className, $propValues]) {
+            $entity = $this->objectFactory->instantiate($className, $this->classMetadata[$className]->properties);
+            $this->objectFactory->write($entity, $propValues);
+
+            $entities[] = $entity;
+        }
+
+        return $entities;
+    }
+
+    /**
+     * @param Query $query
+     * @param int   $lockMode
+     *
+     * @return array
+     */
+    private function doFind(Query $query, int $lockMode = LockMode::NONE) : array
     {
         $className = $query->getClassName();
 
@@ -423,7 +344,7 @@ class Gateway
         $statement = $this->connection->prepare($sql);
         $statement->execute($outputValues);
 
-        $entities = [];
+        $result = [];
 
         while (null !== $inputValues = $statement->fetch()) {
             $index = 0;
@@ -469,13 +390,10 @@ class Gateway
                 }
             }
 
-            $entity = $this->objectFactory->instantiate($className, $this->classMetadata[$className]->properties);
-            $this->objectFactory->write($entity, $propValues);
-
-            $entities[] = $entity;
+            $result[] = [$className, $propValues];
         }
 
-        return $entities;
+        return $result;
     }
 
     /**
