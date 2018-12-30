@@ -38,10 +38,10 @@ class ProxyTest extends AbstractTestCase
 
         $this->assertDebugStatementCount(1);
         $this->assertDebugStatement(0,
-            'SELECT name, street, city, zipcode, country_code, isPoBox, deliveryAddress_address_street, ' .
-            'deliveryAddress_address_city, deliveryAddress_address_zipcode, deliveryAddress_address_country_code, ' .
-            'deliveryAddress_address_isPoBox, ST_AsText(deliveryAddress_location), ST_SRID(deliveryAddress_location) ' .
-            'FROM User WHERE id = ?',
+            'SELECT a.id, a.name, a.street, a.city, a.zipcode, a.country_code, a.isPoBox, a.deliveryAddress_address_street, ' .
+            'a.deliveryAddress_address_city, a.deliveryAddress_address_zipcode, a.deliveryAddress_address_country_code, ' .
+            'a.deliveryAddress_address_isPoBox, ST_AsText(a.deliveryAddress_location), ST_SRID(a.deliveryAddress_location) ' .
+            'FROM User AS a WHERE a.id = ?',
             $userId
         );
 

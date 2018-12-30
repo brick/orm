@@ -30,7 +30,7 @@ class GatewayTest extends AbstractTestCase
         $this->assertNull(self::$countryRepository->load('XX'));
 
         $this->assertDebugStatementCount(1);
-        $this->assertDebugStatement(0, 'SELECT name FROM Country WHERE code = ?', 'XX');
+        $this->assertDebugStatement(0, 'SELECT a.code, a.name FROM Country AS a WHERE a.code = ?', 'XX');
     }
 
     /**
@@ -46,7 +46,7 @@ class GatewayTest extends AbstractTestCase
         $this->assertSame('United Kingdom', $country->getName());
 
         $this->assertDebugStatementCount(1);
-        $this->assertDebugStatement(0, 'SELECT name FROM Country WHERE code = ?', 'GB');
+        $this->assertDebugStatement(0, 'SELECT a.code, a.name FROM Country AS a WHERE a.code = ?', 'GB');
 
         return $country;
     }
@@ -126,7 +126,7 @@ class GatewayTest extends AbstractTestCase
         $user = self::$userRepository->load($userId, LockMode::NONE, ['name']);
 
         $this->assertDebugStatementCount(1);
-        $this->assertDebugStatement(0, 'SELECT name FROM User WHERE id = ?', $userId);
+        $this->assertDebugStatement(0, 'SELECT a.name FROM User AS a WHERE a.id = ?', $userId);
 
         $this->assertSame('John Smith', $user->getName());
         $this->assertSame([], $user->getTransient());
@@ -157,11 +157,11 @@ class GatewayTest extends AbstractTestCase
 
         $this->assertDebugStatementCount(1);
         $this->assertDebugStatement(0,
-            'SELECT name, street, city, zipcode, country_code, isPoBox, ' .
-            'deliveryAddress_address_street, deliveryAddress_address_city, deliveryAddress_address_zipcode, ' .
-            'deliveryAddress_address_country_code, deliveryAddress_address_isPoBox, ' .
-            'ST_AsText(deliveryAddress_location), ST_SRID(deliveryAddress_location) ' .
-            'FROM User WHERE id = ?',
+            'SELECT a.id, a.name, a.street, a.city, a.zipcode, a.country_code, a.isPoBox, ' .
+            'a.deliveryAddress_address_street, a.deliveryAddress_address_city, a.deliveryAddress_address_zipcode, ' .
+            'a.deliveryAddress_address_country_code, a.deliveryAddress_address_isPoBox, ' .
+            'ST_AsText(a.deliveryAddress_location), ST_SRID(a.deliveryAddress_location) ' .
+            'FROM User AS a WHERE a.id = ?',
             $userId
         );
 
@@ -211,11 +211,11 @@ class GatewayTest extends AbstractTestCase
 
         $this->assertDebugStatementCount(1);
         $this->assertDebugStatement(0,
-            'SELECT name, street, city, zipcode, country_code, isPoBox, ' .
-            'deliveryAddress_address_street, deliveryAddress_address_city, deliveryAddress_address_zipcode, ' .
-            'deliveryAddress_address_country_code, deliveryAddress_address_isPoBox, ' .
-            'ST_AsText(deliveryAddress_location), ST_SRID(deliveryAddress_location) ' .
-            'FROM User WHERE id = ?',
+            'SELECT a.id, a.name, a.street, a.city, a.zipcode, a.country_code, a.isPoBox, ' .
+            'a.deliveryAddress_address_street, a.deliveryAddress_address_city, a.deliveryAddress_address_zipcode, ' .
+            'a.deliveryAddress_address_country_code, a.deliveryAddress_address_isPoBox, ' .
+            'ST_AsText(a.deliveryAddress_location), ST_SRID(a.deliveryAddress_location) ' .
+            'FROM User AS a WHERE a.id = ?',
             $userId
         );
     }

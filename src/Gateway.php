@@ -141,9 +141,8 @@ class Gateway
     /**
      * Loads the entity with the given identity from the database.
      *
-     * An optional array of property names can be provided, to load a partial object. By default, all properties will be
-     * loaded and set. Note that properties part of the identity will always be set, regardless of whether they are part
-     * of this array or not. If an empty array is provided, only the properties part of the identity will be set.
+     * An optional array of property names can be provided, to load a partial object.
+     * By default, all properties will be loaded and set.
      *
      * @param string        $class    The entity class name.
      * @param array         $id       The identity, as a map of property name to value.
@@ -156,142 +155,17 @@ class Gateway
      */
     public function load(string $class, array $id, int $lockMode, ?array $props) : ?object
     {
-        $classMetadata = $this->classMetadata[$class];
+        $query = new Query($class);
 
-        $isFullObject = ($props === null);
-
-        if ($props === null) {
-            $props = $classMetadata->nonIdProperties;
-        } else {
-            $props = array_values(array_unique($props));
-
-            foreach ($props as $prop) {
-                if (! isset($classMetadata->propertyMappings[$prop])) {
-                    // @todo UnknownPropertyException
-                    throw new \RuntimeException(sprintf('The %s::$%s property does not exist or is transient.', $class, $prop));
-                }
-            }
+        if ($props !== null) {
+            $query->setProperties(...$props);
         }
-
-        $selectFields = [];
-
-        if ($classMetadata->discriminatorColumn !== null) {
-            $selectFields[] = $classMetadata->discriminatorColumn; // @todo quote field name
-        }
-
-        foreach ($props as $prop) {
-            $propertyMapping = $classMetadata->propertyMappings[$prop];
-
-            // @todo quote field names
-            $fieldNames = $propertyMapping->getFieldNames();
-            $fieldToInputValuesSQL = $propertyMapping->getFieldToInputValuesSQL($fieldNames);
-
-            foreach ($fieldToInputValuesSQL as $selectField) {
-                $selectFields[] = $selectField;
-            }
-        }
-
-        if ($isFullObject) {
-            foreach ($classMetadata->childClasses as $childClass) {
-                $childClassMetadata = $this->classMetadata[$childClass];
-
-                foreach ($childClassMetadata->selfNonIdProperties as $prop) {
-                    $propertyMapping = $childClassMetadata->propertyMappings[$prop];
-
-                    // @todo quote field names
-                    $fieldNames = $propertyMapping->getFieldNames();
-                    $fieldToInputValuesSQL = $propertyMapping->getFieldToInputValuesSQL($fieldNames);
-
-                    foreach ($fieldToInputValuesSQL as $selectField) {
-                        $selectFields[] = $selectField;
-                    }
-                }
-            }
-        }
-
-        $whereConditions = [];
-        $outputValues = [];
 
         foreach ($id as $prop => $value) {
-            $propertyMapping = $classMetadata->propertyMappings[$prop];
-
-            $expressionsAndOutputValues = $propertyMapping->convertPropToFields($value);
-
-            foreach ($propertyMapping->getFieldNames() as $fieldNameIndex => $fieldName) {
-                // @todo keep an eye on https://wiki.php.net/rfc/spread_operator_for_array (maybe PHP 7.4?)
-                // this would allow for foreach (... as [$expression, ...$values])
-                foreach ($expressionsAndOutputValues[$fieldNameIndex] as $index => $expressionOrValue) {
-                    if ($index === 0) {
-                        $whereConditions[] = $fieldName . ' = ' . $expressionOrValue;
-                    } else {
-                        $outputValues[] = $expressionOrValue;
-                    }
-                }
-            }
+            $query->addPredicate($prop, '=', $value);
         }
 
-        if (! $selectFields) {
-            // no props requested, just perform a SELECT 1
-            $selectFields = ['1'];
-        }
-
-        $sql = $this->getSelectSQL($classMetadata->tableName, $selectFields, $whereConditions, $lockMode);
-        $statement = $this->connection->prepare($sql);
-        $statement->execute($outputValues);
-
-        $inputValues = $statement->fetch();
-
-        if ($inputValues === null) {
-            return null;
-        }
-
-        $index = 0;
-        $propValues = [];
-
-        if ($classMetadata->discriminatorColumn !== null) {
-            $discriminatorValue = $inputValues[$index++];
-            $actualClass = $classMetadata->discriminatorMap[$discriminatorValue];
-
-            if ($actualClass !== $class && ! is_subclass_of($actualClass, $class)) {
-                // @todo custom exception
-                throw new \Exception(sprintf('Expected instance of %s, got %s.', $class, $actualClass));
-            }
-
-            $class = $actualClass;
-        }
-
-        foreach ($props as $prop) {
-            $propertyMapping = $classMetadata->propertyMappings[$prop];
-            $valuesCount = $propertyMapping->getInputValuesCount();
-
-            $propInputValues = array_slice($inputValues, $index, $valuesCount);
-            $index += $valuesCount;
-
-            $propValues[$prop] = $propertyMapping->convertInputValuesToProp($this, $propInputValues);
-        }
-
-        if ($isFullObject) {
-            foreach ($classMetadata->childClasses as $childClass) {
-                $childClassMetadata = $this->classMetadata[$childClass];
-
-                foreach ($childClassMetadata->selfNonIdProperties as $prop) {
-                    $propertyMapping = $childClassMetadata->propertyMappings[$prop];
-                    $valuesCount = $propertyMapping->getInputValuesCount();
-
-                    if ($childClass === $class || is_subclass_of($class, $childClass)) {
-                        $propInputValues = array_slice($inputValues, $index, $valuesCount);
-                        $propValues[$prop] = $propertyMapping->convertInputValuesToProp($this, $propInputValues);
-                    }
-
-                    $index += $valuesCount;
-                }
-            }
-        }
-
-        $object = $this->objectFactory->instantiate($class, $this->classMetadata[$class]->properties);
-        $this->objectFactory->write($object, $propValues + $id);
-
-        return $object;
+        return $this->findOne($query, $lockMode);
     }
 
     /**
@@ -318,7 +192,7 @@ class Gateway
             foreach ($props as $prop) {
                 if (! isset($classMetadata->propertyMappings[$prop])) {
                     // @todo UnknownPropertyException
-                    throw new \RuntimeException(sprintf('The %s::$%s property does not exist.', $class, $prop));
+                    throw new \RuntimeException(sprintf('The %s::$%s property does not exist or is transient.', $class, $prop));
                 }
             }
         }
@@ -419,7 +293,7 @@ class Gateway
             foreach ($props as $prop) {
                 if (! isset($classMetadata->propertyMappings[$prop])) {
                     // @todo UnknownPropertyException
-                    throw new \RuntimeException(sprintf('The %s::$%s property does not exist.', $className, $prop));
+                    throw new \RuntimeException(sprintf('The %s::$%s property does not exist or is transient.', $className, $prop));
                 }
             }
         }
