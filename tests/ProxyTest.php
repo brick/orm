@@ -54,6 +54,6 @@ class ProxyTest extends AbstractTestCase
         // Using a non-identity property: should initialize the proxy
         $this->assertSame('United Kingdom', $country->getName());
         $this->assertDebugStatementCount(2);
-        $this->assertDebugStatement(1, 'SELECT a.code, a.name FROM Country AS a WHERE a.code = ?', 'GB');
+        $this->assertDebugStatement(1, 'SELECT a.name FROM Country AS a WHERE a.code = ?', 'GB');
     }
 }

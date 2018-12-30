@@ -16,6 +16,8 @@ use Brick\ORM\Tests\Resources\Models\User;
  */
 class UserProxy extends User implements Proxy
 {
+    private const __NON_ID_PROPERTIES = ['name', 'billingAddress', 'deliveryAddress'];
+
     /**
      * @var Gateway
      */
@@ -34,15 +36,15 @@ class UserProxy extends User implements Proxy
     /**
      * Class constructor.
      *
-     * @param Gateway $gateway The gateway.
-     * @param array   $id      The identity, as a map of property name to value.
+     * @param Gateway  $gateway  The gateway.
+     * @param array    $identity The identity, as a map of property name to value.
      */
-    public function __construct(Gateway $gateway, array $id)
+    public function __construct(Gateway $gateway, array $identity)
     {
         $this->__gateway = $gateway;
-        $this->__identity = $id;
+        $this->__identity = $identity;
 
-        foreach ($id as $prop => $value) {
+        foreach ($identity as $prop => $value) {
             $this->{$prop} = $value;
         }
 
@@ -61,16 +63,25 @@ class UserProxy extends User implements Proxy
     public function __get(string $name)
     {
         if (! $this->__isInitialized) {
-            // @todo should this only load non-initialized properties? Currently it loads everything, overwriting initialized properties!
-            $propValues = $this->__gateway->loadProps(User::class, $this->__identity, LockMode::NONE, null);
+            $loadProps = [];
 
-            if ($propValues === null) {
-                // @todo custom exception class + show identity (using scalars?) in error message
-                throw new \RuntimeException(sprintf('Proxied entity does not exist.'));
+            foreach (self::__NON_ID_PROPERTIES as $prop) {
+                if (! isset($this->{$prop})) { // exclude initialized properties
+                    $loadProps[] = $prop;
+                }
             }
 
-            foreach ($propValues as $prop => $value) {
-                $this->{$prop} = $value;
+            if ($loadProps) {
+                $propValues = $this->__gateway->loadProps(User::class, $this->__identity, $loadProps);
+
+                if ($propValues === null) {
+                    // @todo custom exception class + show identity (using scalars?) in error message
+                    throw new \RuntimeException(sprintf('Proxied entity does not exist.'));
+                }
+
+                foreach ($propValues as $prop => $value) {
+                    $this->{$prop} = $value;
+                }
             }
 
             $this->__isInitialized = true;

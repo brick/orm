@@ -98,6 +98,12 @@ class ProxyBuilder
             $code = str_replace('unset($UNSET_NON_ID_PROPS);', '', $code);
         }
 
+        $nonIdProps = array_map(function(string $prop) : string {
+            return var_export($prop, true);
+        }, $this->nonIdProps);
+
+        $code = str_replace('NON_ID_PROPS', implode(', ', $nonIdProps), $code);
+
         // Imports
 
         $importString = '';

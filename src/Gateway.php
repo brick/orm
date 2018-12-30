@@ -134,16 +134,15 @@ class Gateway
     /**
      * Loads an entity's properties.
      *
-     * @param string        $class    The entity class name.
-     * @param array         $id       The identity, as a map of property name to value.
-     * @param int           $lockMode The lock mode.
-     * @param string[]|null $props    An optional array of property names to load. Defaults to non-id properties.
+     * @param string   $class The entity class name.
+     * @param array    $id    The identity, as a map of property name to value.
+     * @param string[] $props The list of property names to load.
      *
      * @return array|null The properties, or null if the entity doesn't exist.
      *
      * @throws \RuntimeException If a property name does not exist.
      */
-    public function loadProps(string $class, array $id, int $lockMode, ?array $props) : ?array
+    public function loadProps(string $class, array $id, array $props) : ?array
     {
         $query = new Query($class);
 
@@ -155,7 +154,7 @@ class Gateway
             $query->addPredicate($prop, '=', $value);
         }
 
-        $result = $this->doFind($query, $lockMode);
+        $result = $this->doFind($query, LockMode::NONE);
 
         if (! $result) {
             return null;
