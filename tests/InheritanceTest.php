@@ -176,7 +176,7 @@ class InheritanceTest extends AbstractTestCase
     /**
      * @depends testSaveCreateCountryEvent
      * @expectedException \RuntimeException
-     * @expectedExceptionMessage The Brick\ORM\Tests\Resources\Models\Event::$country property does not exist.
+     * @expectedExceptionMessage The Brick\ORM\Tests\Resources\Models\Event::$country property does not exist or is transient.
      *
      * @param int $eventId The ID of the event to load.
      *

@@ -168,7 +168,7 @@ class Gateway
             foreach ($props as $prop) {
                 if (! isset($classMetadata->propertyMappings[$prop])) {
                     // @todo UnknownPropertyException
-                    throw new \RuntimeException(sprintf('The %s::$%s property does not exist.', $class, $prop));
+                    throw new \RuntimeException(sprintf('The %s::$%s property does not exist or is transient.', $class, $prop));
                 }
             }
         }
