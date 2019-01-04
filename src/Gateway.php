@@ -267,6 +267,11 @@ class Gateway
             }
         }
 
+        if (! $selectFields) {
+            // No fields are selected, just perform a SELECT 1
+            $selectFields[] = '1';
+        }
+
         $outputValues = [];
         $tableAliases = []; // Table aliases, indexed by (dotted) property name.
 
