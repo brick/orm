@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Brick\ORM\PropertyMapping;
 
 use Brick\ORM\EntityMetadata;
+use Brick\ORM\LockMode;
 use Brick\ORM\PropertyMapping;
 use Brick\ORM\Gateway;
 
@@ -135,6 +136,13 @@ class EntityMapping implements PropertyMapping
             $currentIndex += $readFieldCount;
 
             $id[$prop] = $propertyMapping->convertInputValuesToProp($gateway, $currentInputValues);
+        }
+
+        if ($this->classMetadata->childClasses) {
+            // Not a leaf entity: eager load
+            // @todo couldn't we JOIN the target table to get just the discriminator value?
+            //       in any case, we should JOIN to eager load, not perform another query!
+            return $gateway->load($this->classMetadata->className, $id, LockMode::NONE, null);
         }
 
         return $gateway->getProxy($this->classMetadata->className, $id);
