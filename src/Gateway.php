@@ -675,13 +675,17 @@ class Gateway
      *
      * This results in an immediate UPDATE statement being executed against the database.
      *
-     * @param object $entity The entity to update.
+     * By default, all persistent properties are considered, unless a list of properties is given, in which case only
+     * these properties will be considered. Non-initialized properties are skipped.
+     *
+     * @param object $entity   The entity to update.
+     * @param string ...$props An optional list of properties to update.
      *
      * @return void
      *
      * @throws \RuntimeException
      */
-    public function update(object $entity) : void
+    public function update(object $entity, string ...$props) : void
     {
         $class = get_class($entity);
 
@@ -698,10 +702,15 @@ class Gateway
 
         $values = [];
 
-        foreach ($classMetadata->nonIdProperties as $prop) {
+        $props = $props ?: $classMetadata->nonIdProperties;
+
+        foreach ($props as $prop) {
             if (array_key_exists($prop, $propValues)) {
                 $values[$prop] = $propValues[$prop];
             }
+
+            // @todo exception if an unknown property is passed as a parameter?
+            //       this will be necessary if this method is part of the public API.
         }
 
         $id = [];
