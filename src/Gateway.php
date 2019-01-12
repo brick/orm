@@ -146,10 +146,7 @@ class Gateway
     public function loadProps(string $class, array $id, array $props, int $lockMode = LockMode::NONE) : ?array
     {
         $query = new Query($class);
-
-        if ($props !== null) {
-            $query->setProperties(...$props);
-        }
+        $query->setProperties(...$props);
 
         foreach ($id as $prop => $value) {
             $query->addPredicate($prop, '=', $value);
