@@ -696,30 +696,60 @@ class Gateway
             }
         }
 
+        $values = [];
+
+        foreach ($classMetadata->nonIdProperties as $prop) {
+            if (array_key_exists($prop, $propValues)) {
+                $values[$prop] = $propValues[$prop];
+            }
+        }
+
+        $id = [];
+
+        foreach ($classMetadata->idProperties as $prop) {
+            $id[$prop] = $propValues[$prop];
+        }
+
+        $this->doUpdate($class, $values, $id);
+    }
+
+    /**
+     * Updates an entity in the database.
+     *
+     * This results in an immediate UPDATE statement being executed against the database.
+     *
+     * @param string $class
+     * @param array  $values A map of updatable property name to value.
+     * @param array  $id     A map of identity property name to value.
+     *
+     * @return void
+     */
+    public function doUpdate(string $class, array $values, array $id) : void
+    {
+        $classMetadata = $this->classMetadata[$class];
+
         $updates = [];
         $whereConditions = [];
         $outputValues = [];
 
-        foreach ($classMetadata->nonIdProperties as $prop) {
-            if (array_key_exists($prop, $propValues)) {
-                $propertyMapping = $classMetadata->propertyMappings[$prop];
-                $expressionsAndOutputValues = $propertyMapping->convertPropToFields($propValues[$prop]);
+        foreach ($values as $prop => $value) {
+            $propertyMapping = $classMetadata->propertyMappings[$prop];
+            $expressionsAndOutputValues = $propertyMapping->convertPropToFields($value);
 
-                foreach ($propertyMapping->getFieldNames() as $fieldNameIndex => $fieldName) { // @todo quote field name
-                    foreach ($expressionsAndOutputValues[$fieldNameIndex] as $index => $expressionOrValue) {
-                        if ($index === 0) {
-                            $updates[] = $fieldName . ' = ' . $expressionOrValue;
-                        } else {
-                            $outputValues[] = $expressionOrValue;
-                        }
+            foreach ($propertyMapping->getFieldNames() as $fieldNameIndex => $fieldName) { // @todo quote field name
+                foreach ($expressionsAndOutputValues[$fieldNameIndex] as $index => $expressionOrValue) {
+                    if ($index === 0) {
+                        $updates[] = $fieldName . ' = ' . $expressionOrValue;
+                    } else {
+                        $outputValues[] = $expressionOrValue;
                     }
                 }
             }
         }
 
-        foreach ($classMetadata->idProperties as $prop) {
+        foreach ($id as $prop => $value) {
             $propertyMapping = $classMetadata->propertyMappings[$prop];
-            $expressionsAndOutputValues = $propertyMapping->convertPropToFields($propValues[$prop]);
+            $expressionsAndOutputValues = $propertyMapping->convertPropToFields($value);
 
             foreach ($propertyMapping->getFieldNames() as $fieldNameIndex => $fieldName) { // @todo quote field name
                 foreach ($expressionsAndOutputValues[$fieldNameIndex] as $index => $expressionOrValue) {
