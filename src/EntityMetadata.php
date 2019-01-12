@@ -32,6 +32,8 @@ class EntityMetadata extends ClassMetadata
      * The keys are discriminator strings or ints, the values are class names.
      * If the entity is not part of an inheritance hierarchy, this will be an empty array.
      *
+     * This property is set, and is the same, for all classes in the inheritance hiearchy.
+     *
      * @var array
      */
     public $discriminatorMap;
