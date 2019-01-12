@@ -134,15 +134,16 @@ class Gateway
     /**
      * Loads an entity's properties.
      *
-     * @param string   $class The entity class name.
-     * @param array    $id    The identity, as a map of property name to value.
-     * @param string[] $props The list of property names to load.
+     * @param string   $class    The entity class name.
+     * @param array    $id       The identity, as a map of property name to value.
+     * @param string[] $props    The list of property names to load.
+     * @param int      $lockMode The lock mode to use.
      *
      * @return array|null The properties, or null if the entity doesn't exist.
      *
      * @throws \RuntimeException If a property name does not exist.
      */
-    public function loadProps(string $class, array $id, array $props) : ?array
+    public function loadProps(string $class, array $id, array $props, int $lockMode = LockMode::NONE) : ?array
     {
         $query = new Query($class);
 
@@ -154,13 +155,41 @@ class Gateway
             $query->addPredicate($prop, '=', $value);
         }
 
-        $result = $this->doFind($query, LockMode::NONE);
+        $result = $this->doFind($query, $lockMode);
 
         if (! $result) {
             return null;
         }
 
         return $result[0][1];
+    }
+
+    /**
+     * Loads the properties of the given entity.
+     *
+     * The entity must have an identity.
+     * By default, all properties are loaded. If a list of properties if given, only these properties will be loaded.
+     *
+     * @param object $entity   The entity to hydrate.
+     * @param int    $lockMode The lock mode.
+     * @param string ...$props An optional list of properties to hydrate.
+     *
+     * @return void
+     *
+     * @throws \RuntimeException If the entity has no identity, or is not found. @todo custom exceptions.
+     */
+    public function hydrate(object $entity, int $lockMode = LockMode::NONE, string ...$props) : void
+    {
+        $class = get_class($entity);
+        $identity = $this->getIdentity($class, $entity);
+
+        $values = $this->loadProps($class, $identity, $props, $lockMode);
+
+        if ($values === null) {
+            throw new \RuntimeException('Entity not found.');
+        }
+
+        $this->objectFactory->write($entity, $values);
     }
 
     /**
