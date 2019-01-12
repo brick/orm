@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Brick\ORM\Tests\Resources\Models;
 
+use Brick\ORM\Tests\Resources\Models\Event\UserEvent;
+
 /**
  * An entity with an auto-increment integer identity, composed of built-in types, other entities, embeddables.
  */
@@ -32,6 +34,14 @@ class User
      * @var GeoAddress|null
      */
     protected $deliveryAddress;
+
+    /**
+     * A reference to a entity in an inheritance hierarchy, requiring the discriminator value in the User table to know
+     * the correct target class.
+     *
+     * @var UserEvent|null
+     */
+    protected $lastEvent;
 
     /**
      * A transient property, that should not be persisted.

@@ -16,7 +16,7 @@ use Brick\ORM\Tests\Resources\Models\User;
  */
 class UserProxy extends User implements Proxy
 {
-    private const __NON_ID_PROPERTIES = ['name', 'billingAddress', 'deliveryAddress'];
+    private const __NON_ID_PROPERTIES = ['name', 'billingAddress', 'deliveryAddress', 'lastEvent'];
 
     /**
      * @var Gateway
@@ -51,7 +51,8 @@ class UserProxy extends User implements Proxy
         unset(
             $this->name,
             $this->billingAddress,
-            $this->deliveryAddress
+            $this->deliveryAddress,
+            $this->lastEvent
         );
     }
 

@@ -71,8 +71,8 @@ class GatewayTest extends AbstractTestCase
         $this->assertDebugStatement(0,
             'INSERT INTO User (name, street, city, zipcode, country_code, isPoBox, ' .
             'deliveryAddress_address_street, deliveryAddress_address_city, deliveryAddress_address_zipcode, ' .
-            'deliveryAddress_address_country_code, deliveryAddress_address_isPoBox, deliveryAddress_location) ' .
-            'VALUES (?, ?, ?, ?, ?, ?, NULL, NULL, NULL, NULL, NULL, NULL)',
+            'deliveryAddress_address_country_code, deliveryAddress_address_isPoBox, deliveryAddress_location, lastEvent_type, lastEvent_id) ' .
+            'VALUES (?, ?, ?, ?, ?, ?, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL)',
             'John Smith', '123 Unknown Road', 'London', 'WC2E9XX', 'GB', false
         );
 
@@ -103,7 +103,7 @@ class GatewayTest extends AbstractTestCase
             'UPDATE User SET name = ?, street = ?, city = ?, zipcode = ?, country_code = ?, isPoBox = ?, ' .
             'deliveryAddress_address_street = ?, deliveryAddress_address_city = ?, ' .
             'deliveryAddress_address_zipcode = ?, deliveryAddress_address_country_code = ?, ' .
-            'deliveryAddress_address_isPoBox = ?, deliveryAddress_location = ST_GeomFromText(?, ?) ' .
+            'deliveryAddress_address_isPoBox = ?, deliveryAddress_location = ST_GeomFromText(?, ?), lastEvent_type = NULL, lastEvent_id = NULL ' .
             'WHERE id = ?',
             'John Smith',
             '123 Unknown Road', 'London', 'WC2E9XX', 'GB', false,
@@ -160,7 +160,7 @@ class GatewayTest extends AbstractTestCase
             'SELECT a.id, a.name, a.street, a.city, a.zipcode, a.country_code, a.isPoBox, ' .
             'a.deliveryAddress_address_street, a.deliveryAddress_address_city, a.deliveryAddress_address_zipcode, ' .
             'a.deliveryAddress_address_country_code, a.deliveryAddress_address_isPoBox, ' .
-            'ST_AsText(a.deliveryAddress_location), ST_SRID(a.deliveryAddress_location) ' .
+            'ST_AsText(a.deliveryAddress_location), ST_SRID(a.deliveryAddress_location), a.lastEvent_type, a.lastEvent_id ' .
             'FROM User AS a WHERE a.id = ?',
             $userId
         );
@@ -214,7 +214,7 @@ class GatewayTest extends AbstractTestCase
             'SELECT a.id, a.name, a.street, a.city, a.zipcode, a.country_code, a.isPoBox, ' .
             'a.deliveryAddress_address_street, a.deliveryAddress_address_city, a.deliveryAddress_address_zipcode, ' .
             'a.deliveryAddress_address_country_code, a.deliveryAddress_address_isPoBox, ' .
-            'ST_AsText(a.deliveryAddress_location), ST_SRID(a.deliveryAddress_location) ' .
+            'ST_AsText(a.deliveryAddress_location), ST_SRID(a.deliveryAddress_location), a.lastEvent_type, a.lastEvent_id ' .
             'FROM User AS a WHERE a.id = ?',
             $userId
         );

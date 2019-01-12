@@ -35,6 +35,7 @@ class ObjectFactoryTest extends TestCase
             "\0*\0name" => null,
             "\0*\0billingAddress" => null,
             "\0*\0deliveryAddress" => null,
+            "\0*\0lastEvent" => null,
             "\0*\0transient" => []
         ], (array) $user);
 
@@ -43,6 +44,7 @@ class ObjectFactoryTest extends TestCase
             'name' => null,
             'billingAddress' => null,
             'deliveryAddress' => null,
+            'lastEvent' => null,
             'transient' => []
         ], $objectFactory->read($user));
     }
@@ -50,7 +52,7 @@ class ObjectFactoryTest extends TestCase
     public function testInstantiateWithUnsetProps()
     {
         $objectFactory = new ObjectFactory();
-        $user = $objectFactory->instantiate(User::class, ['id', 'name', 'billingAddress', 'deliveryAddress']);
+        $user = $objectFactory->instantiate(User::class, ['id', 'name', 'billingAddress', 'deliveryAddress', 'lastEvent']);
 
         $this->assertSame(User::class, get_class($user));
 
@@ -70,7 +72,7 @@ class ObjectFactoryTest extends TestCase
         ];
 
         $objectFactory = new ObjectFactory();
-        $user = $objectFactory->instantiate(User::class, ['id', 'name', 'billingAddress', 'deliveryAddress']);
+        $user = $objectFactory->instantiate(User::class, ['id', 'name', 'billingAddress', 'deliveryAddress', 'lastEvent']);
         $objectFactory->write($user, $values);
 
         $this->assertSame(User::class, get_class($user));

@@ -83,7 +83,9 @@ abstract class AbstractTestCase extends TestCase
                 deliveryAddress_address_zipcode VARCHAR(50) NULL,
                 deliveryAddress_address_country_code CHAR(2) NULL,
                 deliveryAddress_address_isPoBox TINYINT(1) NULL,
-                deliveryAddress_location GEOMETRY NULL
+                deliveryAddress_location GEOMETRY NULL,
+                lastEvent_type VARCHAR(30) NULL,
+                lastEvent_id INT(10) UNSIGNED NULL
             )
         ');
 

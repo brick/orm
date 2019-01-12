@@ -68,6 +68,10 @@ class EntityMapping implements PropertyMapping
     {
         $names = [];
 
+        if ($this->classMetadata->discriminatorColumn !== null) {
+            $names[] = $this->fieldNamePrefix . $this->classMetadata->discriminatorColumn;
+        }
+
         foreach ($this->classMetadata->idProperties as $prop) {
             foreach ($this->classMetadata->propertyMappings[$prop]->getFieldNames() as $name) {
                 $names[] = $this->fieldNamePrefix . $name;
@@ -86,6 +90,10 @@ class EntityMapping implements PropertyMapping
     {
         $count = 0;
 
+        if ($this->classMetadata->discriminatorColumn !== null) {
+            $count++;
+        }
+
         foreach ($this->classMetadata->idProperties as $prop) {
             $propertyMapping = $this->classMetadata->propertyMappings[$prop];
             $count += $propertyMapping->getInputValuesCount();
@@ -103,6 +111,10 @@ class EntityMapping implements PropertyMapping
     {
         $wrappedFields = [];
         $currentIndex = 0;
+
+        if ($this->classMetadata->discriminatorColumn !== null) {
+            $wrappedFields[] = $fieldNames[$currentIndex++];
+        }
 
         foreach ($this->classMetadata->idProperties as $prop) {
             $propertyMapping = $this->classMetadata->propertyMappings[$prop];
@@ -126,6 +138,18 @@ class EntityMapping implements PropertyMapping
     {
         $currentIndex = 0;
 
+        if ($this->classMetadata->discriminatorColumn !== null) {
+            $discriminatorValue = $values[$currentIndex++];
+
+            if ($discriminatorValue === null) {
+                return null;
+            }
+
+            $className = $this->classMetadata->discriminatorMap[$discriminatorValue];
+        } else {
+            $className = $this->classMetadata->className;
+        }
+
         $id = [];
 
         foreach ($this->classMetadata->idProperties as $prop) {
@@ -135,17 +159,16 @@ class EntityMapping implements PropertyMapping
             $currentInputValues = array_slice($values, $currentIndex, $readFieldCount);
             $currentIndex += $readFieldCount;
 
-            $id[$prop] = $propertyMapping->convertInputValuesToProp($gateway, $currentInputValues);
+            $value = $propertyMapping->convertInputValuesToProp($gateway, $currentInputValues);
+
+            if ($value === null) {
+                return null;
+            }
+
+            $id[$prop] = $value;
         }
 
-        if ($this->classMetadata->childClasses) {
-            // Not a leaf entity: eager load
-            // @todo couldn't we JOIN the target table to get just the discriminator value?
-            //       in any case, we should JOIN to eager load, not perform another query!
-            return $gateway->load($this->classMetadata->className, $id, LockMode::NONE, null);
-        }
-
-        return $gateway->getProxy($this->classMetadata->className, $id);
+        return $gateway->getProxy($className, $id);
     }
 
     /**
@@ -158,6 +181,17 @@ class EntityMapping implements PropertyMapping
         $result = [];
 
         $entity = $propValue;
+
+        if ($this->classMetadata->discriminatorColumn !== null) {
+            if ($entity === null) {
+                $result[] = ['NULL'];
+            } else {
+                // @todo should have access to the target class' EntityMetadata::$discriminatorValue?
+                //       or EntityMetadata could have an inverse discriminator map?
+                $discriminatorValue = array_search(get_class($propValue), $this->classMetadata->discriminatorMap, true);
+                $result[] = ['?', $discriminatorValue];
+            }
+        }
 
         if ($entity !== null) {
             $r = new \ReflectionObject($entity);
