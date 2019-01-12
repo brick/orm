@@ -31,10 +31,10 @@ class FollowRepository
         $this->gateway = $gateway;
     }
 
-    public function load(User $follower, User $followee, int $lockMode = LockMode::NONE, ?array $props = null) : ?Follow
+    public function load(User $follower, User $followee, int $lockMode = LockMode::NONE, string ...$props) : ?Follow
     {
         /** @noinspection PhpIncompatibleReturnTypeInspection */
-        return $this->gateway->load(Follow::class, ['follower' => $follower, 'followee' => $followee], $lockMode, $props);
+        return $this->gateway->load(Follow::class, ['follower' => $follower, 'followee' => $followee], $lockMode, ...$props);
     }
 
     public function getPlaceholder(User $follower, User $followee) : Follow

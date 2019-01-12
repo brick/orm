@@ -30,10 +30,10 @@ class EventRepository
         $this->gateway = $gateway;
     }
 
-    public function load(int $id, int $lockMode = LockMode::NONE, ?array $props = null) : ?Event
+    public function load(int $id, int $lockMode = LockMode::NONE, string ...$props) : ?Event
     {
         /** @noinspection PhpIncompatibleReturnTypeInspection */
-        return $this->gateway->load(Event::class, ['id' => $id], $lockMode, $props);
+        return $this->gateway->load(Event::class, ['id' => $id], $lockMode, ...$props);
     }
 
     public function getPlaceholder(int $id) : Event

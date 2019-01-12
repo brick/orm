@@ -30,10 +30,10 @@ class UserRepository
         $this->gateway = $gateway;
     }
 
-    public function load(int $id, int $lockMode = LockMode::NONE, ?array $props = null) : ?User
+    public function load(int $id, int $lockMode = LockMode::NONE, string ...$props) : ?User
     {
         /** @noinspection PhpIncompatibleReturnTypeInspection */
-        return $this->gateway->load(User::class, ['id' => $id], $lockMode, $props);
+        return $this->gateway->load(User::class, ['id' => $id], $lockMode, ...$props);
     }
 
     public function getPlaceholder(int $id) : User

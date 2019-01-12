@@ -123,7 +123,7 @@ class GatewayTest extends AbstractTestCase
      */
     public function testLoadPartialUser(int $userId) : int
     {
-        $user = self::$userRepository->load($userId, LockMode::NONE, ['name']);
+        $user = self::$userRepository->load($userId, LockMode::NONE, 'name');
 
         $this->assertDebugStatementCount(1);
         $this->assertDebugStatement(0, 'SELECT a.name FROM User AS a WHERE a.id = ?', $userId);

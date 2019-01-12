@@ -107,20 +107,20 @@ class Gateway
      * An optional array of property names can be provided, to load a partial object.
      * By default, all properties will be loaded and set.
      *
-     * @param string        $class    The entity class name.
-     * @param array         $id       The identity, as a map of property name to value.
-     * @param int           $lockMode The lock mode.
-     * @param string[]|null $props    An optional array of property names to load.
+     * @param string $class    The entity class name.
+     * @param array  $id       The identity, as a map of property name to value.
+     * @param int    $lockMode The lock mode.
+     * @param string ...$props An optional array of property names to load.
      *
      * @return object|null The entity, or null if it doesn't exist.
      *
      * @throws \RuntimeException If a property name does not exist.
      */
-    public function load(string $class, array $id, int $lockMode, ?array $props) : ?object
+    public function load(string $class, array $id, int $lockMode, string ...$props) : ?object
     {
         $query = new Query($class);
 
-        if ($props !== null) {
+        if ($props) {
             $query->setProperties(...$props);
         }
 
@@ -602,7 +602,7 @@ class Gateway
      */
     public function existsIdentity(string $class, array $id) : bool
     {
-        return $this->load($class, $id, LockMode::NONE, []) !== null;
+        return $this->loadProps($class, $id, [], LockMode::NONE) !== null;
     }
 
     /**

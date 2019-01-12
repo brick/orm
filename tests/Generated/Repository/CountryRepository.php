@@ -30,10 +30,10 @@ class CountryRepository
         $this->gateway = $gateway;
     }
 
-    public function load(string $code, int $lockMode = LockMode::NONE, ?array $props = null) : ?Country
+    public function load(string $code, int $lockMode = LockMode::NONE, string ...$props) : ?Country
     {
         /** @noinspection PhpIncompatibleReturnTypeInspection */
-        return $this->gateway->load(Country::class, ['code' => $code], $lockMode, $props);
+        return $this->gateway->load(Country::class, ['code' => $code], $lockMode, ...$props);
     }
 
     public function getPlaceholder(string $code) : Country

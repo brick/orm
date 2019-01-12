@@ -30,10 +30,10 @@ class CLASS_NAMERepository
         $this->gateway = $gateway;
     }
 
-    public function load($IDENTITY_PROPS, int $lockMode = LockMode::NONE, ?array $props = null) : ?CLASS_NAME
+    public function load($IDENTITY_PROPS, int $lockMode = LockMode::NONE, string ...$props) : ?CLASS_NAME
     {
         /** @noinspection PhpIncompatibleReturnTypeInspection */
-        return $this->gateway->load(CLASS_NAME::class, IDENTITY_ARRAY, $lockMode, $props);
+        return $this->gateway->load(CLASS_NAME::class, IDENTITY_ARRAY, $lockMode, ...$props);
     }
 
     public function getPlaceholder($IDENTITY_PROPS) : CLASS_NAME
