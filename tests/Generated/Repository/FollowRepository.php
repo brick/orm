@@ -65,7 +65,7 @@ class FollowRepository
 
     public function remove(Follow $follow) : void
     {
-        $this->gateway->remove(Follow::class, $follow);
+        $this->gateway->remove($follow);
     }
 
     public function removeIdentity(User $follower, User $followee) : void

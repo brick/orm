@@ -807,13 +807,14 @@ class Gateway
      *
      * This results in an immediate DELETE statement being executed against the database.
      *
-     * @param string $class  The entity class name.
      * @param object $entity The entity to remove.
      *
      * @return void
      */
-    public function remove(string $class, object $entity) : void
+    public function remove(object $entity) : void
     {
+        $class = get_class($entity);
+
         $this->removeIdentity($class, $this->getIdentity($class, $entity));
     }
 

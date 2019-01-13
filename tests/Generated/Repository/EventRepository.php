@@ -64,7 +64,7 @@ class EventRepository
 
     public function remove(Event $event) : void
     {
-        $this->gateway->remove(Event::class, $event);
+        $this->gateway->remove($event);
     }
 
     public function removeIdentity(int $id) : void

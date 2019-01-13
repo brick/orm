@@ -64,7 +64,7 @@ class CountryRepository
 
     public function remove(Country $country) : void
     {
-        $this->gateway->remove(Country::class, $country);
+        $this->gateway->remove($country);
     }
 
     public function removeIdentity(string $code) : void

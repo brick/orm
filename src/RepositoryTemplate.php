@@ -64,7 +64,7 @@ class CLASS_NAMERepository
 
     public function remove(CLASS_NAME $ENTITY_PROP_NAME) : void
     {
-        $this->gateway->remove(CLASS_NAME::class, $ENTITY_PROP_NAME);
+        $this->gateway->remove($ENTITY_PROP_NAME);
     }
 
     public function removeIdentity($IDENTITY_PROPS) : void

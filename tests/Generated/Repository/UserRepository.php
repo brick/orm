@@ -64,7 +64,7 @@ class UserRepository
 
     public function remove(User $user) : void
     {
-        $this->gateway->remove(User::class, $user);
+        $this->gateway->remove($user);
     }
 
     public function removeIdentity(int $id) : void
