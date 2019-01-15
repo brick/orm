@@ -580,13 +580,14 @@ class Gateway
     /**
      * Returns whether the given entity exists in the database.
      *
-     * @param string $class  The entity class name.
      * @param object $entity The entity to check.
      *
      * @return bool
      */
-    public function exists(string $class, object $entity) : bool
+    public function exists(object $entity) : bool
     {
+        $class = get_class($entity);
+
         return $this->existsIdentity($class, $this->getIdentity($class, $entity));
     }
 

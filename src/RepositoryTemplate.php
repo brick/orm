@@ -44,7 +44,7 @@ class CLASS_NAMERepository
 
     public function exists(CLASS_NAME $ENTITY_PROP_NAME) : bool
     {
-        return $this->gateway->exists(CLASS_NAME::class, $ENTITY_PROP_NAME);
+        return $this->gateway->exists($ENTITY_PROP_NAME);
     }
 
     public function existsIdentity($IDENTITY_PROPS) : bool

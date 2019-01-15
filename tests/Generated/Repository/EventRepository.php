@@ -44,7 +44,7 @@ class EventRepository
 
     public function exists(Event $event) : bool
     {
-        return $this->gateway->exists(Event::class, $event);
+        return $this->gateway->exists($event);
     }
 
     public function existsIdentity(int $id) : bool

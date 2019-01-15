@@ -44,7 +44,7 @@ class CountryRepository
 
     public function exists(Country $country) : bool
     {
-        return $this->gateway->exists(Country::class, $country);
+        return $this->gateway->exists($country);
     }
 
     public function existsIdentity(string $code) : bool

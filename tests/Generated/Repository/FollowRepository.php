@@ -45,7 +45,7 @@ class FollowRepository
 
     public function exists(Follow $follow) : bool
     {
-        return $this->gateway->exists(Follow::class, $follow);
+        return $this->gateway->exists($follow);
     }
 
     public function existsIdentity(User $follower, User $followee) : bool

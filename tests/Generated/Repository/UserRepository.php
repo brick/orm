@@ -44,7 +44,7 @@ class UserRepository
 
     public function exists(User $user) : bool
     {
-        return $this->gateway->exists(User::class, $user);
+        return $this->gateway->exists($user);
     }
 
     public function existsIdentity(int $id) : bool
