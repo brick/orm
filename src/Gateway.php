@@ -341,7 +341,7 @@ class Gateway
                 foreach ($fieldNames as $fieldNameIndex => $fieldName) {
                     foreach ($expressionsAndOutputValues[$fieldNameIndex] as $index => $expressionOrValue) {
                         if ($index === 0) {
-                            $whereConditions[] = $tableAlias . '.' . $fieldNames[$index] . ' ' . $operator . ' ' . $expressionOrValue;
+                            $whereConditions[] = $tableAlias . '.' . $fieldNames[$fieldNameIndex] . ' ' . $operator . ' ' . $expressionOrValue;
                         } else {
                             $outputValues[] = $expressionOrValue;
                         }
