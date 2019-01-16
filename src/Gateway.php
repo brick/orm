@@ -210,6 +210,8 @@ class Gateway
     }
 
     /**
+     * Finds entities using a query object.
+     *
      * @todo custom exceptions
      *
      * @param Query $query        The query object.
@@ -275,8 +277,15 @@ class Gateway
     }
 
     /**
-     * @param Query $query
-     * @param int   $lockMode
+     * Finds entities using a query object, and returns them as class names and properties.
+     *
+     * The result is a list, whose each element is itself a list containing exactly 2 elements:
+     *
+     * - the class name of the entity as a string;
+     * - a map of property name to value as an array.
+     *
+     * @param Query $query    The query object.
+     * @param int   $lockMode The lock mode.
      *
      * @return array
      */
