@@ -87,7 +87,7 @@ class ProxyBuilder
         if ($this->nonIdProps) {
             $unsets = "\n";
 
-            $unsets .= implode(",\n", array_map(function(string $prop) : string {
+            $unsets .= implode(",\n", array_map(static function(string $prop) : string {
                 return str_repeat(' ', 12) . '$this->' . $prop;
             }, $this->nonIdProps));
 
@@ -98,7 +98,7 @@ class ProxyBuilder
             $code = str_replace('unset($UNSET_NON_ID_PROPS);', '', $code);
         }
 
-        $nonIdProps = array_map(function(string $prop) : string {
+        $nonIdProps = array_map(static function(string $prop) : string {
             return var_export($prop, true);
         }, $this->nonIdProps);
 
