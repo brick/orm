@@ -664,10 +664,13 @@ class Gateway
     private function instantiate(EntityMetadata $classMetadata, string $class, array $id) : object
     {
         if ($this->useProxies) {
+            // Returns a lazy-loading proxy, with the identity set and other properties lazy-loaded on first access.
             $proxyClass = $classMetadata->proxyClassName;
 
             return new $proxyClass($this, $id);
         }
+
+        // Return a partial object, with only the identity set.
 
         $entity = $this->objectFactory->instantiate($class, $classMetadata->properties);
         $this->objectFactory->write($entity, $id);
