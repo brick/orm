@@ -168,7 +168,7 @@ class EntityMapping implements PropertyMapping
             $id[$prop] = $value;
         }
 
-        return $gateway->getProxy($className, $id);
+        return $gateway->getReference($className, $id);
     }
 
     /**

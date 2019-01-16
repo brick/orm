@@ -36,10 +36,10 @@ class CountryRepository
         return $this->gateway->load(Country::class, ['code' => $code], $lockMode, ...$props);
     }
 
-    public function getPlaceholder(string $code) : Country
+    public function getReference(string $code) : Country
     {
         /** @noinspection PhpIncompatibleReturnTypeInspection */
-        return $this->gateway->getPlaceholder(Country::class, ['code' => $code]);
+        return $this->gateway->getReference(Country::class, ['code' => $code]);
     }
 
     public function exists(Country $country) : bool

@@ -101,6 +101,8 @@ class ClassMetadataBuilder
             }
         }
 
+        $classMetadata->rootClassName = $entityConfiguration->getClassName();
+
         if ($reflectionClass->isAbstract()) {
             $classMetadata->proxyClassName = null;
         } else {

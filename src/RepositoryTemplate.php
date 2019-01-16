@@ -36,10 +36,10 @@ class CLASS_NAMERepository
         return $this->gateway->load(CLASS_NAME::class, IDENTITY_ARRAY, $lockMode, ...$props);
     }
 
-    public function getPlaceholder($IDENTITY_PROPS) : CLASS_NAME
+    public function getReference($IDENTITY_PROPS) : CLASS_NAME
     {
         /** @noinspection PhpIncompatibleReturnTypeInspection */
-        return $this->gateway->getPlaceholder(CLASS_NAME::class, IDENTITY_ARRAY);
+        return $this->gateway->getReference(CLASS_NAME::class, IDENTITY_ARRAY);
     }
 
     public function exists(CLASS_NAME $ENTITY_PROP_NAME) : bool

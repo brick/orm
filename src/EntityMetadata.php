@@ -39,6 +39,16 @@ class EntityMetadata extends ClassMetadata
     public $discriminatorMap;
 
     /**
+     * The root entity class name.
+     *
+     * If the entity is not part of an inheritance hierarchy, or is itself the root of the hierarchy, this will be the
+     * same as the entity class name.
+     *
+     * @var string
+     */
+    public $rootClassName;
+
+    /**
      * The entity's proxy class name.
      *
      * This property is only set if the class is a concrete entity.

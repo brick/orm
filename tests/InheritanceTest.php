@@ -13,6 +13,14 @@ use Brick\ORM\Tests\Resources\Models\User;
 class InheritanceTest extends AbstractTestCase
 {
     /**
+     * {@inheritdoc}
+     */
+    protected static function useProxies() : bool
+    {
+        return false;
+    }
+
+    /**
      * The full SQL to load an Event or one of its subclasses.
      */
     private const LOAD_EVENT_SQL =

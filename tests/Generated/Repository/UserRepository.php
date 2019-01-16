@@ -36,10 +36,10 @@ class UserRepository
         return $this->gateway->load(User::class, ['id' => $id], $lockMode, ...$props);
     }
 
-    public function getPlaceholder(int $id) : User
+    public function getReference(int $id) : User
     {
         /** @noinspection PhpIncompatibleReturnTypeInspection */
-        return $this->gateway->getPlaceholder(User::class, ['id' => $id]);
+        return $this->gateway->getReference(User::class, ['id' => $id]);
     }
 
     public function exists(User $user) : bool

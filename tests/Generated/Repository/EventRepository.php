@@ -36,10 +36,10 @@ class EventRepository
         return $this->gateway->load(Event::class, ['id' => $id], $lockMode, ...$props);
     }
 
-    public function getPlaceholder(int $id) : Event
+    public function getReference(int $id) : Event
     {
         /** @noinspection PhpIncompatibleReturnTypeInspection */
-        return $this->gateway->getPlaceholder(Event::class, ['id' => $id]);
+        return $this->gateway->getReference(Event::class, ['id' => $id]);
     }
 
     public function exists(Event $event) : bool

@@ -37,10 +37,10 @@ class FollowRepository
         return $this->gateway->load(Follow::class, ['follower' => $follower, 'followee' => $followee], $lockMode, ...$props);
     }
 
-    public function getPlaceholder(User $follower, User $followee) : Follow
+    public function getReference(User $follower, User $followee) : Follow
     {
         /** @noinspection PhpIncompatibleReturnTypeInspection */
-        return $this->gateway->getPlaceholder(Follow::class, ['follower' => $follower, 'followee' => $followee]);
+        return $this->gateway->getReference(Follow::class, ['follower' => $follower, 'followee' => $followee]);
     }
 
     public function exists(Follow $follow) : bool

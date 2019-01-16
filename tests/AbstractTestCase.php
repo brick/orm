@@ -41,6 +41,11 @@ abstract class AbstractTestCase extends TestCase
     protected static $eventRepository;
 
     /**
+     * @return bool
+     */
+    abstract protected static function useProxies() : bool;
+
+    /**
      * @todo schema is MySQL only for now, and test server is hardcoded
      *
      * {@inheritdoc}
@@ -54,7 +59,7 @@ abstract class AbstractTestCase extends TestCase
         $connection = new Connection($driverConnection, self::$logger);
         $classMetadata = require __DIR__ . '/Generated/ClassMetadata.php';
 
-        self::$gateway = new Gateway($connection, $classMetadata);
+        self::$gateway = new Gateway($connection, $classMetadata, null, static::useProxies());
 
         self::$countryRepository = new CountryRepository(self::$gateway);
         self::$userRepository = new UserRepository(self::$gateway);

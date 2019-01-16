@@ -11,6 +11,14 @@ use Brick\ORM\Tests\Resources\Models\User;
 class ProxyTest extends AbstractTestCase
 {
     /**
+     * {@inheritdoc}
+     */
+    protected static function useProxies() : bool
+    {
+        return true;
+    }
+
+    /**
      * @return void
      */
     public function testLazyLoadingProxy() : void

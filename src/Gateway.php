@@ -37,6 +37,22 @@ class Gateway
     private $classMetadata;
 
     /**
+     * The identity map, to keep references to managed entities, if any.
+     *
+     * @var IdentityMap|null
+     */
+    private $identityMap;
+
+    /**
+     * Whether to use lazy-loading proxies to reference entities whose identity is known, but data is not yet known.
+     *
+     * If false, partial objects with no lazy-loading capability will be used instead.
+     *
+     * @var bool
+     */
+    private $useProxies;
+
+    /**
      * @var ObjectFactory
      */
     private $objectFactory;
@@ -46,11 +62,15 @@ class Gateway
      *
      * @param Connection       $connection
      * @param EntityMetadata[] $classMetadata
+     * @param IdentityMap|null $identityMap
+     * @param bool             $useProxies
      */
-    public function __construct(Connection $connection, array $classMetadata)
+    public function __construct(Connection $connection, array $classMetadata, ?IdentityMap $identityMap = null, bool $useProxies = false)
     {
-        $this->connection = $connection;
+        $this->connection    = $connection;
         $this->classMetadata = $classMetadata;
+        $this->identityMap   = $identityMap;
+        $this->useProxies    = $useProxies;
         $this->objectFactory = new ObjectFactory();
     }
 
@@ -202,8 +222,47 @@ class Gateway
         $entities = [];
 
         foreach ($this->doFind($query, $lockMode) as [$className, $propValues]) {
-            $entity = $this->objectFactory->instantiate($className, $this->classMetadata[$className]->properties);
-            $this->objectFactory->write($entity, $propValues);
+            $classMetadata = $this->classMetadata[$className];
+
+            if ($this->identityMap !== null) {
+                $identity = [];
+
+                foreach ($classMetadata->idProperties as $idProperty) {
+                    if (! isset($propValues[$idProperty])) {
+                        throw new \Exception(
+                            'Object\'s identity must be retrieved when running with an identity map. ' .
+                            'Please add "' . $idProperty . '" to loaded properties of "' . $className . '".'
+                        );
+                    }
+
+                    $identity[] = $propValues[$idProperty];
+                }
+
+                // Get the existing entity from the identity map, if any.
+                $entity = $this->identityMap->get($classMetadata->rootClassName, $identity);
+
+                if ($lockMode === LockMode::NONE) {
+                    // No lock requested, use the entity from the identity map if it exists.
+
+                    if ($entity === null) {
+                        $entity = $this->objectFactory->instantiate($className, $classMetadata->properties);
+                        $this->objectFactory->write($entity, $propValues);
+                    }
+                } else {
+                    // Lock requested, if the entity already exists in the identity map, refresh it.
+
+                    if ($entity === null) {
+                        $entity = $this->objectFactory->instantiate($className, $classMetadata->properties);
+                        $this->identityMap->set($classMetadata->rootClassName, $identity, $entity);
+                    }
+
+                    $this->objectFactory->write($entity, $propValues);
+                }
+            } else {
+                // No identity map, always create a new entity.
+                $entity = $this->objectFactory->instantiate($className, $classMetadata->properties);
+                $this->objectFactory->write($entity, $propValues);
+            }
 
             $entities[] = $entity;
         }
@@ -554,27 +613,53 @@ class Gateway
      *
      * @return object
      */
-    public function getPlaceholder(string $class, array $id) : object
+    public function getReference(string $class, array $id) : object
     {
         $classMetadata = $this->classMetadata[$class];
+
+        if (array_keys($id) !== $classMetadata->idProperties) {
+            // @todo a map in an incorrect order should be allowed: attempt to reorder keys.
+            // @todo custom exception.
+            throw new \Exception('Invalid identity.');
+        }
+
+        if ($this->identityMap !== null) {
+            $entity = $this->identityMap->get($classMetadata->rootClassName, $id);
+
+            if ($entity === null) {
+                $entity = $this->instantiate($classMetadata, $class, $id);
+                $this->identityMap->set($classMetadata->rootClassName, $id, $entity);
+            } elseif (! $entity instanceof $class) {
+                // Consistency check: if we request a subclass of rootClassName, and the object in the identity map
+                // is not an instance of the subclass.
+                throw new \Exception('Expected instance of "' . $class . '", got instance of "' . get_class($entity) . '".');
+            }
+
+            return $entity;
+        }
+
+        return $this->instantiate($classMetadata, $class, $id);
+    }
+
+    /**
+     * @param EntityMetadata $classMetadata
+     * @param string         $class
+     * @param array          $id
+     *
+     * @return object
+     */
+    private function instantiate(EntityMetadata $classMetadata, string $class, array $id) : object
+    {
+        if ($this->useProxies) {
+            $proxyClass = $classMetadata->proxyClassName;
+
+            return new $proxyClass($this, $id);
+        }
 
         $entity = $this->objectFactory->instantiate($class, $classMetadata->properties);
         $this->objectFactory->write($entity, $id);
 
         return $entity;
-    }
-
-    /**
-     * @param string $class
-     * @param array  $id
-     *
-     * @return object
-     */
-    public function getProxy(string $class, array $id) : object
-    {
-        $proxyClass = $this->classMetadata[$class]->proxyClassName;
-
-        return new $proxyClass($this, $id);
     }
 
     /**
@@ -610,6 +695,7 @@ class Gateway
      * Saves the given entity to the database.
      *
      * This results in an immediate INSERT statement being executed against the database.
+     * If an identity map is in use, the object is added to the identity map on successful completion of the INSERT.
      *
      * @param object $entity The entity to save.
      *
@@ -685,15 +771,29 @@ class Gateway
         $statement = $this->connection->prepare($sql);
         $statement->execute($outputValues);
 
+        $identity = null;
+
         // Set the identity property if the table is auto-increment
         if ($classMetadata->isAutoIncrement) {
             $lastInsertId = $this->connection->lastInsertId();
 
-            // Note: can only be a single property mapping to a single field, using a single scalar value
+            // This can only be a single property mapping to a single field, using a single scalar value.
             $prop = $classMetadata->idProperties[0];
             $value = $classMetadata->propertyMappings[$prop]->convertInputValuesToProp($this, [$lastInsertId]);
 
             $this->objectFactory->write($entity, [$prop => $value]);
+
+            $identity = [$value];
+        }
+
+        if ($this->identityMap !== null) {
+            if ($identity === null) {
+                foreach ($classMetadata->idProperties as $idProperty) {
+                    $identity[] = $propValues[$idProperty];
+                }
+            }
+
+            $this->identityMap->set($classMetadata->rootClassName, $identity, $entity);
         }
     }
 

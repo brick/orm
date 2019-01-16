@@ -13,6 +13,14 @@ use Brick\ORM\Tests\Resources\Objects\Geometry;
 
 class GatewayTest extends AbstractTestCase
 {
+    /**
+     * {@inheritdoc}
+     */
+    protected static function useProxies() : bool
+    {
+        return false;
+    }
+
     public function testSaveCountry() : void
     {
         $country = new Country('GB', 'United Kingdom');
