@@ -51,7 +51,8 @@ class IdentityMap
     /**
      * Adds an entity to the identity map.
      *
-     * If an entity already exists under this identity, it is replaced.
+     * If the entity already exists in the identity map, this method does nothing.
+     * If another entity already exists under this identity, an exception is thrown.
      *
      * @param string $class    The root entity class name.
      * @param array  $identity The list of values that form the entity's identity.
@@ -69,6 +70,11 @@ class IdentityMap
             }
 
             $ref = & $ref[$key];
+        }
+
+        if ($ref !== null && $ref !== $entity) {
+            // @todo custom exception, better exception message
+            throw new \Exception('Two entities with the same identity conflict.');
         }
 
         $ref = $entity;
