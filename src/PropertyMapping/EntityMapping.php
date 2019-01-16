@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Brick\ORM\PropertyMapping;
 
 use Brick\ORM\EntityMetadata;
-use Brick\ORM\LockMode;
 use Brick\ORM\PropertyMapping;
 use Brick\ORM\Gateway;
 
