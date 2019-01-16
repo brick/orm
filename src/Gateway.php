@@ -793,7 +793,7 @@ class Gateway
         if ($classMetadata->isAutoIncrement) {
             $lastInsertId = $this->connection->lastInsertId();
 
-            // This can only be a single property mapping to a single field, using a single scalar value.
+            // This can only be a single property mapping to a single field, using a single scalar (int|string) value.
             $prop = $classMetadata->idProperties[0];
             $value = $classMetadata->propertyMappings[$prop]->convertInputValuesToProp($this, [$lastInsertId]);
 

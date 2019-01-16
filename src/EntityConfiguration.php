@@ -121,11 +121,23 @@ class EntityConfiguration extends ClassConfiguration
             $identityProperties = $this->getIdentityProperties();
 
             if (count($identityProperties) !== 1) {
-                throw new \LogicException(sprintf('The entity %s has multiple identity properties and cannot be mapped to an auto-increment table.', $this->getClassName()));
+                throw new \LogicException(sprintf(
+                    'The entity "%s" has multiple identity properties and cannot be mapped to an auto-increment table.',
+                    $this->getClassName()
+                ));
             }
 
-            // @todo this should also check that the property maps to a single column;
-            // maybe, for PHP 7.4, just check that the property type is int or string?
+            $propertyType = $this->propertyTypeChecker->getPropertyType($this->reflectionClass->getProperty($identityProperties[0]));
+            $type = $propertyType->type;
+
+            if ($type !== 'int' && $type !== 'string') {
+                throw new \LogicException(sprintf(
+                    'The entity "%s" has an auto-increment identity that maps to an unsupported type "%s", ' .
+                    'only int and string are allowed.',
+                    $this->getClassName(),
+                    $type
+                ));
+            }
         }
 
         return $this->isAutoIncrement;
