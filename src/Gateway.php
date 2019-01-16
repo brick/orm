@@ -212,14 +212,18 @@ class Gateway
     /**
      * @todo custom exceptions
      *
-     * @param Query $query
-     * @param int   $lockMode
+     * @param Query $query        The query object.
+     * @param int   $lockMode     The lock mode.
+     * @param bool  $forceRefresh Whether to force refresh of entities when LockMode::NONE is provided.
+     *                            By default, LockMode::NONE does not refresh entities, while other lock modes do.
      *
      * @return object[]
      */
-    public function find(Query $query, int $lockMode = LockMode::NONE) : array
+    public function find(Query $query, int $lockMode = LockMode::NONE, bool $forceRefresh = false) : array
     {
         $entities = [];
+
+        $refresh = $forceRefresh || ($lockMode !== LockMode::NONE);
 
         foreach ($this->doFind($query, $lockMode) as [$className, $propValues]) {
             $classMetadata = $this->classMetadata[$className];
@@ -241,15 +245,8 @@ class Gateway
                 // Get the existing entity from the identity map, if any.
                 $entity = $this->identityMap->get($classMetadata->rootClassName, $identity);
 
-                if ($lockMode === LockMode::NONE) {
-                    // No lock requested, use the entity from the identity map if it exists.
-
-                    if ($entity === null) {
-                        $entity = $this->objectFactory->instantiate($className, $classMetadata->properties);
-                        $this->objectFactory->write($entity, $propValues);
-                    }
-                } else {
-                    // Lock requested, if the entity already exists in the identity map, refresh it.
+                if ($refresh) {
+                    // If the entity already exists in the identity map, refresh it.
 
                     if ($entity === null) {
                         $entity = $this->objectFactory->instantiate($className, $classMetadata->properties);
@@ -257,6 +254,13 @@ class Gateway
                     }
 
                     $this->objectFactory->write($entity, $propValues);
+                } else {
+                    // Use the entity from the identity map if it exists.
+
+                    if ($entity === null) {
+                        $entity = $this->objectFactory->instantiate($className, $classMetadata->properties);
+                        $this->objectFactory->write($entity, $propValues);
+                    }
                 }
             } else {
                 // No identity map, always create a new entity.
