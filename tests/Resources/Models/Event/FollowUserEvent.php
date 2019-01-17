@@ -10,11 +10,6 @@ use Brick\ORM\Tests\Resources\Models\User;
 class FollowUserEvent extends Event
 {
     /**
-     * @var int
-     */
-    protected $id;
-
-    /**
      * @var User
      */
     protected $follower;

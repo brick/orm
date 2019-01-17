@@ -10,11 +10,6 @@ use Brick\ORM\Tests\Resources\Models\User;
 abstract class UserEvent extends Event
 {
     /**
-     * @var int
-     */
-    protected $id;
-
-    /**
      * @var User
      */
     protected $user;

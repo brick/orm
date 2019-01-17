@@ -34,7 +34,7 @@ class InheritanceTest extends AbstractTestCase
      * The full SQL to load a UserEvent or one of its subclasses.
      */
     private const LOAD_USER_EVENT_SQL =
-        'SELECT a.type, a.id, a.user_id, a.time, a.newAddress_street, a.newAddress_city, a.newAddress_zipcode, ' .
+        'SELECT a.type, a.user_id, a.id, a.time, a.newAddress_street, a.newAddress_city, a.newAddress_zipcode, ' .
         'a.newAddress_country_code, a.newAddress_isPoBox, a.newAddress_address_street, a.newAddress_address_city, ' .
         'a.newAddress_address_zipcode, a.newAddress_address_country_code, a.newAddress_address_isPoBox, ' .
         'ST_AsText(a.newAddress_location), ST_SRID(a.newAddress_location), a.newName FROM Event AS a WHERE a.id = ?';
@@ -114,8 +114,8 @@ class InheritanceTest extends AbstractTestCase
     {
         return [
             [Event::class, self::LOAD_EVENT_SQL],
-            [Event\CountryEvent::class, 'SELECT a.type, a.id, a.country_code, a.time, a.newName FROM Event AS a WHERE a.id = ?'],
-            [Event\CountryEvent\CreateCountryEvent::class, 'SELECT a.type, a.id, a.country_code, a.time FROM Event AS a WHERE a.id = ?'],
+            [Event\CountryEvent::class, 'SELECT a.type, a.country_code, a.id, a.time, a.newName FROM Event AS a WHERE a.id = ?'],
+            [Event\CountryEvent\CreateCountryEvent::class, 'SELECT a.type, a.country_code, a.id, a.time FROM Event AS a WHERE a.id = ?'],
         ];
     }
 
@@ -270,7 +270,7 @@ class InheritanceTest extends AbstractTestCase
         $this->assertSame('FR', $event->getCountry()->getCode());
 
         $expectedQuery =
-            'SELECT a.type, a.id, a.country_code, a.time, a.newName FROM Event AS a ' .
+            'SELECT a.type, a.country_code, a.id, a.time, a.newName FROM Event AS a ' .
             'INNER JOIN Country AS b ON a.country_code = b.code WHERE a.id = ? AND b.name = ?';
 
         $this->assertDebugStatementCount(1);
@@ -355,8 +355,8 @@ class InheritanceTest extends AbstractTestCase
     {
         return [
             [Event::class, self::LOAD_EVENT_SQL],
-            [Event\CountryEvent::class, 'SELECT a.type, a.id, a.country_code, a.time, a.newName FROM Event AS a WHERE a.id = ?'],
-            [Event\CountryEvent\EditCountryNameEvent::class, 'SELECT a.type, a.newName, a.id, a.country_code, a.time FROM Event AS a WHERE a.id = ?'],
+            [Event\CountryEvent::class, 'SELECT a.type, a.country_code, a.id, a.time, a.newName FROM Event AS a WHERE a.id = ?'],
+            [Event\CountryEvent\EditCountryNameEvent::class, 'SELECT a.type, a.newName, a.country_code, a.id, a.time FROM Event AS a WHERE a.id = ?'],
         ];
     }
 
@@ -503,7 +503,7 @@ class InheritanceTest extends AbstractTestCase
         return [
             [Event::class, self::LOAD_EVENT_SQL],
             [Event\UserEvent::class, self::LOAD_USER_EVENT_SQL],
-            [Event\UserEvent\CreateUserEvent::class, 'SELECT a.type, a.id, a.user_id, a.time FROM Event AS a WHERE a.id = ?'],
+            [Event\UserEvent\CreateUserEvent::class, 'SELECT a.type, a.user_id, a.id, a.time FROM Event AS a WHERE a.id = ?'],
         ];
     }
 
@@ -629,7 +629,7 @@ class InheritanceTest extends AbstractTestCase
         return [
             [Event::class, self::LOAD_EVENT_SQL],
             [Event\UserEvent::class, self::LOAD_USER_EVENT_SQL],
-            [Event\UserEvent\EditUserNameEvent::class, 'SELECT a.type, a.newName, a.id, a.user_id, a.time FROM Event AS a WHERE a.id = ?'],
+            [Event\UserEvent\EditUserNameEvent::class, 'SELECT a.type, a.newName, a.user_id, a.id, a.time FROM Event AS a WHERE a.id = ?'],
         ];
     }
 

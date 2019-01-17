@@ -10,11 +10,6 @@ use Brick\ORM\Tests\Resources\Models\Country;
 abstract class CountryEvent extends Event
 {
     /**
-     * @var int
-     */
-    protected $id;
-
-    /**
      * @var Country
      */
     protected $country;
