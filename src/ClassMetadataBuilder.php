@@ -141,11 +141,19 @@ class ClassMetadataBuilder
             $classMetadata->propertyMappings[$propertyName] = $propertyMapping;
         }
 
-        // Enforce identities that ultimately map to int or string properties.
+        // Enforce non-nullable identities, that ultimately map to int or string properties.
         // We need this guarantee for our identity map, and other types do not make much sense anyway.
 
         foreach ($classMetadata->idProperties as $idProperty) {
             $propertyMapping = $classMetadata->propertyMappings[$idProperty];
+
+            if ($propertyMapping->isNullable()) {
+                throw new \LogicException(sprintf(
+                    'Identity property %s::$%s must not be nullable.',
+                    $classMetadata->className,
+                    $idProperty
+                ));
+            }
 
             if ($propertyMapping instanceof IntMapping) {
                 continue;
