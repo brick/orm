@@ -98,6 +98,7 @@ class ClassMetadataBuilder
         }
 
         $classMetadata->discriminatorMap = $entityConfiguration->getDiscriminatorMap();
+        $classMetadata->inverseDiscriminatorMap = array_flip($classMetadata->discriminatorMap);
 
         $classMetadata->childClasses = [];
 

@@ -185,9 +185,8 @@ class EntityMapping implements PropertyMapping
             if ($entity === null) {
                 $result[] = ['NULL'];
             } else {
-                // @todo should have access to the target class' EntityMetadata::$discriminatorValue?
-                //       or EntityMetadata could have an inverse discriminator map?
-                $discriminatorValue = array_search(get_class($propValue), $this->classMetadata->discriminatorMap, true);
+                $class = get_class($propValue);
+                $discriminatorValue = $this->classMetadata->inverseDiscriminatorMap[$class];
                 $result[] = ['?', $discriminatorValue];
             }
         }

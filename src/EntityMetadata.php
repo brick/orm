@@ -39,6 +39,18 @@ class EntityMetadata extends ClassMetadata
     public $discriminatorMap;
 
     /**
+     * The inverse discriminator map.
+     *
+     * The keys are class names, the values are discriminator values (as string or int).
+     * If the entity is not part of an inheritance hierarchy, this will be an empty array.
+     *
+     * This property is set, and is the same, for all classes in the inheritance hiearchy.
+     *
+     * @var array
+     */
+    public $inverseDiscriminatorMap;
+
+    /**
      * The root entity class name.
      *
      * If the entity is not part of an inheritance hierarchy, or is itself the root of the hierarchy, this will be the
