@@ -4,6 +4,10 @@ declare(strict_types=1);
 
 namespace Brick\ORM;
 
+use Brick\ORM\PropertyMapping\EntityMapping;
+use Brick\ORM\PropertyMapping\IntMapping;
+use Brick\ORM\PropertyMapping\StringMapping;
+
 /**
  * Builds ClassMetadata instances for all entities.
  */
@@ -74,6 +78,8 @@ class ClassMetadataBuilder
      * @param EntityConfiguration $entityConfiguration
      *
      * @return void
+     *
+     * @throws \LogicException
      */
     private function fillEntityMetadata(EntityMetadata $classMetadata, string $className, EntityConfiguration $entityConfiguration) : void
     {
@@ -133,6 +139,33 @@ class ClassMetadataBuilder
         foreach ($persistentProperties as $propertyName) {
             $propertyMapping = $entityConfiguration->getPropertyMapping($className, $propertyName, $this->entityMetadata, $this->embeddableMetadata);
             $classMetadata->propertyMappings[$propertyName] = $propertyMapping;
+        }
+
+        // Enforce identities that ultimately map to int or string properties.
+        // We need this guarantee for our identity map, and other types do not make much sense anyway.
+
+        foreach ($classMetadata->idProperties as $idProperty) {
+            $propertyMapping = $classMetadata->propertyMappings[$idProperty];
+
+            if ($propertyMapping instanceof IntMapping) {
+                continue;
+            }
+
+            if ($propertyMapping instanceof StringMapping) {
+                continue;
+            }
+
+            if ($propertyMapping instanceof EntityMapping) {
+                continue;
+            }
+
+            throw new \LogicException(sprintf(
+                'Identity property %s::$%s uses an unsupported mapping type %s. ' .
+                'Identities must ultimately map to int or string properties.',
+                $classMetadata->className,
+                $idProperty,
+                get_class($propertyMapping)
+            ));
         }
     }
 
