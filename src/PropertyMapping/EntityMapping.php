@@ -191,20 +191,26 @@ class EntityMapping implements PropertyMapping
             }
         }
 
+        $idProperties = $this->classMetadata->idProperties;
+
+        $identity = [];
+
         if ($entity !== null) {
-            $r = new \ReflectionObject($entity);
+            (function() use ($idProperties, & $identity) {
+                foreach ($idProperties as $prop) {
+                    $identity[$prop] = $this->{$prop};
+                }
+            })->bindTo($entity, $entity)();
+        } else {
+            foreach ($idProperties as $prop) {
+                $identity[$prop] = null;
+            }
         }
 
-        foreach ($this->classMetadata->idProperties as $prop) {
-            if ($entity === null) {
-                $idPropValue = null;
-            } else {
-                $p = $r->getProperty($prop);
-                $p->setAccessible(true);
-                $idPropValue = $p->getValue($entity);
-            }
+        foreach ($idProperties as $prop) {
+            $propertyMapping = $this->classMetadata->propertyMappings[$prop];
 
-            foreach ($this->classMetadata->propertyMappings[$prop]->convertPropToFields($idPropValue) as $expressionAndValues) {
+            foreach ($propertyMapping->convertPropToFields($identity[$prop]) as $expressionAndValues) {
                 $result[] = $expressionAndValues;
             }
         }
