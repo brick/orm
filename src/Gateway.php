@@ -241,8 +241,10 @@ class Gateway
                         );
                     }
 
-                    $identity[] = $propValues[$idProperty];
+                    $identity[$idProperty] = $propValues[$idProperty];
                 }
+
+                $identity = $this->getScalarIdentity($classMetadata, $identity);
 
                 // Get the existing entity from the identity map, if any.
                 $entity = $this->identityMap->get($classMetadata->rootClassName, $identity);
@@ -630,18 +632,14 @@ class Gateway
     {
         $classMetadata = $this->classMetadata[$class];
 
-        if (array_keys($id) !== $classMetadata->idProperties) {
-            // @todo a map in an incorrect order should be allowed: attempt to reorder keys.
-            // @todo custom exception.
-            throw new \Exception('Invalid identity.');
-        }
+        $scalarId = $this->getScalarIdentity($classMetadata, $id);
 
         if ($this->identityMap !== null) {
-            $entity = $this->identityMap->get($classMetadata->rootClassName, $id);
+            $entity = $this->identityMap->get($classMetadata->rootClassName, $scalarId);
 
             if ($entity === null) {
                 $entity = $this->instantiate($classMetadata, $class, $id);
-                $this->identityMap->set($classMetadata->rootClassName, $id, $entity);
+                $this->identityMap->set($classMetadata->rootClassName, $scalarId, $entity);
             } elseif (! $entity instanceof $class) {
                 // Consistency check: if we request a subclass of rootClassName, and the object in the identity map
                 // is not an instance of the subclass.
@@ -805,9 +803,11 @@ class Gateway
         if ($this->identityMap !== null) {
             if ($identity === null) {
                 foreach ($classMetadata->idProperties as $idProperty) {
-                    $identity[] = $propValues[$idProperty];
+                    $identity[$idProperty] = $propValues[$idProperty];
                 }
             }
+
+            $identity = $this->getScalarIdentity($classMetadata, $identity);
 
             $this->identityMap->set($classMetadata->rootClassName, $identity, $entity);
         }
@@ -996,5 +996,31 @@ class Gateway
         }
 
         return $identity;
+    }
+
+    /**
+     * Returns the identity of the given identity, as a list of scalar values.
+     *
+     * The scalar values are integers or strings.
+     *
+     * @param EntityMetadata $classMetadata The entity class metadata.
+     * @param array          $identity      The object's identity, as a map of property name to value.
+     *                                      Must contain a valid entry for each identity property.
+     *
+     * @return array The identity, as a list of scalar values.
+     */
+    private function getScalarIdentity(EntityMetadata $classMetadata, array $identity) : array
+    {
+        $result = [];
+
+        foreach ($classMetadata->idProperties as $idProperty) {
+            $propertyMapping = $classMetadata->propertyMappings[$idProperty];
+
+            foreach ($propertyMapping->convertPropToFields($identity[$idProperty]) as $expressionAndValues) {
+                $result[] = array_slice($expressionAndValues, 1);
+            }
+        }
+
+        return array_merge(...$result);
     }
 }

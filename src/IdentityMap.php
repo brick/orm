@@ -9,9 +9,9 @@ namespace Brick\ORM;
  *
  * For performance reasons, no consistency checks are performed. In particular, it is assumed that:
  *
- * - identity arrays contain integers, strings and objects (other entities) only;
- * - multiple calls to set() and get() for a given class name always contain the same number and type of elements for
- *   the identity, and always in the same order.
+ * - identity arrays contain integers and strings only;
+ * - multiple calls to set() and get() for a given class name always contain the same number of elements for the
+ *   identity, and always in the same order.
  *
  * These conditions must always be met by the ORM classes that consume the identity map.
  * Failure to meet these conditions would result in PHP errors.
@@ -29,7 +29,7 @@ class IdentityMap
      * Retrieves an entity from the identity map.
      *
      * @param string $class    The root entity class name.
-     * @param array  $identity The list of values that form the entity's identity.
+     * @param array  $identity The list of scalar values that form the entity's identity.
      *
      * @return object|null The entity, or null if not found.
      */
@@ -38,10 +38,6 @@ class IdentityMap
         $ref = & $this->entities[$class];
 
         foreach ($identity as $key) {
-            if (is_object($key)) {
-                $key = spl_object_id($key);
-            }
-
             $ref = & $ref[$key];
         }
 
@@ -55,7 +51,7 @@ class IdentityMap
      * If another entity already exists under this identity, an exception is thrown.
      *
      * @param string $class    The root entity class name.
-     * @param array  $identity The list of values that form the entity's identity.
+     * @param array  $identity The list of scalar values that form the entity's identity.
      * @param object $entity   The entity to add.
      *
      * @return void
@@ -65,10 +61,6 @@ class IdentityMap
         $ref = & $this->entities[$class];
 
         foreach ($identity as $key) {
-            if (is_object($key)) {
-                $key = spl_object_id($key);
-            }
-
             $ref = & $ref[$key];
         }
 
