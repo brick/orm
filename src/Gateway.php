@@ -1001,26 +1001,33 @@ class Gateway
     /**
      * Returns the identity of the given identity, as a list of scalar values.
      *
-     * The scalar values are integers or strings.
-     *
      * @param EntityMetadata $classMetadata The entity class metadata.
      * @param array          $identity      The object's identity, as a map of property name to value.
      *                                      Must contain a valid entry for each identity property.
      *
-     * @return array The identity, as a list of scalar values.
+     * @return array The identity, as a list of int or string values.
      */
     private function getScalarIdentity(EntityMetadata $classMetadata, array $identity) : array
     {
         $result = [];
 
         foreach ($classMetadata->idProperties as $idProperty) {
+            $value = $identity[$idProperty];
             $propertyMapping = $classMetadata->propertyMappings[$idProperty];
 
-            foreach ($propertyMapping->convertPropToFields($identity[$idProperty]) as $expressionAndValues) {
-                $result[] = array_slice($expressionAndValues, 1);
+            if ($propertyMapping instanceof EntityMapping) {
+                $targetClassMetadata = $propertyMapping->classMetadata;
+                $targetId = $this->getIdentity($targetClassMetadata->className, $value);
+
+                foreach ($this->getScalarIdentity($targetClassMetadata, $targetId) as $value) {
+                    $result[] = $value;
+                }
+            } else {
+                // This is guaranteed to be a IntMapping or StringMapping, we can use the value directly.
+                $result[] = $value;
             }
         }
 
-        return array_merge(...$result);
+        return $result;
     }
 }
