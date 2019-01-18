@@ -193,7 +193,8 @@ class Gateway
      *
      * @return void
      *
-     * @throws \RuntimeException If the entity has no identity, or is not found. @todo custom exceptions.
+     * @throws Exception\NoIdentityException     If the entity has no identity.
+     * @throws Exception\EntityNotFoundException If the entity is not found in the database.
      */
     public function hydrate(object $entity, int $lockMode = LockMode::NONE, string ...$props) : void
     {
@@ -203,7 +204,9 @@ class Gateway
         $values = $this->loadProps($class, $identity, $props, $lockMode);
 
         if ($values === null) {
-            throw new \RuntimeException('Entity not found.');
+            $scalarIdentity = $this->getScalarIdentity($this->classMetadata[$class], $identity);
+
+            throw Exception\EntityNotFoundException::entityNotFound($class, $scalarIdentity);
         }
 
         $this->objectFactory->write($entity, $values);
@@ -638,7 +641,7 @@ class Gateway
             $entity = $this->identityMap->get($classMetadata->rootClassName, $scalarId);
 
             if ($entity === null) {
-                $entity = $this->instantiate($classMetadata, $class, $id);
+                $entity = $this->instantiate($classMetadata, $id, $scalarId);
                 $this->identityMap->set($classMetadata->rootClassName, $scalarId, $entity);
             } elseif (! $entity instanceof $class) {
                 // Consistency check: if we request a subclass of rootClassName, and the object in the identity map
@@ -649,28 +652,28 @@ class Gateway
             return $entity;
         }
 
-        return $this->instantiate($classMetadata, $class, $id);
+        return $this->instantiate($classMetadata, $id, $scalarId);
     }
 
     /**
-     * @param EntityMetadata $classMetadata
-     * @param string         $class
-     * @param array          $id
+     * @param EntityMetadata $classMetadata The entity metadata.
+     * @param array          $id            The identity, as a map of property name to value.
+     * @param array          $scalarId      The identity, as a list of scalar values.
      *
      * @return object
      */
-    private function instantiate(EntityMetadata $classMetadata, string $class, array $id) : object
+    private function instantiate(EntityMetadata $classMetadata, array $id, array $scalarId) : object
     {
         if ($this->useProxies) {
-            // Returns a lazy-loading proxy, with the identity set and other properties lazy-loaded on first access.
+            // Return a lazy-loading proxy, with the identity set and other properties lazy-loaded on first access.
             $proxyClass = $classMetadata->proxyClassName;
 
-            return new $proxyClass($this, $id);
+            return new $proxyClass($this, $id, $scalarId);
         }
 
         // Return a partial object, with only the identity set.
 
-        $entity = $this->objectFactory->instantiate($class, $classMetadata->properties);
+        $entity = $this->objectFactory->instantiate($classMetadata->className, $classMetadata->properties);
         $this->objectFactory->write($entity, $id);
 
         return $entity;
@@ -978,7 +981,7 @@ class Gateway
      *
      * @return array The identity, as a map of property name to value.
      *
-     * @throws \RuntimeException
+     * @throws Exception\NoIdentityException If the entity has no identity.
      */
     private function getIdentity(string $class, object $entity) : array
     {
@@ -989,7 +992,7 @@ class Gateway
 
         foreach ($classMetadata->idProperties as $idProperty) {
             if (! isset($values[$idProperty])) {
-                throw new \RuntimeException('The entity has no identity.');
+                throw new Exception\NoIdentityException('The entity has no identity.');
             }
 
             $identity[$idProperty] = $values[$idProperty];
@@ -1006,6 +1009,8 @@ class Gateway
      *                                      Must contain a valid entry for each identity property.
      *
      * @return array The identity, as a list of int or string values.
+     *
+     * @throws Exception\NoIdentityException If an entity with no identity is part of the identity.
      */
     private function getScalarIdentity(EntityMetadata $classMetadata, array $identity) : array
     {
@@ -1023,7 +1028,7 @@ class Gateway
                     $result[] = $value;
                 }
             } else {
-                // This is guaranteed to be a IntMapping or StringMapping, we can use the value directly.
+                // This is guaranteed to be an IntMapping or StringMapping, we can use the value directly.
                 $result[] = $value;
             }
         }
