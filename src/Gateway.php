@@ -719,7 +719,8 @@ class Gateway
      * @return void
      *
      * @throws \RuntimeException
-     * @throws \Brick\Db\DbException If a database error occurs.
+     * @throws Exception\NoIdentityException If saving an entity with a non-autoincrement identity which is not set.
+     * @throws \Brick\Db\DbException         If a database error occurs.
      */
     public function save(object $entity) : void
     {
@@ -733,14 +734,13 @@ class Gateway
             foreach ($classMetadata->idProperties as $idProperty) {
                 if (isset($propValues[$idProperty])) {
                     // @todo custom exception
-                    throw new \RuntimeException('Cannot save() an entity with an autoincrement identity already set.');
+                    throw new \RuntimeException('Cannot save() an entity with an autoincrement identity already set. Use update() instead.');
                 }
             }
         } else {
             foreach ($classMetadata->idProperties as $idProperty) {
                 if (! isset($propValues[$idProperty])) {
-                    // @todo custom exception
-                    throw new \RuntimeException('Cannot save() an entity with a non-autoincrement identity not set.');
+                    throw new Exception\NoIdentityException('Cannot save() an entity with a non-autoincrement identity not set.');
                 }
             }
         }
@@ -829,7 +829,7 @@ class Gateway
      *
      * @return void
      *
-     * @throws \RuntimeException
+     * @throws Exception\NoIdentityException
      */
     public function update(object $entity, string ...$props) : void
     {
@@ -841,8 +841,7 @@ class Gateway
 
         foreach ($classMetadata->idProperties as $idProperty) {
             if (! isset($propValues[$idProperty])) {
-                // @todo custom exception
-                throw new \RuntimeException('Cannot update() an entity with no identity.');
+                throw new Exception\NoIdentityException('Cannot update() an entity with no identity.');
             }
         }
 
