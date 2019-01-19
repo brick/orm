@@ -79,18 +79,18 @@ class Gateway
      *
      * The arrays of fields and values must have the same number of elements.
      *
-     * @param string   $table  The table name.
-     * @param string[] $fields The list of field names.
-     * @param string[] $values The list of placeheld field values.
+     * @param string   $table       The table name.
+     * @param string[] $fields      The list of field names.
+     * @param string[] $expressions The list of SQL expressions.
      *
      * @return string
      */
-    private function getInsertSQL(string $table, array $fields, array $values) : string
+    private function getInsertSQL(string $table, array $fields, array $expressions) : string
     {
         $fields = implode(', ', $fields);
-        $values = implode(', ', $values);
+        $expressions = implode(', ', $expressions);
 
-        return sprintf('INSERT INTO %s (%s) VALUES (%s)', $table, $fields, $values);
+        return sprintf('INSERT INTO %s (%s) VALUES (%s)', $table, $fields, $expressions);
     }
 
     /**
@@ -746,12 +746,12 @@ class Gateway
         }
 
         $fieldNames = [];
-        $fieldValues = [];
+        $sqlExpressions = [];
         $outputValues = [];
 
         if ($classMetadata->discriminatorColumn !== null) {
             $fieldNames[] = $classMetadata->discriminatorColumn; // @todo quote field name
-            $fieldValues[] = '?';
+            $sqlExpressions[] = '?';
             $outputValues[] = $classMetadata->discriminatorValue;
         }
 
@@ -776,7 +776,7 @@ class Gateway
                 foreach ($expressionsAndOutputValues[$fieldNameIndex] as $index => $expressionOrValue) {
                     if ($index === 0) {
                         $fieldNames[] = $fieldName; // @todo quote field name
-                        $fieldValues[] = $expressionOrValue;
+                        $sqlExpressions[] = $expressionOrValue;
                     } else {
                         $outputValues[] = $expressionOrValue;
                     }
@@ -784,7 +784,7 @@ class Gateway
             }
         }
 
-        $sql = $this->getInsertSQL($classMetadata->tableName, $fieldNames, $fieldValues);
+        $sql = $this->getInsertSQL($classMetadata->tableName, $fieldNames, $sqlExpressions);
         $statement = $this->connection->prepare($sql);
         $statement->execute($outputValues);
 
