@@ -630,6 +630,8 @@ class Gateway
      * @param array  $id    The identity, as a map of property name to value.
      *
      * @return object
+     *
+     * @throws Exception\NoIdentityException If an entity with no identity is part of the given identity.
      */
     public function getReference(string $class, array $id) : object
     {
@@ -685,6 +687,8 @@ class Gateway
      * @param object $entity The entity to check.
      *
      * @return bool
+     *
+     * @throws Exception\NoIdentityException If the entity has no identity.
      */
     public function exists(object $entity) : bool
     {
@@ -1009,7 +1013,7 @@ class Gateway
      *
      * @return array The identity, as a list of int or string values.
      *
-     * @throws Exception\NoIdentityException If an entity with no identity is part of the identity.
+     * @throws Exception\NoIdentityException If an entity with no identity is part of the given identity.
      */
     private function getScalarIdentity(EntityMetadata $classMetadata, array $identity) : array
     {
