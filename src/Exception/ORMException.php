@@ -37,7 +37,7 @@ class ORMException extends \Exception
      * - 123
      * - [123, "ABC"]
      *
-     * @param array $scalarIdentity The scalar identity of the object. Must contain at least one entry.
+     * @param array $scalarIdentity The identity, as a list of scalar values. Must contain at least one entry.
      *                              Each entry must be an int or a string.
      *
      * @return string

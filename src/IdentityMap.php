@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Brick\ORM;
 
+use Brick\ORM\Exception\IdentityConflictException;
+
 /**
  * The identity map.
  *
@@ -55,6 +57,8 @@ class IdentityMap
      * @param object $entity   The entity to add.
      *
      * @return void
+     *
+     * @throws IdentityConflictException If another instance with the same identity already exists.
      */
     public function set(string $class, array $identity, object $entity) : void
     {
@@ -65,8 +69,7 @@ class IdentityMap
         }
 
         if ($ref !== null && $ref !== $entity) {
-            // @todo custom exception, better exception message
-            throw new \Exception('Two entities with the same identity conflict.');
+            throw IdentityConflictException::identityMapConflict($class, $identity);
         }
 
         $ref = $entity;
