@@ -252,23 +252,12 @@ class Gateway
                 // Get the existing entity from the identity map, if any.
                 $entity = $this->identityMap->get($classMetadata->rootClassName, $identity);
 
-                if ($refresh) {
-                    // If the entity already exists in the identity map, refresh it.
-
-                    if ($entity === null) {
-                        $entity = $this->objectFactory->instantiate($className, $classMetadata->properties);
-                        $this->identityMap->set($classMetadata->rootClassName, $identity, $entity);
-                    }
-
+                if ($entity === null) {
+                    $entity = $this->objectFactory->instantiate($className, $classMetadata->properties);
                     $this->objectFactory->write($entity, $propValues);
-                } else {
-                    // Use the entity from the identity map if it exists.
-
-                    if ($entity === null) {
-                        $entity = $this->objectFactory->instantiate($className, $classMetadata->properties);
-                        $this->identityMap->set($classMetadata->rootClassName, $identity, $entity);
-                        $this->objectFactory->write($entity, $propValues);
-                    }
+                    $this->identityMap->set($classMetadata->rootClassName, $identity, $entity);
+                } elseif ($refresh) {
+                    $this->objectFactory->write($entity, $propValues);
                 }
             } else {
                 // No identity map, always create a new entity.
