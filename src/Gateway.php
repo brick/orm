@@ -266,6 +266,7 @@ class Gateway
 
                     if ($entity === null) {
                         $entity = $this->objectFactory->instantiate($className, $classMetadata->properties);
+                        $this->identityMap->set($classMetadata->rootClassName, $identity, $entity);
                         $this->objectFactory->write($entity, $propValues);
                     }
                 }
