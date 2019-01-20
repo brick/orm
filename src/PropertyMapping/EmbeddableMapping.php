@@ -141,7 +141,7 @@ class EmbeddableMapping implements PropertyMapping
         $objectFactory = new ObjectFactory();
 
         // no need to unset persistent any props here, as we're always loading all values in the embeddable
-        $object = $objectFactory->instantiate($this->classMetadata->className, []);
+        $object = $objectFactory->instantiate($this->classMetadata);
         $objectFactory->write($object, $propValues);
 
         return $object;

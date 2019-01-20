@@ -24,40 +24,36 @@ class ObjectFactory
     /**
      * Instantiates an empty object, without calling the class constructor.
      *
-     * This aim of this method is to return an object whose *persistent* properties are not initialized.
+     * This method returns an object whose *persistent* properties are not initialized.
+     * Transient properties are still initialized to their default value, if any.
      *
-     * It must be called with the list of properties to unset: we cannot blindly unset() every single property in the
-     * class, as we should not unset() transient properties, if any; transient properties should keep their default
-     * value if they have one.
-     *
-     * This method is therefore aimed to be called with the list of persistent properties of the object. This list
-     * should ideally be pre-filtered to remove typed properties that have no default value, as unset() will have no
-     * effect on them, for even better performance.
-     *
-     * @param string   $class      The fully-qualified class name.
-     * @param string[] $unsetProps The list of properties to unset.
+     * @param ClassMetadata $classMetadata The class metadata of the entity or embeddable.
      *
      * @return object
      *
      * @throws \ReflectionException If the class does not exist.
      */
-    public function instantiate(string $class, array $unsetProps) : object
+    public function instantiate(ClassMetadata $classMetadata) : object
     {
-        if (isset($this->classes[$class])) {
-            $reflectionClass = $this->classes[$class];
+        $className = $classMetadata->className;
+
+        if (isset($this->classes[$className])) {
+            $reflectionClass = $this->classes[$className];
         } else {
-            $reflectionClass = $this->classes[$class] = new \ReflectionClass($class);
+            $reflectionClass = $this->classes[$className] = new \ReflectionClass($className);
         }
 
         $object = $reflectionClass->newInstanceWithoutConstructor();
 
-        if ($unsetProps) {
-            (function() use ($unsetProps) {
-                foreach ($unsetProps as $unsetProp) {
-                    unset($this->{$unsetProp});
-                }
-            })->bindTo($object, $class)();
-        }
+        // Unset persistent properties
+        // @todo PHP 7.4: for even better performance, only unset typed properties that have a default value,
+        //       as unset() will have no effect on those that have no default value (will require a new metadata prop).
+
+        (function() use ($classMetadata) {
+            foreach ($classMetadata->properties as $prop) {
+                unset($this->{$prop});
+            }
+        })->bindTo($object, $className)();
 
         return $object;
     }

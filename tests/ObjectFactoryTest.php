@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Brick\ORM\Tests;
 
+use Brick\ORM\EntityMetadata;
 use Brick\ORM\ObjectFactory;
 use Brick\ORM\Tests\Resources\Models\User;
 
@@ -25,8 +26,12 @@ class ObjectFactoryTest extends TestCase
 {
     public function testInstantiate()
     {
+        $testClassMetadata = new EntityMetadata();
+        $testClassMetadata->className = User::class;
+        $testClassMetadata->properties = [];
+
         $objectFactory = new ObjectFactory();
-        $user = $objectFactory->instantiate(User::class, []);
+        $user = $objectFactory->instantiate($testClassMetadata);
 
         $this->assertSame(User::class, get_class($user));
 
@@ -49,10 +54,14 @@ class ObjectFactoryTest extends TestCase
         ], $objectFactory->read($user));
     }
 
-    public function testInstantiateWithUnsetProps()
+    public function testInstantiateWithPersistentProps()
     {
+        $testClassMetadata = new EntityMetadata();
+        $testClassMetadata->className = User::class;
+        $testClassMetadata->properties = ['id', 'name', 'billingAddress', 'deliveryAddress', 'lastEvent'];
+
         $objectFactory = new ObjectFactory();
-        $user = $objectFactory->instantiate(User::class, ['id', 'name', 'billingAddress', 'deliveryAddress', 'lastEvent']);
+        $user = $objectFactory->instantiate($testClassMetadata);
 
         $this->assertSame(User::class, get_class($user));
 
@@ -71,8 +80,12 @@ class ObjectFactoryTest extends TestCase
             'name' => 'John'
         ];
 
+        $testClassMetadata = new EntityMetadata();
+        $testClassMetadata->className = User::class;
+        $testClassMetadata->properties = ['id', 'name', 'billingAddress', 'deliveryAddress', 'lastEvent'];
+
         $objectFactory = new ObjectFactory();
-        $user = $objectFactory->instantiate(User::class, ['id', 'name', 'billingAddress', 'deliveryAddress', 'lastEvent']);
+        $user = $objectFactory->instantiate($testClassMetadata);
         $objectFactory->write($user, $values);
 
         $this->assertSame(User::class, get_class($user));
