@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Brick\ORM;
 
 /**
- * Creates, reads and writes objects.
+ * Creates, reads and writes persistent objects.
  *
  * Important note: this does not aim to support private properties in parent classes.
  *
@@ -28,12 +28,13 @@ class ObjectFactory
      * Transient properties are still initialized to their default value, if any.
      *
      * @param ClassMetadata $classMetadata The class metadata of the entity or embeddable.
+     * @param array         $values        An optional map of property name to value to write.
      *
      * @return object
      *
      * @throws \ReflectionException If the class does not exist.
      */
-    public function instantiate(ClassMetadata $classMetadata) : object
+    public function instantiate(ClassMetadata $classMetadata, array $values = []) : object
     {
         $className = $classMetadata->className;
 
@@ -45,13 +46,17 @@ class ObjectFactory
 
         $object = $reflectionClass->newInstanceWithoutConstructor();
 
-        // Unset persistent properties
-        // @todo PHP 7.4: for even better performance, only unset typed properties that have a default value,
-        //       as unset() will have no effect on those that have no default value (will require a new metadata prop).
-
-        (function() use ($classMetadata) {
+        (function() use ($classMetadata, $values) {
+            // Unset persistent properties
+            // @todo PHP 7.4: for even better performance, only unset typed properties that have a default value, as
+            //       unset() will have no effect on those that have no default value (will require a new metadata prop).
             foreach ($classMetadata->properties as $prop) {
                 unset($this->{$prop});
+            }
+
+            // Set values
+            foreach ($values as $key => $value) {
+                $this->{$key} = $value;
             }
         })->bindTo($object, $className)();
 

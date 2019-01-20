@@ -138,13 +138,10 @@ class EmbeddableMapping implements PropertyMapping
             $propValues[$prop] = $propertyMapping->convertInputValuesToProp($gateway, $currentInputValues);
         }
 
+        // @todo keep an ObjectFactory cache.
         $objectFactory = new ObjectFactory();
 
-        // no need to unset persistent any props here, as we're always loading all values in the embeddable
-        $object = $objectFactory->instantiate($this->classMetadata);
-        $objectFactory->write($object, $propValues);
-
-        return $object;
+        return $objectFactory->instantiate($this->classMetadata, $propValues);
     }
 
     /**

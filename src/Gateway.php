@@ -253,16 +253,16 @@ class Gateway
                 $entity = $this->identityMap->get($classMetadata->rootClassName, $identity);
 
                 if ($entity === null) {
-                    $entity = $this->objectFactory->instantiate($classMetadata);
-                    $this->objectFactory->write($entity, $propValues);
+                    // Entity not found in the identity map, create and add it.
+                    $entity = $this->objectFactory->instantiate($classMetadata, $propValues);
                     $this->identityMap->set($classMetadata->rootClassName, $identity, $entity);
                 } elseif ($refresh) {
+                    // Entity found in the identity map, but refresh is requested.
                     $this->objectFactory->write($entity, $propValues);
                 }
             } else {
                 // No identity map, always create a new entity.
-                $entity = $this->objectFactory->instantiate($classMetadata);
-                $this->objectFactory->write($entity, $propValues);
+                $entity = $this->objectFactory->instantiate($classMetadata, $propValues);
             }
 
             $entities[] = $entity;
@@ -665,10 +665,7 @@ class Gateway
 
         // Return a partial object, with only the identity set.
 
-        $entity = $this->objectFactory->instantiate($classMetadata);
-        $this->objectFactory->write($entity, $id);
-
-        return $entity;
+        return $this->objectFactory->instantiate($classMetadata, $id);
     }
 
     /**
