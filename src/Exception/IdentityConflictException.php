@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Brick\ORM\Exception;
 
 /**
- * Exception found when attempting when two instances with the same identity conflict.
+ * Exception thrown when attempting when two instances with the same identity conflict.
  */
 class IdentityConflictException extends ORMException
 {

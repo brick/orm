@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Brick\ORM\Exception;
 
 /**
- * Exception found when attempting to load an entity that does not exist in the database.
+ * Exception thrown when attempting to load an entity that does not exist in the database.
  *
  * This exception will typically be thrown when attempting to load a proxy, or manually hydrate an entity, whose
  * identity is not found in the database.
