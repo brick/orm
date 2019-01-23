@@ -161,7 +161,8 @@ class Gateway
      *
      * @return array|null The properties, or null if the entity doesn't exist.
      *
-     * @throws \RuntimeException If a property name does not exist.
+     * @throws \RuntimeException                     If a property name does not exist.
+     * @throws Exception\UnknownEntityClassException If the class name is not a valid entity class.
      */
     public function loadProps(string $class, array $id, array $props, int $lockMode = LockMode::NONE) : ?array
     {
@@ -193,12 +194,13 @@ class Gateway
      *
      * @return void
      *
-     * @throws Exception\NoIdentityException     If the entity has no identity.
-     * @throws Exception\EntityNotFoundException If the entity is not found in the database.
+     * @throws Exception\UnknownEntityClassException If the object is not a valid entity.
+     * @throws Exception\NoIdentityException         If the entity has no identity.
+     * @throws Exception\EntityNotFoundException     If the entity is not found in the database.
      */
     public function hydrate(object $entity, int $lockMode = LockMode::NONE, string ...$props) : void
     {
-        $class = get_class($entity);
+        $class = $this->getEntityClass($entity);
         $identity = $this->getIdentity($class, $entity);
 
         $values = $this->loadProps($class, $identity, $props, $lockMode);
@@ -223,6 +225,8 @@ class Gateway
      *                            By default, LockMode::NONE does not refresh entities, while other lock modes do.
      *
      * @return object[]
+     *
+     * @throws Exception\UnknownEntityClassException If the query's class name is not a valid entity class.
      */
     public function find(Query $query, int $lockMode = LockMode::NONE, bool $forceRefresh = false) : array
     {
@@ -283,13 +287,15 @@ class Gateway
      * @param int   $lockMode The lock mode.
      *
      * @return array
+     *
+     * @throws Exception\UnknownEntityClassException If the query's class name is not a valid entity class.
      */
     private function doFind(Query $query, int $lockMode = LockMode::NONE) : array
     {
         $className = $query->getClassName();
 
         if (! isset($this->classMetadata[$className])) {
-            throw new \InvalidArgumentException(sprintf('%s is not a valid entity.', $className));
+            throw Exception\UnknownEntityClassException::unknownEntityClass($className);
         }
 
         $classMetadata = $this->classMetadata[$className];
@@ -675,11 +681,12 @@ class Gateway
      *
      * @return bool
      *
-     * @throws Exception\NoIdentityException If the entity has no identity.
+     * @throws Exception\UnknownEntityClassException If the object is not a valid entity.
+     * @throws Exception\NoIdentityException         If the entity has no identity.
      */
     public function exists(object $entity) : bool
     {
-        $class = get_class($entity);
+        $class = $this->getEntityClass($entity);
 
         return $this->existsIdentity($class, $this->getIdentity($class, $entity));
     }
@@ -710,12 +717,13 @@ class Gateway
      * @return void
      *
      * @throws \RuntimeException
-     * @throws Exception\NoIdentityException If saving an entity with a non-autoincrement identity which is not set.
-     * @throws \Brick\Db\DbException         If a database error occurs.
+     * @throws Exception\UnknownEntityClassException If the object is not a valid entity.
+     * @throws Exception\NoIdentityException         If saving an entity with a non-autoincrement identity which is not set.
+     * @throws \Brick\Db\DbException                 If a database error occurs.
      */
     public function save(object $entity) : void
     {
-        $class = get_class($entity);
+        $class = $this->getEntityClass($entity);
 
         $classMetadata = $this->classMetadata[$class];
 
@@ -820,11 +828,12 @@ class Gateway
      *
      * @return void
      *
-     * @throws Exception\NoIdentityException
+     * @throws Exception\UnknownEntityClassException If the object is not a valid entity.
+     * @throws Exception\NoIdentityException         If the entity has no identity.
      */
     public function update(object $entity, string ...$props) : void
     {
-        $class = get_class($entity);
+        $class = $this->getEntityClass($entity);
 
         $classMetadata = $this->classMetadata[$class];
 
@@ -920,10 +929,12 @@ class Gateway
      * @param object $entity The entity to remove.
      *
      * @return void
+     *
+     * @throws Exception\UnknownEntityClassException If the object is not a valid entity.
      */
     public function remove(object $entity) : void
     {
-        $class = get_class($entity);
+        $class = $this->getEntityClass($entity);
 
         $this->removeIdentity($class, $this->getIdentity($class, $entity));
     }
@@ -966,7 +977,7 @@ class Gateway
     }
 
     /**
-     * @param string $class  The entity class name.
+     * @param string $class  The entity class name. Must be validated.
      * @param object $entity The entity.
      *
      * @return array The identity, as a map of property name to value.
@@ -1024,5 +1035,29 @@ class Gateway
         }
 
         return $result;
+    }
+
+    /**
+     * Returns the FQCN of the given object.
+     *
+     * @param object $entity
+     *
+     * @return string
+     *
+     * @throws Exception\UnknownEntityClassException If the object is not a valid entity.
+     */
+    private function getEntityClass(object $entity) : string
+    {
+        if ($entity instanceof Proxy) {
+            $class = get_parent_class($entity);
+        } else {
+            $class = get_class($entity);
+        }
+
+        if (! isset($this->classMetadata[$class])) {
+            throw Exception\UnknownEntityClassException::unknownEntityClass($class);
+        }
+
+        return $class;
     }
 }
