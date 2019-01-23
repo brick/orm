@@ -163,6 +163,7 @@ class Gateway
      *
      * @throws \RuntimeException                     If a property name does not exist.
      * @throws Exception\UnknownEntityClassException If the class name is not a valid entity class.
+     * @throws Exception\UnknownPropertyException    If an unknown property is given.
      */
     public function loadProps(string $class, array $id, array $props, int $lockMode = LockMode::NONE) : ?array
     {
@@ -195,6 +196,7 @@ class Gateway
      * @return void
      *
      * @throws Exception\UnknownEntityClassException If the object is not a valid entity.
+     * @throws Exception\UnknownPropertyException    If an unknown property is given.
      * @throws Exception\NoIdentityException         If the entity has no identity.
      * @throws Exception\EntityNotFoundException     If the entity is not found in the database.
      */
@@ -227,6 +229,7 @@ class Gateway
      * @return object[]
      *
      * @throws Exception\UnknownEntityClassException If the query's class name is not a valid entity class.
+     * @throws Exception\UnknownPropertyException    If the query targets an unknown property.
      */
     public function find(Query $query, int $lockMode = LockMode::NONE, bool $forceRefresh = false) : array
     {
@@ -289,6 +292,7 @@ class Gateway
      * @return array
      *
      * @throws Exception\UnknownEntityClassException If the query's class name is not a valid entity class.
+     * @throws Exception\UnknownPropertyException    If the query targets an unknown property.
      */
     private function doFind(Query $query, int $lockMode = LockMode::NONE) : array
     {
@@ -503,6 +507,8 @@ class Gateway
      * Adds joins for the given property, returns the alias of the table to read from, and the property mapping.
      *
      * @todo Quick & dirty. Refactor.
+     *
+     * @throws Exception\UnknownPropertyException
      */
     private function addJoins(EntityMetadata $classMetadata, SelectQueryBuilder $selectBuilder, TableAliasGenerator $tableAliasGenerator, string $mainTableAlias, array & $tableAliases, string $dottedProperty) : array
     {
@@ -515,11 +521,11 @@ class Gateway
         foreach ($properties as $index => $property) {
             if (! $isEntityOrEmbeddable) {
                 // Requesting a child property of a non-entity or embeddable property
-                throw new \InvalidArgumentException(sprintf('%s is not a valid property for %s.', $dottedProperty, $classMetadata->className));
+                throw Exception\UnknownPropertyException::invalidDottedProperty($classMetadata->className, $dottedProperty);
             }
 
             if (! isset($currentClassMetadata->propertyMappings[$property])) {
-                throw new \InvalidArgumentException(sprintf('%s has no property named $%s.', $currentClassMetadata->className, $property));
+                throw Exception\UnknownPropertyException::unknownProperty($currentClassMetadata->className, $property);
             }
 
             $propertyMapping = $currentClassMetadata->propertyMappings[$property];
@@ -591,9 +597,11 @@ class Gateway
      * @param Query $query
      * @param int   $lockMode
      *
-     * @return object|null
+     * @return object|null The entity, or NULL if not found.
      *
      * @throws \Exception @todo NonUniqueResultException
+     * @throws Exception\UnknownEntityClassException If the query's class name is not a valid entity class.
+     * @throws Exception\UnknownPropertyException    If the query targets an unknown property.
      */
     public function findOne(Query $query, int $lockMode = LockMode::NONE) : ?object
     {
@@ -829,6 +837,7 @@ class Gateway
      * @return void
      *
      * @throws Exception\UnknownEntityClassException If the object is not a valid entity.
+     * @throws Exception\UnknownPropertyException    If an unknown property is given.
      * @throws Exception\NoIdentityException         If the entity has no identity.
      */
     public function update(object $entity, string ...$props) : void
@@ -853,9 +862,6 @@ class Gateway
             if (array_key_exists($prop, $propValues)) {
                 $values[$prop] = $propValues[$prop];
             }
-
-            // @todo exception if an unknown property is passed as a parameter?
-            //       this will be necessary if this method is part of the public API.
         }
 
         $id = [];
@@ -877,6 +883,8 @@ class Gateway
      * @param array  $id     A map of identity property name to value.
      *
      * @return void
+     *
+     * @throws Exception\UnknownPropertyException If an unknown property is given.
      */
     public function doUpdate(string $class, array $values, array $id) : void
     {
@@ -887,6 +895,10 @@ class Gateway
         $outputValues = [];
 
         foreach ($values as $prop => $value) {
+            if (! isset($classMetadata->propertyMappings[$prop])) {
+                throw Exception\UnknownPropertyException::unknownProperty($class, $prop);
+            }
+
             $propertyMapping = $classMetadata->propertyMappings[$prop];
             $expressionsAndOutputValues = $propertyMapping->convertPropToFields($value);
 
@@ -902,6 +914,7 @@ class Gateway
         }
 
         foreach ($id as $prop => $value) {
+            // @todo check identity if this method is going to stay as part of the public API
             $propertyMapping = $classMetadata->propertyMappings[$prop];
             $expressionsAndOutputValues = $propertyMapping->convertPropToFields($value);
 
