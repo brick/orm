@@ -594,14 +594,16 @@ class Gateway
     }
 
     /**
+     * Finds a single entity using a query object.
+     *
      * @param Query $query
      * @param int   $lockMode
      *
      * @return object|null The entity, or NULL if not found.
      *
-     * @throws \Exception @todo NonUniqueResultException
      * @throws Exception\UnknownEntityClassException If the query's class name is not a valid entity class.
      * @throws Exception\UnknownPropertyException    If the query targets an unknown property.
+     * @throws Exception\NonUniqueResultException    If the query returns more than one result.
      */
     public function findOne(Query $query, int $lockMode = LockMode::NONE) : ?object
     {
@@ -616,8 +618,7 @@ class Gateway
             return $entities[0];
         }
 
-        // @todo NonUniqueResultException
-        throw new \Exception(sprintf('The query returned %u results, expected at most 1.', $count));
+        throw Exception\NonUniqueResultException::nonUniqueResult($count);
     }
 
     /**
