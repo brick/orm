@@ -219,8 +219,6 @@ class Gateway
     /**
      * Finds entities using a query object.
      *
-     * @todo custom exceptions
-     *
      * @param Query $query        The query object.
      * @param int   $lockMode     The lock mode.
      * @param bool  $forceRefresh Whether to force refresh of entities when LockMode::NONE is provided.
@@ -245,6 +243,7 @@ class Gateway
 
                 foreach ($classMetadata->idProperties as $idProperty) {
                     if (! isset($propValues[$idProperty])) {
+                        // @todo custom exception
                         throw new \Exception(
                             'Object\'s identity must be retrieved when running with an identity map. ' .
                             'Please add "' . $idProperty . '" to loaded properties of "' . $className . '".'
@@ -315,8 +314,7 @@ class Gateway
 
             foreach ($props as $prop) {
                 if (! isset($classMetadata->propertyMappings[$prop])) {
-                    // @todo UnknownPropertyException
-                    throw new \RuntimeException(sprintf('The %s::$%s property does not exist or is transient.', $className, $prop));
+                    throw Exception\UnknownPropertyException::unknownProperty($className, $prop);
                 }
             }
         }
@@ -772,8 +770,8 @@ class Gateway
             $propertyMapping = $classMetadata->propertyMappings[$prop];
 
             // @todo workaround to avoid sending NULL values for non-initialized properties,
-            // such as an auto-increment id in a new object. Remove for PHP 7.4 when these fields will be
-            // uninitialized instead of null, and will be naturally skipped.
+            //       such as an auto-increment id in a new object. Remove for PHP 7.4 when these fields will be
+            //       uninitialized instead of null, and will be naturally skipped.
             if ($value === null && ! $propertyMapping->isNullable()) {
                 continue;
             }
