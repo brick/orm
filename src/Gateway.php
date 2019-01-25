@@ -162,7 +162,7 @@ class Gateway
      * @return array|null The properties, or null if the entity doesn't exist.
      *
      * @throws \RuntimeException                     If a property name does not exist.
-     * @throws Exception\UnknownEntityClassException If the class name is not a valid entity class.
+     * @throws Exception\UnknownEntityClassException If the class name is not a known entity class.
      * @throws Exception\UnknownPropertyException    If an unknown property is given.
      */
     public function loadProps(string $class, array $id, array $props, int $lockMode = LockMode::NONE) : ?array
@@ -195,7 +195,7 @@ class Gateway
      *
      * @return void
      *
-     * @throws Exception\UnknownEntityClassException If the object is not a valid entity.
+     * @throws Exception\UnknownEntityClassException If the object is not a known entity.
      * @throws Exception\UnknownPropertyException    If an unknown property is given.
      * @throws Exception\NoIdentityException         If the entity has no identity.
      * @throws Exception\EntityNotFoundException     If the entity is not found in the database.
@@ -226,7 +226,7 @@ class Gateway
      *
      * @return object[]
      *
-     * @throws Exception\UnknownEntityClassException If the query's class name is not a valid entity class.
+     * @throws Exception\UnknownEntityClassException If the query's class name is not a known entity class.
      * @throws Exception\UnknownPropertyException    If the query targets an unknown property.
      */
     public function find(Query $query, int $lockMode = LockMode::NONE, bool $forceRefresh = false) : array
@@ -290,7 +290,7 @@ class Gateway
      *
      * @return array
      *
-     * @throws Exception\UnknownEntityClassException If the query's class name is not a valid entity class.
+     * @throws Exception\UnknownEntityClassException If the query's class name is not a known entity class.
      * @throws Exception\UnknownPropertyException    If the query targets an unknown property.
      */
     private function doFind(Query $query, int $lockMode = LockMode::NONE) : array
@@ -599,7 +599,7 @@ class Gateway
      *
      * @return object|null The entity, or NULL if not found.
      *
-     * @throws Exception\UnknownEntityClassException If the query's class name is not a valid entity class.
+     * @throws Exception\UnknownEntityClassException If the query's class name is not a known entity class.
      * @throws Exception\UnknownPropertyException    If the query targets an unknown property.
      * @throws Exception\NonUniqueResultException    If the query returns more than one result.
      */
@@ -688,7 +688,7 @@ class Gateway
      *
      * @return bool
      *
-     * @throws Exception\UnknownEntityClassException If the object is not a valid entity.
+     * @throws Exception\UnknownEntityClassException If the object is not a known entity.
      * @throws Exception\NoIdentityException         If the entity has no identity.
      */
     public function exists(object $entity) : bool
@@ -724,7 +724,7 @@ class Gateway
      * @return void
      *
      * @throws \RuntimeException
-     * @throws Exception\UnknownEntityClassException If the object is not a valid entity.
+     * @throws Exception\UnknownEntityClassException If the object is not a known entity.
      * @throws Exception\NoIdentityException         If saving an entity with a non-autoincrement identity which is not set.
      * @throws \Brick\Db\DbException                 If a database error occurs.
      */
@@ -835,7 +835,7 @@ class Gateway
      *
      * @return void
      *
-     * @throws Exception\UnknownEntityClassException If the object is not a valid entity.
+     * @throws Exception\UnknownEntityClassException If the object is not a known entity.
      * @throws Exception\UnknownPropertyException    If an unknown property is given.
      * @throws Exception\NoIdentityException         If the entity has no identity.
      */
@@ -942,7 +942,7 @@ class Gateway
      *
      * @return void
      *
-     * @throws Exception\UnknownEntityClassException If the object is not a valid entity.
+     * @throws Exception\UnknownEntityClassException If the object is not a known entity.
      */
     public function remove(object $entity) : void
     {
@@ -1056,7 +1056,7 @@ class Gateway
      *
      * @return string
      *
-     * @throws Exception\UnknownEntityClassException If the object is not a valid entity.
+     * @throws Exception\UnknownEntityClassException If the object is not a known entity.
      */
     private function getEntityClass(object $entity) : string
     {
