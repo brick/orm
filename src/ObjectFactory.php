@@ -75,20 +75,9 @@ class ObjectFactory
      */
     public function read(object $object) : array
     {
-        $values = [];
-
-        foreach ((array) $object as $key => $value) {
-            // Remove the "\0*\0" in front of protected/private properties
-            $pos = strrpos($key, "\0");
-
-            if ($pos !== false) {
-                $key = substr($key, $pos + 1);
-            }
-
-            $values[$key] = $value;
-        }
-
-        return $values;
+        return (function() {
+            return get_object_vars($this);
+        })->bindTo($object, $object)();
     }
 
     /**
