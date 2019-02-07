@@ -183,8 +183,8 @@ class InheritanceTest extends AbstractTestCase
 
     /**
      * @depends testSaveCreateCountryEvent
-     * @expectedException \RuntimeException
-     * @expectedExceptionMessage The Brick\ORM\Tests\Resources\Models\Event::$country property does not exist or is transient.
+     * @expectedException \Brick\ORM\Exception\UnknownPropertyException
+     * @expectedExceptionMessage Class "Brick\ORM\Tests\Resources\Models\Event" has no persistent property named "country".
      *
      * @param int $eventId The ID of the event to load.
      *
