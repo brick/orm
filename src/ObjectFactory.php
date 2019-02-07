@@ -24,8 +24,9 @@ class ObjectFactory
     /**
      * Instantiates an empty object, without calling the class constructor.
      *
-     * This method returns an object whose *persistent* properties are not initialized.
+     * By default, this method returns an object whose *persistent* properties are not initialized.
      * Transient properties are still initialized to their default value, if any.
+     * Properties may be initialized by passing a map of property name to value.
      *
      * @param ClassMetadata $classMetadata The class metadata of the entity or embeddable.
      * @param array         $values        An optional map of property name to value to write.
