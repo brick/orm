@@ -36,7 +36,7 @@ class GeometryMapping implements PropertyMapping
     /**
      * {@inheritdoc}
      */
-    public function getType() : string
+    public function getType() : ?string
     {
         return Geometry::class;
     }

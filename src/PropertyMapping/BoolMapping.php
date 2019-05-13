@@ -14,7 +14,7 @@ class BoolMapping extends BuiltinTypeMapping
     /**
      * {@inheritdoc}
      */
-    public function getType() : string
+    public function getType() : ?string
     {
         return 'bool';
     }

@@ -86,7 +86,13 @@ if ($argc !== 2) {
             $identityProps = [];
 
             foreach ($classMetadata[$className]->idProperties as $idProperty) {
-                $identityProps[$idProperty] = $classMetadata[$className]->propertyMappings[$idProperty]->getType();
+                $type = $classMetadata[$className]->propertyMappings[$idProperty]->getType();
+
+                if ($type === null) {
+                    throw new \LogicException('An identity property cannot be mapped to a mixed type.');
+                }
+
+                $identityProps[$idProperty] = $type;
             }
 
             $builder->setIdentityProps($identityProps);
