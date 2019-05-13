@@ -90,7 +90,8 @@ abstract class AbstractTestCase extends TestCase
                 deliveryAddress_address_isPoBox TINYINT(1) NULL,
                 deliveryAddress_location GEOMETRY NULL,
                 lastEvent_type VARCHAR(30) NULL,
-                lastEvent_id INT(10) UNSIGNED NULL
+                lastEvent_id INT(10) UNSIGNED NULL,
+                data JSON NOT NULL
             )
         ');
 

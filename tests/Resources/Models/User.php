@@ -44,6 +44,13 @@ class User
     protected $lastEvent;
 
     /**
+     * A property mapped to JSON datatype.
+     *
+     * @var array
+     */
+    protected $data = ['any' => 'data'];
+
+    /**
      * A transient property, that should not be persisted.
      *
      * @var array
@@ -118,6 +125,14 @@ class User
     public function setDeliveryAddress(?GeoAddress $deliveryAddress) : void
     {
         $this->deliveryAddress = $deliveryAddress;
+    }
+
+    /**
+     * @return array
+     */
+    public function getData() : array
+    {
+        return $this->data;
     }
 
     /**

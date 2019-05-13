@@ -49,6 +49,16 @@ class Configuration
     private $transientProperties = [];
 
     /**
+     * A map of entity/embeddable class names to property names to PropertyMapping instances.
+     *
+     * The mappings are usually inferred from the PHP type, but can be overridden here.
+     * This is typically used to map a mixed/array type property to a JSON column.
+     *
+     * @var PropertyMapping[][]
+     */
+    private $customPropertyMappings = [];
+
+    /**
      * A map of entity/embeddable class names to property names to field names.
      *
      * @var string[][]
@@ -372,6 +382,8 @@ class Configuration
     }
 
     /**
+     * Adds a custom mapping that applies by default to all properties of the given type.
+     *
      * @param string $className       The mapped class name.
      * @param string $propertyMapping The PropertyMapping implementation class name.
      *
@@ -390,6 +402,32 @@ class Configuration
     public function getCustomMappings() : array
     {
         return $this->customMappings;
+    }
+
+    /**
+     * Adds a custom property mapping for a specific property of a given entity/embeddable class.
+     *
+     * @todo Naming of addCustomMapping() / setCustomPropertyMapping() is a bit confusing
+     *
+     * @param string          $class
+     * @param string          $property
+     * @param PropertyMapping $mapping
+     *
+     * @return Configuration
+     */
+    public function setCustomPropertyMapping(string $class, string $property, PropertyMapping $mapping) : Configuration
+    {
+        $this->customPropertyMappings[$class][$property] = $mapping;
+
+        return $this;
+    }
+
+    /**
+     * @return PropertyMapping[][]
+     */
+    public function getCustomPropertyMappings() : array
+    {
+        return $this->customPropertyMappings;
     }
 
     /**

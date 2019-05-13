@@ -48,7 +48,8 @@ class ProxyTest extends AbstractTestCase
         $this->assertDebugStatement(0,
             'SELECT a.id, a.name, a.street, a.city, a.zipcode, a.country_code, a.isPoBox, a.deliveryAddress_address_street, ' .
             'a.deliveryAddress_address_city, a.deliveryAddress_address_zipcode, a.deliveryAddress_address_country_code, ' .
-            'a.deliveryAddress_address_isPoBox, ST_AsText(a.deliveryAddress_location), ST_SRID(a.deliveryAddress_location), a.lastEvent_type, a.lastEvent_id ' .
+            'a.deliveryAddress_address_isPoBox, ST_AsText(a.deliveryAddress_location), ST_SRID(a.deliveryAddress_location), ' .
+            'a.lastEvent_type, a.lastEvent_id, a.data ' .
             'FROM User AS a WHERE a.id = ?',
             $userId
         );

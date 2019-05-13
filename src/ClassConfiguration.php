@@ -116,6 +116,12 @@ abstract class ClassConfiguration
             throw new \InvalidArgumentException(sprintf('Cannot return property mapping for unknown or non-persistent property %s::$%s.', $className, $propertyName));
         }
 
+        $customPropertyMappings = $this->configuration->getCustomPropertyMappings();
+
+        if (isset($customPropertyMappings[$className][$propertyName])) {
+            return $customPropertyMappings[$className][$propertyName];
+        }
+
         $propertyType = $this->propertyTypeChecker->getPropertyType(new \ReflectionProperty($className, $propertyName));
 
         $fieldNames = $this->configuration->getFieldNames();
@@ -132,16 +138,19 @@ abstract class ClassConfiguration
                 case 'bool':
                     return new PropertyMapping\BoolMapping($fieldName, $propertyType->isNullable);
 
+                case 'array':
+                    throw new \LogicException(sprintf('Cannot persist type "array" in %s::$%s; you can store an array as JSON if you wish, by configuring a custom JsonMapping instance.', $className, $propertyName));
+
                 default:
                     throw new \LogicException(sprintf('Cannot persist type "%s" in %s::$%s.', $propertyType->type, $className, $propertyName));
             }
         }
 
-        $customPropertyMappings = $this->configuration->getCustomMappings();
+        $customMappings = $this->configuration->getCustomMappings();
 
-        if (isset($customPropertyMappings[$propertyType->type])) {
+        if (isset($customMappings[$propertyType->type])) {
             // @todo for now this only works with a single field name/prefix, and fixed constructor
-            return new $customPropertyMappings[$propertyType->type]($fieldName, $propertyType->isNullable);
+            return new $customMappings[$propertyType->type]($fieldName, $propertyType->isNullable);
         }
 
         $fieldNamePrefixes = $this->configuration->getFieldNamePrefixes();
@@ -155,6 +164,6 @@ abstract class ClassConfiguration
             return new PropertyMapping\EmbeddableMapping($embeddableMetadata[$propertyType->type], $fieldNamePrefix, $propertyType->isNullable);
         }
 
-        throw new \LogicException(sprintf('Type %s of %s::$%s is not an entity or embeddable.', $propertyType->type, $className, $propertyName));
+        throw new \LogicException(sprintf('Type %s of %s::$%s is not an entity or embeddable, and has no custom mapping defined.', $propertyType->type, $className, $propertyName));
     }
 }

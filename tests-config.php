@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Brick\ORM\PropertyMapping\JsonMapping;
 use Brick\ORM\Tests\Resources\Models;
 
 return (function() {
@@ -50,6 +51,8 @@ return (function() {
     // Override field names / prefixes
     $config->setFieldName(Models\Address::class, 'postcode', 'zipcode');
     $config->setFieldNamePrefix(Models\User::class, 'billingAddress', '');
+
+    $config->setCustomPropertyMapping(Models\User::class, 'data', new JsonMapping('data', false, true));
 
     return $config;
 })();

@@ -41,6 +41,7 @@ class ObjectFactoryTest extends TestCase
             "\0*\0billingAddress" => null,
             "\0*\0deliveryAddress" => null,
             "\0*\0lastEvent" => null,
+            "\0*\0data" => ['any' => 'data'],
             "\0*\0transient" => []
         ], (array) $user);
 
@@ -50,6 +51,7 @@ class ObjectFactoryTest extends TestCase
             'billingAddress' => null,
             'deliveryAddress' => null,
             'lastEvent' => null,
+            'data' => ['any' => 'data'],
             'transient' => []
         ], $objectFactory->read($user));
     }
@@ -58,7 +60,7 @@ class ObjectFactoryTest extends TestCase
     {
         $testClassMetadata = new EntityMetadata();
         $testClassMetadata->className = User::class;
-        $testClassMetadata->properties = ['id', 'name', 'billingAddress', 'deliveryAddress', 'lastEvent'];
+        $testClassMetadata->properties = ['id', 'name', 'billingAddress', 'deliveryAddress', 'lastEvent', 'data'];
 
         $objectFactory = new ObjectFactory();
         $user = $objectFactory->instantiate($testClassMetadata);
@@ -82,7 +84,7 @@ class ObjectFactoryTest extends TestCase
 
         $testClassMetadata = new EntityMetadata();
         $testClassMetadata->className = User::class;
-        $testClassMetadata->properties = ['id', 'name', 'billingAddress', 'deliveryAddress', 'lastEvent'];
+        $testClassMetadata->properties = ['id', 'name', 'billingAddress', 'deliveryAddress', 'lastEvent', 'data'];
 
         $objectFactory = new ObjectFactory();
         $user = $objectFactory->instantiate($testClassMetadata);
