@@ -169,21 +169,16 @@ class SelectQueryBuilder
 
         $query .= $this->limit;
 
-        // @todo MySQL / PostgreSQL only
-        switch ($this->lockMode) {
-            case LockMode::NONE:
-                break;
+        // @todo lock mode syntax is MySQL / PostgreSQL only
 
-            case LockMode::READ:
-                $query .= ' FOR SHARE';
-                break;
+        if ($this->lockMode & LockMode::READ) {
+            $query .= ' FOR SHARE';
+        } elseif ($this->lockMode & LockMode::WRITE) {
+            $query .= ' FOR UPDATE';
+        }
 
-            case LockMode::WRITE:
-                $query .= ' FOR UPDATE';
-                break;
-
-            default:
-                throw new \InvalidArgumentException('Invalid lock mode.');
+        if ($this->lockMode & LockMode::SKIP_LOCKED) {
+            $query .= ' SKIP LOCKED';
         }
 
         return $query;

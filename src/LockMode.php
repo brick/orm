@@ -29,4 +29,9 @@ class LockMode
      * If the entities already exist in the identity map, they are refreshed, overwriting any in-memory changes.
      */
     public const WRITE = 2;
+
+    /**
+     * Skips already locked entities. This must be OR'ed with READ or WRITE.
+     */
+    public const SKIP_LOCKED = 4;
 }

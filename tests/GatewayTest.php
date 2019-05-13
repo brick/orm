@@ -232,4 +232,33 @@ class GatewayTest extends AbstractTestCase
             $userId
         );
     }
+
+    /**
+     * @dataProvider providerLoadWithLock
+     *
+     * @param int    $lockMode
+     * @param string $sqlSuffix
+     *
+     * @return void
+     */
+    public function testLoadWithLock(int $lockMode, string $sqlSuffix) : void
+    {
+        self::$countryRepository->load('XX', $lockMode);
+
+        $this->assertDebugStatementCount(1);
+        $this->assertDebugStatement(0, 'SELECT a.code, a.name FROM Country AS a WHERE a.code = ? ' . $sqlSuffix, 'XX');
+    }
+
+    /**
+     * @return array
+     */
+    public function providerLoadWithLock() : array
+    {
+        return [
+            [LockMode::READ, 'FOR SHARE'],
+            [LockMode::WRITE, 'FOR UPDATE'],
+            [LockMode::READ | LockMode::SKIP_LOCKED, 'FOR SHARE SKIP LOCKED'],
+            [LockMode::WRITE | LockMode::SKIP_LOCKED, 'FOR UPDATE SKIP LOCKED'],
+        ];
+    }
 }
