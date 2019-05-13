@@ -2,11 +2,14 @@
 
 declare(strict_types=1);
 
+use Brick\ORM\Configuration;
 use Brick\ORM\PropertyMapping\JsonMapping;
+use Brick\ORM\Tests\Resources\Mappings;
 use Brick\ORM\Tests\Resources\Models;
+use Brick\ORM\Tests\Resources\Objects;
 
 return (function() {
-    $config = new \Brick\ORM\Configuration();
+    $config = new Configuration();
 
     $config->setRepositoryNamespace('Brick\ORM\Tests\Generated\Repository');
     $config->setRepositoryDir(__DIR__ . '/tests/Generated/Repository');
@@ -43,7 +46,7 @@ return (function() {
     $config->addEmbeddable(Models\Address::class);
     $config->addEmbeddable(Models\GeoAddress::class);
 
-    $config->addCustomMapping(\Brick\ORM\Tests\Resources\Objects\Geometry::class, \Brick\ORM\Tests\Resources\Mappings\GeometryMapping::class);
+    $config->addCustomMapping(Objects\Geometry::class, Mappings\GeometryMapping::class);
 
     // Set transient properties
     $config->setTransientProperties(Models\User::class, 'transient');
