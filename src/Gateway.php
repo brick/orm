@@ -129,14 +129,14 @@ class Gateway
      *
      * @param string $class    The entity class name.
      * @param array  $id       The identity, as a map of property name to value.
-     * @param int    $lockMode The lock mode.
+     * @param int    $options  A bitmask of options to use.
      * @param string ...$props An optional array of property names to load.
      *
      * @return object|null The entity, or null if it doesn't exist.
      *
      * @throws \RuntimeException If a property name does not exist.
      */
-    public function load(string $class, array $id, int $lockMode, string ...$props) : ?object
+    public function load(string $class, array $id, int $options = 0, string ...$props) : ?object
     {
         $query = new Query($class);
 
@@ -148,7 +148,7 @@ class Gateway
             $query->addPredicate($prop, '=', $value);
         }
 
-        return $this->findOne($query, $lockMode);
+        return $this->findOne($query, $options);
     }
 
     /**
@@ -157,7 +157,7 @@ class Gateway
      * @param string   $class    The entity class name.
      * @param array    $id       The identity, as a map of property name to value.
      * @param string[] $props    The list of property names to load.
-     * @param int      $lockMode The lock mode to use.
+     * @param int      $options  A bitmask of options to use.
      *
      * @return array|null The properties, or null if the entity doesn't exist.
      *
@@ -165,7 +165,7 @@ class Gateway
      * @throws Exception\UnknownEntityClassException If the class name is not a known entity class.
      * @throws Exception\UnknownPropertyException    If an unknown property is given.
      */
-    public function loadProps(string $class, array $id, array $props, int $lockMode = LockMode::NONE) : ?array
+    public function loadProps(string $class, array $id, array $props, int $options = 0) : ?array
     {
         $query = new Query($class);
         $query->setProperties(...$props);
@@ -174,7 +174,7 @@ class Gateway
             $query->addPredicate($prop, '=', $value);
         }
 
-        $result = $this->doFind($query, $lockMode);
+        $result = $this->doFind($query, $options);
 
         if (! $result) {
             return null;
@@ -190,7 +190,7 @@ class Gateway
      * By default, all properties are loaded. If a list of properties if given, only these properties will be loaded.
      *
      * @param object $entity   The entity to hydrate.
-     * @param int    $lockMode The lock mode.
+     * @param int    $options  A bitmask of options to use.
      * @param string ...$props An optional list of properties to hydrate.
      *
      * @return void
@@ -200,12 +200,12 @@ class Gateway
      * @throws Exception\NoIdentityException         If the entity has no identity.
      * @throws Exception\EntityNotFoundException     If the entity is not found in the database.
      */
-    public function hydrate(object $entity, int $lockMode = LockMode::NONE, string ...$props) : void
+    public function hydrate(object $entity, int $options = 0, string ...$props) : void
     {
         $class = $this->getEntityClass($entity);
         $identity = $this->getIdentity($class, $entity);
 
-        $values = $this->loadProps($class, $identity, $props, $lockMode);
+        $values = $this->loadProps($class, $identity, $props, $options);
 
         if ($values === null) {
             $scalarIdentity = $this->getScalarIdentity($this->classMetadata[$class], $identity);
@@ -219,23 +219,21 @@ class Gateway
     /**
      * Finds entities using a query object.
      *
-     * @param Query $query        The query object.
-     * @param int   $lockMode     The lock mode.
-     * @param bool  $forceRefresh Whether to force refresh of entities when LockMode::NONE is provided.
-     *                            By default, LockMode::NONE does not refresh entities, while other lock modes do.
+     * @param Query $query   The query object.
+     * @param int   $options A bitmask of options to use.
      *
      * @return object[]
      *
      * @throws Exception\UnknownEntityClassException If the query's class name is not a known entity class.
      * @throws Exception\UnknownPropertyException    If the query targets an unknown property.
      */
-    public function find(Query $query, int $lockMode = LockMode::NONE, bool $forceRefresh = false) : array
+    public function find(Query $query, int $options = 0) : array
     {
         $entities = [];
 
-        $refresh = $forceRefresh || ($lockMode !== LockMode::NONE);
+        $refresh = ($options & Options::REFRESH || $options & Options::LOCK_READ || $options & Options::LOCK_WRITE);
 
-        foreach ($this->doFind($query, $lockMode) as [$className, $propValues]) {
+        foreach ($this->doFind($query, $options) as [$className, $propValues]) {
             $classMetadata = $this->classMetadata[$className];
 
             if ($this->identityMap !== null) {
@@ -285,15 +283,15 @@ class Gateway
      * - the class name of the entity as a string;
      * - a map of property name to value as an array.
      *
-     * @param Query $query    The query object.
-     * @param int   $lockMode The lock mode.
+     * @param Query $query   The query object.
+     * @param int   $options A bitmask of options to use.
      *
      * @return array
      *
      * @throws Exception\UnknownEntityClassException If the query's class name is not a known entity class.
      * @throws Exception\UnknownPropertyException    If the query targets an unknown property.
      */
-    private function doFind(Query $query, int $lockMode = LockMode::NONE) : array
+    private function doFind(Query $query, int $options = 0) : array
     {
         $className = $query->getClassName();
 
@@ -377,7 +375,7 @@ class Gateway
         $tableAliases = []; // Table aliases, indexed by (dotted) property name.
 
         $selectBuilder = new SelectQueryBuilder($selectFields, $classMetadata->tableName, $mainTableAlias);
-        $selectBuilder->setLockMode($lockMode);
+        $selectBuilder->setOptions($options);
 
         foreach ($query->getPredicates() as $predicate) {
             /** @var string $tableAlias */
@@ -594,8 +592,8 @@ class Gateway
     /**
      * Finds a single entity using a query object.
      *
-     * @param Query $query
-     * @param int   $lockMode
+     * @param Query $query   The query object.
+     * @param int   $options A bitmask of options to use.
      *
      * @return object|null The entity, or NULL if not found.
      *
@@ -603,9 +601,9 @@ class Gateway
      * @throws Exception\UnknownPropertyException    If the query targets an unknown property.
      * @throws Exception\NonUniqueResultException    If the query returns more than one result.
      */
-    public function findOne(Query $query, int $lockMode = LockMode::NONE) : ?object
+    public function findOne(Query $query, int $options = 0) : ?object
     {
-        $entities = $this->find($query, $lockMode);
+        $entities = $this->find($query, $options);
         $count = count($entities);
 
         if ($count === 0) {
@@ -710,7 +708,7 @@ class Gateway
      */
     public function existsIdentity(string $class, array $id) : bool
     {
-        return $this->loadProps($class, $id, [], LockMode::NONE) !== null;
+        return $this->loadProps($class, $id, []) !== null;
     }
 
     /**

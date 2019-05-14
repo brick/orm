@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Brick\ORM\Tests\Generated\Repository;
 
 use Brick\ORM\Gateway;
-use Brick\ORM\LockMode;
+use Brick\ORM\Options;
 
 use Brick\ORM\Tests\Resources\Models\Country;
 
@@ -30,10 +30,10 @@ class CountryRepository
         $this->gateway = $gateway;
     }
 
-    public function load(string $code, int $lockMode = LockMode::NONE, string ...$props) : ?Country
+    public function load(string $code, int $options = 0, string ...$props) : ?Country
     {
         /** @noinspection PhpIncompatibleReturnTypeInspection */
-        return $this->gateway->load(Country::class, ['code' => $code], $lockMode, ...$props);
+        return $this->gateway->load(Country::class, ['code' => $code], $options, ...$props);
     }
 
     public function getReference(string $code) : Country

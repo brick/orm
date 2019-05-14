@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Brick\ORM\Tests\Generated\Repository;
 
 use Brick\ORM\Gateway;
-use Brick\ORM\LockMode;
+use Brick\ORM\Options;
 
 use Brick\ORM\Tests\Resources\Models\Event;
 
@@ -30,10 +30,10 @@ class EventRepository
         $this->gateway = $gateway;
     }
 
-    public function load(int $id, int $lockMode = LockMode::NONE, string ...$props) : ?Event
+    public function load(int $id, int $options = 0, string ...$props) : ?Event
     {
         /** @noinspection PhpIncompatibleReturnTypeInspection */
-        return $this->gateway->load(Event::class, ['id' => $id], $lockMode, ...$props);
+        return $this->gateway->load(Event::class, ['id' => $id], $options, ...$props);
     }
 
     public function getReference(int $id) : Event

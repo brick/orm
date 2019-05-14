@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Brick\ORM\Tests;
 
-use Brick\ORM\LockMode;
+use Brick\ORM\Options;
 use Brick\ORM\Query;
 use Brick\ORM\Tests\Resources\Models\Country;
 use Brick\ORM\Tests\Resources\Models\Event;
@@ -94,7 +94,7 @@ class InheritanceTest extends AbstractTestCase
      */
     public function testLoadCreateCountryEventUsingClass(string $class, string $sql, int $eventId) : void
     {
-        $event = self::$gateway->load($class, ['id' => $eventId], LockMode::NONE);
+        $event = self::$gateway->load($class, ['id' => $eventId]);
 
         $this->assertSame(Event\CountryEvent\CreateCountryEvent::class, get_class($event));
 
@@ -133,7 +133,7 @@ class InheritanceTest extends AbstractTestCase
         $this->expectException(\Exception::class);
         $this->expectExceptionMessage(sprintf('Expected instance of %s, got %s.', $class, Event\CountryEvent\CreateCountryEvent::class));
 
-        self::$gateway->load($class, ['id' => $eventId], LockMode::NONE);
+        self::$gateway->load($class, ['id' => $eventId]);
     }
 
     /**
@@ -161,7 +161,7 @@ class InheritanceTest extends AbstractTestCase
      */
     public function testLoadPartialCreateCountryEvent(int $eventId) : void
     {
-        $event = self::$eventRepository->load($eventId, LockMode::NONE, 'id', 'time');
+        $event = self::$eventRepository->load($eventId, 0, 'id', 'time');
 
         $this->assertDebugStatementCount(1);
         $this->assertDebugStatement(0, 'SELECT a.type, a.id, a.time FROM Event AS a WHERE a.id = ?', $eventId);
@@ -192,7 +192,7 @@ class InheritanceTest extends AbstractTestCase
      */
     public function testLoadPartialEventUsingPropertyFromChildClass(int $eventId) : void
     {
-        self::$eventRepository->load($eventId, LockMode::NONE, 'time', 'country');
+        self::$eventRepository->load($eventId, 0, 'time', 'country');
     }
 
     /**
@@ -204,7 +204,7 @@ class InheritanceTest extends AbstractTestCase
      */
     public function testLoadPartialCreateCountryEventUsingClass(int $eventId) : void
     {
-        $event = self::$gateway->load(Event\CountryEvent::class, ['id' => $eventId], LockMode::NONE, 'id', 'time', 'country');
+        $event = self::$gateway->load(Event\CountryEvent::class, ['id' => $eventId], 0, 'id', 'time', 'country');
 
         $this->assertDebugStatementCount(1);
         $this->assertDebugStatement(0, 'SELECT a.type, a.id, a.time, a.country_code FROM Event AS a WHERE a.id = ?', $eventId);
@@ -334,7 +334,7 @@ class InheritanceTest extends AbstractTestCase
      */
     public function testLoadEditCountryNameEventUsingClass(string $class, string $sql, int $eventId) : void
     {
-        $event = self::$gateway->load($class, ['id' => $eventId], LockMode::NONE);
+        $event = self::$gateway->load($class, ['id' => $eventId]);
 
         $this->assertSame(Event\CountryEvent\EditCountryNameEvent::class, get_class($event));
 
@@ -374,7 +374,7 @@ class InheritanceTest extends AbstractTestCase
         $this->expectException(\Exception::class);
         $this->expectExceptionMessage(sprintf('Expected instance of %s, got %s.', $class, Event\CountryEvent\EditCountryNameEvent::class));
 
-        self::$gateway->load($class, ['id' => $eventId], LockMode::NONE);
+        self::$gateway->load($class, ['id' => $eventId]);
     }
 
     /**
@@ -402,7 +402,7 @@ class InheritanceTest extends AbstractTestCase
      */
     public function testLoadPartialEditCountryNameEventUsingClass(int $eventId) : void
     {
-        $event = self::$gateway->load(Event\CountryEvent::class, ['id' => $eventId], LockMode::NONE, 'id', 'time', 'country');
+        $event = self::$gateway->load(Event\CountryEvent::class, ['id' => $eventId], 0, 'id', 'time', 'country');
 
         $this->assertDebugStatementCount(1);
         $this->assertDebugStatement(0, 'SELECT a.type, a.id, a.time, a.country_code FROM Event AS a WHERE a.id = ?', $eventId);
@@ -482,7 +482,7 @@ class InheritanceTest extends AbstractTestCase
     {
         [$userId, $eventId] = $ids;
 
-        $event = self::$gateway->load($class, ['id' => $eventId], LockMode::NONE);
+        $event = self::$gateway->load($class, ['id' => $eventId]);
 
         $this->assertSame(Event\UserEvent\CreateUserEvent::class, get_class($event));
 
@@ -523,7 +523,7 @@ class InheritanceTest extends AbstractTestCase
         $this->expectException(\Exception::class);
         $this->expectExceptionMessage(sprintf('Expected instance of %s, got %s.', $class, Event\UserEvent\CreateUserEvent::class));
 
-        self::$gateway->load($class, ['id' => $eventId], LockMode::NONE);
+        self::$gateway->load($class, ['id' => $eventId]);
     }
 
     /**
@@ -607,7 +607,7 @@ class InheritanceTest extends AbstractTestCase
     {
         [$userId, $eventId] = $ids;
 
-        $event = self::$gateway->load($class, ['id' => $eventId], LockMode::NONE);
+        $event = self::$gateway->load($class, ['id' => $eventId]);
 
         $this->assertSame(Event\UserEvent\EditUserNameEvent::class, get_class($event));
 
@@ -649,7 +649,7 @@ class InheritanceTest extends AbstractTestCase
         $this->expectException(\Exception::class);
         $this->expectExceptionMessage(sprintf('Expected instance of %s, got %s.', $class, Event\UserEvent\EditUserNameEvent::class));
 
-        self::$gateway->load($class, ['id' => $eventId], LockMode::NONE);
+        self::$gateway->load($class, ['id' => $eventId]);
     }
 
     /**

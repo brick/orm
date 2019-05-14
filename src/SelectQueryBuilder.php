@@ -55,7 +55,7 @@ class SelectQueryBuilder
     /**
      * @var int
      */
-    private $lockMode = LockMode::NONE;
+    private $options = 0;
 
     /**
      * @param string[]    $selectFields The fields or expressions to SELECT.
@@ -135,13 +135,13 @@ class SelectQueryBuilder
     }
 
     /**
-     * @param int $lockMode A LockMode constant.
+     * @param int $options A bitmask of options.
      *
      * @return void
      */
-    public function setLockMode(int $lockMode) : void
+    public function setOptions(int $options) : void
     {
-        $this->lockMode = $lockMode;
+        $this->options = $options;
     }
 
     /**
@@ -171,13 +171,13 @@ class SelectQueryBuilder
 
         // @todo lock mode syntax is MySQL / PostgreSQL only
 
-        if ($this->lockMode & LockMode::READ) {
+        if ($this->options & Options::LOCK_READ) {
             $query .= ' FOR SHARE';
-        } elseif ($this->lockMode & LockMode::WRITE) {
+        } elseif ($this->options & Options::LOCK_WRITE) {
             $query .= ' FOR UPDATE';
         }
 
-        if ($this->lockMode & LockMode::SKIP_LOCKED) {
+        if ($this->options & Options::SKIP_LOCKED) {
             $query .= ' SKIP LOCKED';
         }
 

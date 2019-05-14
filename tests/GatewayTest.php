@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Brick\ORM\Tests;
 
-use Brick\ORM\LockMode;
+use Brick\ORM\Options;
 use Brick\ORM\Tests\Resources\Models\Address;
 use Brick\ORM\Tests\Resources\Models\Country;
 use Brick\ORM\Tests\Resources\Models\GeoAddress;
@@ -133,7 +133,7 @@ class GatewayTest extends AbstractTestCase
      */
     public function testLoadPartialUser(int $userId) : int
     {
-        $user = self::$userRepository->load($userId, LockMode::NONE, 'name');
+        $user = self::$userRepository->load($userId, 0, 'name');
 
         $this->assertDebugStatementCount(1);
         $this->assertDebugStatement(0, 'SELECT a.name FROM User AS a WHERE a.id = ?', $userId);
@@ -236,14 +236,14 @@ class GatewayTest extends AbstractTestCase
     /**
      * @dataProvider providerLoadWithLock
      *
-     * @param int    $lockMode
+     * @param int    $options
      * @param string $sqlSuffix
      *
      * @return void
      */
-    public function testLoadWithLock(int $lockMode, string $sqlSuffix) : void
+    public function testLoadWithLock(int $options, string $sqlSuffix) : void
     {
-        self::$countryRepository->load('XX', $lockMode);
+        self::$countryRepository->load('XX', $options);
 
         $this->assertDebugStatementCount(1);
         $this->assertDebugStatement(0, 'SELECT a.code, a.name FROM Country AS a WHERE a.code = ? ' . $sqlSuffix, 'XX');
@@ -255,10 +255,10 @@ class GatewayTest extends AbstractTestCase
     public function providerLoadWithLock() : array
     {
         return [
-            [LockMode::READ, 'FOR SHARE'],
-            [LockMode::WRITE, 'FOR UPDATE'],
-            [LockMode::READ | LockMode::SKIP_LOCKED, 'FOR SHARE SKIP LOCKED'],
-            [LockMode::WRITE | LockMode::SKIP_LOCKED, 'FOR UPDATE SKIP LOCKED'],
+            [Options::LOCK_READ, 'FOR SHARE'],
+            [Options::LOCK_WRITE, 'FOR UPDATE'],
+            [Options::LOCK_READ | Options::SKIP_LOCKED, 'FOR SHARE SKIP LOCKED'],
+            [Options::LOCK_WRITE | Options::SKIP_LOCKED, 'FOR UPDATE SKIP LOCKED'],
         ];
     }
 }

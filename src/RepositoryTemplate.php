@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace REPO_NAMESPACE;
 
 use Brick\ORM\Gateway;
-use Brick\ORM\LockMode;
+use Brick\ORM\Options;
 
 use IMPORTS;
 
@@ -30,10 +30,10 @@ class CLASS_NAMERepository
         $this->gateway = $gateway;
     }
 
-    public function load($IDENTITY_PROPS, int $lockMode = LockMode::NONE, string ...$props) : ?CLASS_NAME
+    public function load($IDENTITY_PROPS, int $options = 0, string ...$props) : ?CLASS_NAME
     {
         /** @noinspection PhpIncompatibleReturnTypeInspection */
-        return $this->gateway->load(CLASS_NAME::class, IDENTITY_ARRAY, $lockMode, ...$props);
+        return $this->gateway->load(CLASS_NAME::class, IDENTITY_ARRAY, $options, ...$props);
     }
 
     public function getReference($IDENTITY_PROPS) : CLASS_NAME

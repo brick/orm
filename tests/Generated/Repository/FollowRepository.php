@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Brick\ORM\Tests\Generated\Repository;
 
 use Brick\ORM\Gateway;
-use Brick\ORM\LockMode;
+use Brick\ORM\Options;
 
 use Brick\ORM\Tests\Resources\Models\Follow,
     Brick\ORM\Tests\Resources\Models\User;
@@ -31,10 +31,10 @@ class FollowRepository
         $this->gateway = $gateway;
     }
 
-    public function load(User $follower, User $followee, int $lockMode = LockMode::NONE, string ...$props) : ?Follow
+    public function load(User $follower, User $followee, int $options = 0, string ...$props) : ?Follow
     {
         /** @noinspection PhpIncompatibleReturnTypeInspection */
-        return $this->gateway->load(Follow::class, ['follower' => $follower, 'followee' => $followee], $lockMode, ...$props);
+        return $this->gateway->load(Follow::class, ['follower' => $follower, 'followee' => $followee], $options, ...$props);
     }
 
     public function getReference(User $follower, User $followee) : Follow
