@@ -16,6 +16,11 @@ use PHPUnit\Framework\TestCase;
 abstract class AbstractTestCase extends TestCase
 {
     /**
+     * @var Connection
+     */
+    protected static $connection;
+
+    /**
      * @var Gateway
      */
     protected static $gateway;
@@ -59,6 +64,7 @@ abstract class AbstractTestCase extends TestCase
         $connection = new Connection($driverConnection, self::$logger);
         $classMetadata = require __DIR__ . '/Generated/ClassMetadata.php';
 
+        self::$connection = $connection;
         self::$gateway = new Gateway($connection, $classMetadata, null, static::useProxies());
 
         self::$countryRepository = new CountryRepository(self::$gateway);

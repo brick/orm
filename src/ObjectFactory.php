@@ -15,11 +15,20 @@ namespace Brick\ORM;
 class ObjectFactory
 {
     /**
-     * A map of fully qualified class names to ReflectionClass instances.
+     * A map of fully qualified class name to ReflectionClass instance.
      *
      * @var \ReflectionClass[]
      */
     private $classes = [];
+
+    /**
+     * A map of full qualified class name to map of property name to Closure.
+     *
+     * Each closure converts a property value to the correct type.
+     *
+     * @var \Closure[][]
+     */
+    private $propertyConverters = [];
 
     /**
      * Instantiates an empty object, without calling the class constructor.
@@ -62,6 +71,141 @@ class ObjectFactory
         })->bindTo($object, $className)();
 
         return $object;
+    }
+
+    /**
+     * Instantiates a data transfer object with a nested array of scalar values.
+     *
+     * The class must have public properties only, and no constructor.
+     *
+     * @param string $className
+     * @param array  $values
+     *
+     * @return object
+     *
+     * @throws \ReflectionException      If the class does not exist.
+     * @throws \InvalidArgumentException If the class is not a valid DTO or an unexpected value is found.
+     */
+    public function instantiateDTO(string $className, array $values) : object
+    {
+        $propertyConverters = $this->getPropertyConverters($className);
+
+        $object = new $className;
+
+        foreach ($values as $name => $value) {
+            if (! isset($propertyConverters[$name])) {
+                throw new \InvalidArgumentException(sprintf('There is no property named $%s in class %s.', $name, $className));
+            }
+
+            $propertyConverter = $propertyConverters[$name];
+            $object->{$name} = $propertyConverter($value);
+        }
+
+        return $object;
+    }
+
+    /**
+     * @param string $className
+     *
+     * @return \Closure[]
+     *
+     * @throws \ReflectionException      If the class does not exist.
+     * @throws \InvalidArgumentException If the class is not a valid DTO or an unexpected value is found.
+     */
+    private function getPropertyConverters(string $className) : array
+    {
+        if (isset($this->propertyConverters[$className])) {
+            return $this->propertyConverters[$className];
+        }
+
+        $reflectionClass = new \ReflectionClass($className);
+
+        if ($reflectionClass->isAbstract()) {
+            throw new \InvalidArgumentException(sprintf('Cannot instantiate abstract class %s.', $className));
+        }
+
+        if ($reflectionClass->isInterface()) {
+            throw new \InvalidArgumentException(sprintf('Cannot instantiate interface %s.', $className));
+        }
+
+        if ($reflectionClass->isInternal()) {
+            throw new \InvalidArgumentException(sprintf('Cannot instantiate internal class %s.', $className));
+        }
+
+        if ($reflectionClass->getConstructor() !== null) {
+            throw new \InvalidArgumentException(sprintf('Class %s must not have a constructor.', $className));
+        }
+
+        $properties = $reflectionClass->getProperties();
+
+        $result = [];
+
+        foreach ($properties as $property) {
+            $name = $property->getName();
+
+            if ($property->isStatic()) {
+                throw new \InvalidArgumentException(sprintf('Property $%s of class %s must not be static.', $name, $className));
+            }
+
+            if (! $property->isPublic()) {
+                throw new \InvalidArgumentException(sprintf('Property $%s of class %s must be public.', $name, $className));
+            }
+
+            $result[$name] = $this->getPropertyValueConverter($property);
+        }
+
+        $this->propertyConverters[$className] = $result;
+
+        return $result;
+    }
+
+    /**
+     * @param \ReflectionProperty $property
+     *
+     * @return \Closure
+     *
+     * @throws \InvalidArgumentException If an unexpected value is found.
+     */
+    private function getPropertyValueConverter(\ReflectionProperty $property) : \Closure
+    {
+        /** @var \ReflectionType|null $type */
+        $type = $property->getType();
+
+        $propertyName = $property->getName();
+        $className = $property->getDeclaringClass()->getName();
+
+        if ($type !== null) {
+            $propertyType = $type->getName();
+
+            if ($type->isBuiltin()) {
+                switch ($propertyType) {
+                    case 'string':
+                        return fn ($value) => $value;
+
+                    case 'int':
+                        return fn ($value) => (int) $value;
+
+                    case 'float':
+                        return fn ($value) => (float) $value;
+
+                    case 'bool':
+                        return fn ($value) => (bool) $value;
+
+                    default:
+                        throw new \InvalidArgumentException(sprintf('Unexpected non-scalar type "%s" for property $%s in class %s.', $propertyType, $propertyName, $className));
+                }
+            } else {
+                return function($value) use ($propertyName, $className, $type) {
+                    if (! is_array($value)) {
+                        throw new \InvalidArgumentException(sprintf('Expected array for property $%s of class %s, got %s.', $propertyName, $className, gettype($value)));
+                    }
+
+                    return $this->instantiateDTO($type->getName(), $value);
+                };
+            }
+        }
+
+        return fn ($value) => $value;
     }
 
     /**

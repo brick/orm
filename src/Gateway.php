@@ -75,6 +75,71 @@ class Gateway
     }
 
     /**
+     * Performs a native query and instantiates DTOs.
+     *
+     * The DTO class must have only public, non-static properties, and no constructor.
+     * The selected values must match the object properties.
+     * Properties with no matching value will be left uninitialized.
+     *
+     * DTOs may contain other DTOs; to select values for nested DTOs, use the 'property__nestedProperty' syntax.
+     * Properties pointing to a nested DTO will be initialized only if at least one nested property value is selected.
+     *
+     * @param string $className  The name of the class to instantiate.
+     * @param string $query      The SQL query.
+     * @param array  $parameters The bound parameters.
+     *
+     * @return object[] The instances of the class.
+     *
+     * @throws \Brick\Db\DbException
+     */
+    public function nativeQuery(string $className, string $query, array $parameters = []) : array
+    {
+        $statement = $this->connection->query($query, $parameters);
+        $rows = $statement->fetchAll(true);
+
+        $result = [];
+
+        foreach ($rows as $row) {
+            $values = $this->nestValues($row);
+            $result[] = $this->objectFactory->instantiateDTO($className, $values);
+        }
+
+        return $result;
+    }
+
+    /**
+     * Transforms a flat associative array into a nested array.
+     *
+     * Example: ['foo' => 'FOO', 'bar__baz' => 'BAZ'] would turn into ['foo' => 'FOO', 'bar' => ['baz' => 'BAZ']].
+     *
+     * @param array $values
+     *
+     * @return array
+     */
+    private function nestValues(array $values) : array
+    {
+        $result = [];
+
+        foreach ($values as $name => $value) {
+            $names = explode('__', $name);
+
+            $ref = & $result;
+
+            foreach ($names as $name) {
+                if ($ref !== null && ! is_array($ref)) {
+                    throw new \InvalidArgumentException('Invalid mix of scalar and non-scalar values.');
+                }
+
+                $ref = & $ref[$name];
+            }
+
+            $ref = $value;
+        }
+
+        return $result;
+    }
+
+    /**
      * Builds an INSERT query.
      *
      * The arrays of fields and values must have the same number of elements.
