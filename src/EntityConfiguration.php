@@ -127,8 +127,12 @@ class EntityConfiguration extends ClassConfiguration
                 ));
             }
 
-            $propertyType = $this->propertyTypeChecker->getPropertyType($this->reflectionClass->getProperty($identityProperties[0]));
-            $type = $propertyType->type;
+            $reflectionProperty = $this->reflectionClass->getProperty($identityProperties[0]);
+
+            /** @var \ReflectionNamedType|null $propertyType */
+            $propertyType = $reflectionProperty->getType();
+
+            $type = $propertyType->getName();
 
             if ($type !== 'int' && $type !== 'string') {
                 throw new \LogicException(sprintf(

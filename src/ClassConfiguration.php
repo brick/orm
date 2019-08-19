@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace Brick\ORM;
 
-use Brick\ORM\Reflection\PropertyTypeChecker;
-
 abstract class ClassConfiguration
 {
     /**
@@ -17,11 +15,6 @@ abstract class ClassConfiguration
      * @var \ReflectionClass
      */
     protected $reflectionClass;
-
-    /**
-     * @var PropertyTypeChecker
-     */
-    protected $propertyTypeChecker;
 
     /**
      * @param Configuration $configuration
@@ -38,8 +31,6 @@ abstract class ClassConfiguration
         } catch (\ReflectionException $e) {
             throw new \InvalidArgumentException(sprintf('%s does not exist.', $className), 0, $e);
         }
-
-        $this->propertyTypeChecker = new PropertyTypeChecker();
     }
 
     /**
@@ -84,9 +75,7 @@ abstract class ClassConfiguration
                 throw new \LogicException(sprintf('%s::$%s is private; private properties are not supported. Make the property protected, or add it to transient properties if it should not be persistent.', $className, $propertyName));
             }
 
-            $propertyType = $this->propertyTypeChecker->getPropertyType($reflectionProperty);
-
-            if ($propertyType === null) {
+            if (! $reflectionProperty->hasType()) {
                 throw new \LogicException(sprintf('%s::$%s is not typed. Add a type to the property, or add it to transient properties if it should not be persistent.', $className, $propertyName));
             }
 
@@ -122,48 +111,53 @@ abstract class ClassConfiguration
             return $customPropertyMappings[$className][$propertyName];
         }
 
-        $propertyType = $this->propertyTypeChecker->getPropertyType(new \ReflectionProperty($className, $propertyName));
+        $reflectionProperty = new \ReflectionProperty($className, $propertyName);
+
+        /** @var \ReflectionNamedType|null $propertyType */
+        $propertyType = $reflectionProperty->getType();
+        $typeName = $propertyType->getName();
+        $allowsNull = $propertyType->allowsNull();
 
         $fieldNames = $this->configuration->getFieldNames();
         $fieldName = $fieldNames[$className][$propertyName] ?? $propertyName;
 
-        if ($propertyType->isBuiltin) {
-            switch ($propertyType->type) {
+        if ($propertyType->isBuiltin()) {
+            switch ($typeName) {
                 case 'int':
-                    return new PropertyMapping\IntMapping($fieldName, $propertyType->isNullable);
+                    return new PropertyMapping\IntMapping($fieldName, $allowsNull);
 
                 case 'string':
-                    return new PropertyMapping\StringMapping($fieldName, $propertyType->isNullable);
+                    return new PropertyMapping\StringMapping($fieldName, $allowsNull);
 
                 case 'bool':
-                    return new PropertyMapping\BoolMapping($fieldName, $propertyType->isNullable);
+                    return new PropertyMapping\BoolMapping($fieldName, $allowsNull);
 
                 case 'array':
                     throw new \LogicException(sprintf('Cannot persist type "array" in %s::$%s; you can store an array as JSON if you wish, by configuring a custom JsonMapping instance.', $className, $propertyName));
 
                 default:
-                    throw new \LogicException(sprintf('Cannot persist type "%s" in %s::$%s.', $propertyType->type, $className, $propertyName));
+                    throw new \LogicException(sprintf('Cannot persist type "%s" in %s::$%s.', $typeName, $className, $propertyName));
             }
         }
 
         $customMappings = $this->configuration->getCustomMappings();
 
-        if (isset($customMappings[$propertyType->type])) {
+        if (isset($customMappings[$typeName])) {
             // @todo for now this only works with a single field name/prefix, and fixed constructor
-            return new $customMappings[$propertyType->type]($fieldName, $propertyType->isNullable);
+            return new $customMappings[$typeName]($fieldName, $allowsNull);
         }
 
         $fieldNamePrefixes = $this->configuration->getFieldNamePrefixes();
         $fieldNamePrefix = $fieldNamePrefixes[$className][$propertyName] ?? $propertyName . '_';
 
-        if (isset($entityMetadata[$propertyType->type])) {
-            return new PropertyMapping\EntityMapping($entityMetadata[$propertyType->type], $fieldNamePrefix, $propertyType->isNullable);
+        if (isset($entityMetadata[$typeName])) {
+            return new PropertyMapping\EntityMapping($entityMetadata[$typeName], $fieldNamePrefix, $allowsNull);
         }
 
-        if (isset($embeddableMetadata[$propertyType->type])) {
-            return new PropertyMapping\EmbeddableMapping($embeddableMetadata[$propertyType->type], $fieldNamePrefix, $propertyType->isNullable);
+        if (isset($embeddableMetadata[$typeName])) {
+            return new PropertyMapping\EmbeddableMapping($embeddableMetadata[$typeName], $fieldNamePrefix, $allowsNull);
         }
 
-        throw new \LogicException(sprintf('Type %s of %s::$%s is not an entity or embeddable, and has no custom mapping defined.', $propertyType->type, $className, $propertyName));
+        throw new \LogicException(sprintf('Type %s of %s::$%s is not an entity or embeddable, and has no custom mapping defined.', $typeName, $className, $propertyName));
     }
 }
