@@ -6,15 +6,9 @@ namespace Brick\ORM;
 
 abstract class ClassConfiguration
 {
-    /**
-     * @var Configuration
-     */
-    protected $configuration;
+    protected Configuration $configuration;
 
-    /**
-     * @var \ReflectionClass
-     */
-    protected $reflectionClass;
+    protected \ReflectionClass $reflectionClass;
 
     /**
      * @param Configuration $configuration

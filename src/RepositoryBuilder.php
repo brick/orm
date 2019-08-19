@@ -6,20 +6,11 @@ namespace Brick\ORM;
 
 class RepositoryBuilder
 {
-    /**
-     * @var string|null
-     */
-    private $repositoryNamespace;
+    private ?string $repositoryNamespace = null;
 
-    /**
-     * @var string|null
-     */
-    private $entityClassName;
+    private ?string $entityClassName = null;
 
-    /**
-     * @var array|null
-     */
-    private $identityProps;
+    private ?array $identityProps = null;
 
     /**
      * @param string $namespace The namespace of the repository.

@@ -22,10 +22,8 @@ class IdentityMap
 {
     /**
      * The entities, indexed by root class name and identity (one nested array per identity value).
-     *
-     * @var array
      */
-    private $entities = [];
+    private array $entities = [];
 
     /**
      * Retrieves an entity from the identity map.

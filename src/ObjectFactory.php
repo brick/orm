@@ -19,7 +19,7 @@ class ObjectFactory
      *
      * @var \ReflectionClass[]
      */
-    private $classes = [];
+    private array $classes = [];
 
     /**
      * A map of full qualified class name to map of property name to Closure.
@@ -28,7 +28,7 @@ class ObjectFactory
      *
      * @var \Closure[][]
      */
-    private $propertyConverters = [];
+    private array $propertyConverters = [];
 
     /**
      * Instantiates an empty object, without calling the class constructor.

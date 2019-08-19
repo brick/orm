@@ -6,15 +6,9 @@ namespace Brick\ORM;
 
 class QueryOrderBy
 {
-    /**
-     * @var string
-     */
-    private $property;
+    private string $property;
 
-    /**
-     * @var string
-     */
-    private $direction;
+    private string $direction;
 
     /**
      * QueryOrderBy constructor.

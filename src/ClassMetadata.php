@@ -8,17 +8,15 @@ abstract class ClassMetadata
 {
     /**
      * The entity or embeddable class name.
-     *
-     * @var string
      */
-    public $className;
+    public string $className;
 
     /**
      * The list of persistent properties.
      *
      * @var string[]
      */
-    public $properties;
+    public array $properties;
 
     /**
      * A map of persistent property names to PropertyMapping instances.
@@ -27,5 +25,5 @@ abstract class ClassMetadata
      *
      * @var PropertyMapping[]
      */
-    public $propertyMappings;
+    public array $propertyMappings;
 }

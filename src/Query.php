@@ -6,37 +6,28 @@ namespace Brick\ORM;
 
 class Query
 {
-    /**
-     * @var string
-     */
-    private $className;
+    private string $className;
 
     /**
      * The properties to load, or null to load the full entity.
      *
      * @var string[]|null
      */
-    private $properties;
+    private ?array $properties = null;
 
     /**
      * @var QueryPredicate[]
      */
-    private $predicates = [];
+    private array $predicates = [];
 
     /**
      * @var QueryOrderBy[]
      */
-    private $orderBy = [];
+    private array $orderBy = [];
 
-    /**
-     * @var int|null
-     */
-    private $limit;
+    private ?int $limit = null;
 
-    /**
-     * @var int|null
-     */
-    private $offset;
+    private ?int $offset = null;
 
     /**
      * @param string $className

@@ -13,20 +13,17 @@ use Brick\ORM\PropertyMapping\StringMapping;
  */
 class ClassMetadataBuilder
 {
-    /**
-     * @var Configuration
-     */
-    private $configuration;
+    private Configuration $configuration;
 
     /**
      * @var EntityMetadata[]
      */
-    private $entityMetadata;
+    private array $entityMetadata;
 
     /**
      * @var EmbeddableMetadata[]
      */
-    private $embeddableMetadata;
+    private array $embeddableMetadata;
 
     /**
      * @param Configuration $configuration

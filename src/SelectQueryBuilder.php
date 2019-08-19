@@ -16,46 +16,33 @@ class SelectQueryBuilder
      *
      * @var string[]
      */
-    private $selectFields;
+    private array $selectFields;
 
     /**
      * The table name.
-     *
-     * @var string
      */
-    private $tableName;
+    private string $tableName;
 
     /**
      * An optional table alias.
-     *
-     * @var string|null
      */
-    private $tableAlias;
+    private ?string $tableAlias;
 
-    /**
-     * @var array
-     */
-    private $joins = [];
+    private array $joins = [];
 
     /**
      * @var string[]
      */
-    private $whereConditions = [];
+    private array $whereConditions = [];
 
     /**
      * @var string[]
      */
-    private $orderBy = [];
+    private array $orderBy = [];
 
-    /**
-     * @var string
-     */
-    private $limit = '';
+    private string $limit = '';
 
-    /**
-     * @var int
-     */
-    private $options = 0;
+    private int $options = 0;
 
     /**
      * @param string[]    $selectFields The fields or expressions to SELECT.

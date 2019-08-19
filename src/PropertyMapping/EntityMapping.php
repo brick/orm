@@ -15,20 +15,12 @@ class EntityMapping implements PropertyMapping
 {
     /**
      * The class metadata of the target entity.
-     *
-     * @var EntityMetadata
      */
-    public $classMetadata;
+    public EntityMetadata $classMetadata;
 
-    /**
-     * @var string
-     */
-    public $fieldNamePrefix;
+    public string $fieldNamePrefix;
 
-    /**
-     * @var bool
-     */
-    public $isNullable;
+    public bool $isNullable;
 
     /**
      * @param EntityMetadata $classMetadata   The target entity class metadata.

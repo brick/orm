@@ -6,15 +6,9 @@ namespace Brick\ORM;
 
 class QueryPredicate
 {
-    /**
-     * @var string
-     */
-    private $property;
+    private string $property;
 
-    /**
-     * @var string
-     */
-    private $operator;
+    private string $operator;
 
     /**
      * @var mixed

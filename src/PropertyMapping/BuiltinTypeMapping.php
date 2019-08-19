@@ -11,15 +11,9 @@ use Brick\ORM\PropertyMapping;
  */
 abstract class BuiltinTypeMapping implements PropertyMapping
 {
-    /**
-     * @var string
-     */
-    public $fieldName;
+    public string $fieldName;
 
-    /**
-     * @var bool
-     */
-    public $isNullable;
+    public bool $isNullable;
 
     /**
      * @param string $fieldName

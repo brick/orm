@@ -6,41 +6,30 @@ namespace Brick\ORM;
 
 class EntityConfiguration extends ClassConfiguration
 {
-    /**
-     * @var string|null
-     */
-    private $belongsTo;
+    private ?string $belongsTo = null;
 
-    /**
-     * @var string|null
-     */
-    private $tableName;
+    private ?string $tableName = null;
 
-    /**
-     * @var bool
-     */
-    private $isAutoIncrement = false;
+    private bool $isAutoIncrement = false;
 
     /**
      * The list of identity properties, or null if not set.
      *
      * @var string[]|null
      */
-    private $identityProperties;
+    private ?array $identityProperties = null;
 
     /**
      * The discriminator column name, or null if not set.
-     *
-     * @var string|null
      */
-    private $discriminatorColumn;
+    private ?string $discriminatorColumn = null;
 
     /**
      * A map of discriminator values to entity class names, or an empty array if not set.
      *
      * @var string[]
      */
-    private $discriminatorMap = [];
+    private array $discriminatorMap = [];
 
     /**
      * Sets the root entity of the aggregate this entity belongs to.
@@ -243,7 +232,7 @@ class EntityConfiguration extends ClassConfiguration
     }
 
     /**
-     * Returns the discriminator column name, or null if not inheritance is mapped.
+     * Returns the discriminator column name, or null if inheritance is not in use.
      *
      * @return string|null
      */

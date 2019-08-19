@@ -11,20 +11,16 @@ class EntityMetadata extends ClassMetadata
      *
      * This property will only be set if the entity is part of an inheritance hierarchy.
      * For other entities, this property will be null.
-     *
-     * @var string|null
      */
-    public $discriminatorColumn;
+    public ?string $discriminatorColumn;
 
     /**
      * The discriminator value.
      *
      * This property will only be set if the entity is a concrete class in an inheritance hierarchy.
      * For other entities and abstract entities, this property will be null.
-     *
-     * @var string|null
      */
-    public $discriminatorValue;
+    public ?string $discriminatorValue;
 
     /**
      * The discriminator map for inheritance.
@@ -33,10 +29,8 @@ class EntityMetadata extends ClassMetadata
      * If the entity is not part of an inheritance hierarchy, this will be an empty array.
      *
      * This property is set, and is the same, for all classes in the inheritance hiearchy.
-     *
-     * @var array
      */
-    public $discriminatorMap;
+    public array $discriminatorMap;
 
     /**
      * The inverse discriminator map.
@@ -45,37 +39,29 @@ class EntityMetadata extends ClassMetadata
      * If the entity is not part of an inheritance hierarchy, this will be an empty array.
      *
      * This property is set, and is the same, for all classes in the inheritance hiearchy.
-     *
-     * @var array
      */
-    public $inverseDiscriminatorMap;
+    public array $inverseDiscriminatorMap;
 
     /**
      * The root entity class name.
      *
      * If the entity is not part of an inheritance hierarchy, or is itself the root of the hierarchy, this will be the
      * same as the entity class name.
-     *
-     * @var string
      */
-    public $rootClassName;
+    public string $rootClassName;
 
     /**
      * The entity's proxy class name.
      *
      * This property is only set if the class is a concrete entity.
      * For abstract entities, this property will be null.
-     *
-     * @var string|null
      */
-    public $proxyClassName;
+    public ?string $proxyClassName;
 
     /**
      * The database table name.
-     *
-     * @var string
      */
-    public $tableName;
+    public string $tableName;
 
     /**
      * The list of persistent property names that are part of the identity.
@@ -85,7 +71,7 @@ class EntityMetadata extends ClassMetadata
      *
      * @var string[]
      */
-    public $idProperties;
+    public array $idProperties;
 
     /**
      * The list of persistent property names that are NOT part of the identity.
@@ -95,31 +81,29 @@ class EntityMetadata extends ClassMetadata
      *
      * @var string[]
      */
-    public $nonIdProperties;
+    public array $nonIdProperties;
 
     /**
      * The list of persistent property names that are not part of the identity, and are declared in this class only.
      *
      * Properties declared in parent classes are not included here.
      *
-     * @var array
+     * @var string[]
      */
-    public $selfNonIdProperties;
+    public array $selfNonIdProperties;
 
     /**
      * The list of child entity class names, if any.
      *
      * @var string[]
      */
-    public $childClasses;
+    public array $childClasses;
 
     /**
      * Whether the table uses an auto-increment primary key.
      *
      * This is only supported on tables with a single primary key column. If this is true, there must be only one
      * property part of the identity, and this property must map to a single database field.
-     *
-     * @var bool
      */
-    public $isAutoIncrement;
+    public bool $isAutoIncrement;
 }

@@ -6,20 +6,11 @@ namespace Brick\ORM;
 
 class ProxyBuilder
 {
-    /**
-     * @var string|null
-     */
-    private $proxyNamespace;
+    private ?string $proxyNamespace = null;
 
-    /**
-     * @var string|null
-     */
-    private $entityClassName;
+    private ?string $entityClassName = null;
 
-    /**
-     * @var array|null
-     */
-    private $nonIdProps;
+    private ?array $nonIdProps = null;
 
     /**
      * @param string $namespace The namespace of the proxy class.

@@ -6,47 +6,29 @@ namespace Brick\ORM;
 
 class Configuration
 {
-    /**
-     * @var string|null
-     */
-    private $proxyNamespace;
+    private ?string $proxyNamespace = null;
 
-    /**
-     * @var string|null
-     */
-    private $proxyDir;
+    private ?string $proxyDir = null;
 
-    /**
-     * @var string|null
-     */
-    private $repositoryNamespace;
+    private ?string $repositoryNamespace = null;
 
-    /**
-     * @var string|null
-     */
-    private $repositoryDir;
+    private ?string $repositoryDir = null;
 
-    /**
-     * @var string|null
-     */
-    private $classMetadataFile;
+    private ?string $classMetadataFile = null;
 
-    /**
-     * @var string|null
-     */
-    private $baseEntityNamespace;
+    private ?string $baseEntityNamespace = null;
 
     /**
      * @var ClassConfiguration[]
      */
-    private $classes = [];
+    private array $classes = [];
 
     /**
      * A map of entity/embeddable class names to lists of transient property names.
      *
      * @var string[][]
      */
-    private $transientProperties = [];
+    private array $transientProperties = [];
 
     /**
      * A map of entity/embeddable class names to property names to PropertyMapping instances.
@@ -56,28 +38,28 @@ class Configuration
      *
      * @var PropertyMapping[][]
      */
-    private $customPropertyMappings = [];
+    private array $customPropertyMappings = [];
 
     /**
      * A map of entity/embeddable class names to property names to field names.
      *
      * @var string[][]
      */
-    private $fieldNames = [];
+    private array $fieldNames = [];
 
     /**
      * A map of entity/embeddable class names to property names to field name prefixes.
      *
      * @var string[][]
      */
-    private $fieldNamePrefixes = [];
+    private array $fieldNamePrefixes = [];
 
     /**
      * A map of class names to custom property mapping classes.
      *
      * @var PropertyMapping[]
      */
-    private $customMappings = [];
+    private array $customMappings = [];
 
     /**
      * @param string $proxyNamespace

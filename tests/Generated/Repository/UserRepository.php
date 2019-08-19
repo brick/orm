@@ -15,10 +15,7 @@ use Brick\ORM\Tests\Resources\Models\User;
  */
 class UserRepository
 {
-    /**
-     * @var Gateway
-     */
-    private $gateway;
+    private Gateway $gateway;
 
     /**
      * Class constructor.

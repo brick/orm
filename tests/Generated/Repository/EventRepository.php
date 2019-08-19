@@ -15,10 +15,7 @@ use Brick\ORM\Tests\Resources\Models\Event;
  */
 class EventRepository
 {
-    /**
-     * @var Gateway
-     */
-    private $gateway;
+    private Gateway $gateway;
 
     /**
      * Class constructor.

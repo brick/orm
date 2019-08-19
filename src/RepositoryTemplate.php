@@ -15,10 +15,7 @@ use IMPORTS;
  */
 class CLASS_NAMERepository
 {
-    /**
-     * @var Gateway
-     */
-    private $gateway;
+    private Gateway $gateway;
 
     /**
      * Class constructor.

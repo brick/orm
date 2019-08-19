@@ -18,25 +18,13 @@ class EditUserBillingAddressEventProxy extends EditUserBillingAddressEvent imple
 {
     private const __NON_ID_PROPERTIES = ['newAddress', 'user', 'time'];
 
-    /**
-     * @var Gateway
-     */
-    private $__gateway;
+    private Gateway $__gateway;
 
-    /**
-     * @var array
-     */
-    private $__identity;
+    private array $__identity;
 
-    /**
-     * @var array
-     */
-    private $__scalarIdentity;
+    private array $__scalarIdentity;
 
-    /**
-     * @var bool
-     */
-    private $__isInitialized = false;
+    private bool $__isInitialized = false;
 
     /**
      * Class constructor.

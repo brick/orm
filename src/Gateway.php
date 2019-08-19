@@ -24,38 +24,28 @@ use Brick\ORM\PropertyMapping\EntityMapping;
  */
 class Gateway
 {
-    /**
-     * @var Connection
-     */
-    private $connection;
+    private Connection $connection;
 
     /**
      * The entity metadata, indexed by class name.
      *
      * @var EntityMetadata[]
      */
-    private $classMetadata;
+    private array $classMetadata;
 
     /**
      * The identity map, to keep references to managed entities, if any.
-     *
-     * @var IdentityMap|null
      */
-    private $identityMap;
+    private ?IdentityMap $identityMap;
 
     /**
      * Whether to use lazy-loading proxies to reference entities whose identity is known, but data is not yet known.
      *
      * If false, partial objects with no lazy-loading capability will be used instead.
-     *
-     * @var bool
      */
-    private $useProxies;
+    private bool $useProxies;
 
-    /**
-     * @var ObjectFactory
-     */
-    private $objectFactory;
+    private ObjectFactory $objectFactory;
 
     /**
      * Gateway constructor.

@@ -12,22 +12,14 @@ use Brick\ORM\PropertyMapping;
  */
 class JsonMapping implements PropertyMapping
 {
-    /**
-     * @var string
-     */
-    public $fieldName;
+    public string $fieldName;
 
-    /**
-     * @var bool
-     */
-    public $isNullable;
+    public bool $isNullable;
 
     /**
      * Whether to decode JSON objects as associative arrays (true) or stdClass objects (false).
-     *
-     * @var bool
      */
-    public $objectAsArray;
+    public bool $objectAsArray;
 
     /**
      * @param string $fieldName

@@ -16,10 +16,7 @@ use Brick\ORM\Tests\Resources\Models\Follow,
  */
 class FollowRepository
 {
-    /**
-     * @var Gateway
-     */
-    private $gateway;
+    private Gateway $gateway;
 
     /**
      * Class constructor.

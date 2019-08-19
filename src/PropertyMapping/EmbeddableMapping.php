@@ -16,20 +16,12 @@ class EmbeddableMapping implements PropertyMapping
 {
     /**
      * The class metadata of the target entity.
-     *
-     * @var EmbeddableMetadata
      */
-    public $classMetadata;
+    public EmbeddableMetadata $classMetadata;
 
-    /**
-     * @var string
-     */
-    public $fieldNamePrefix;
+    public string $fieldNamePrefix;
 
-    /**
-     * @var bool
-     */
-    public $isNullable;
+    public bool $isNullable;
 
     /**
      * @param EmbeddableMetadata $classMetadata   The target entity class metadata.

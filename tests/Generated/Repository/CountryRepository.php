@@ -15,10 +15,7 @@ use Brick\ORM\Tests\Resources\Models\Country;
  */
 class CountryRepository
 {
-    /**
-     * @var Gateway
-     */
-    private $gateway;
+    private Gateway $gateway;
 
     /**
      * Class constructor.

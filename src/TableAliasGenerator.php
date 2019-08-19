@@ -6,10 +6,7 @@ namespace Brick\ORM;
 
 class TableAliasGenerator
 {
-    /**
-     * @var int
-     */
-    private $number = 0;
+    private int $number = 0;
 
     /**
      * @return string
