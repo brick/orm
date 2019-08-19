@@ -12,15 +12,9 @@ class EditUserDeliveryAddressEvent extends UserEvent
 {
     /**
      * This property purposefully has the same name and different type as another property in a sibling class.
-     *
-     * @var GeoAddress
      */
-    protected $newAddress;
+    protected GeoAddress $newAddress;
 
-    /**
-     * @param User       $user
-     * @param GeoAddress $newDeliveryAddress
-     */
     public function __construct(User $user, GeoAddress $newDeliveryAddress)
     {
         parent::__construct($user);

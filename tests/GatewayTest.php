@@ -143,8 +143,10 @@ class GatewayTest extends AbstractTestCase
 
         try {
             $user->getBillingAddress();
-        } catch (\PHPUnit\Framework\Error\Notice $notice) {
-            goto ok;
+        } catch (\Error $error) {
+            if (strpos($error->getMessage(), 'must not be accessed before initialization') !== false) {
+                goto ok;
+            }
         }
 
         $this->fail('This property should not be set in partial object.');

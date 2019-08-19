@@ -56,7 +56,7 @@ class ObjectFactory
 
         $object = $reflectionClass->newInstanceWithoutConstructor();
 
-        (function() use ($classMetadata, $values) {
+        (function() use ($classMetadata, $values, $reflectionClass) {
             // Unset persistent properties
             // @todo PHP 7.4: for even better performance, only unset typed properties that have a default value, as
             //       unset() will have no effect on those that have no default value (will require a new metadata prop).
@@ -66,6 +66,18 @@ class ObjectFactory
 
             // Set values
             foreach ($values as $key => $value) {
+                if ($value === null) {
+                    // @todo temporary fix: do not set null values when typed property is not nullable;
+                    //       needs investigation to see why these null values are being passed in the first place
+
+                    /** @var \ReflectionType|null $reflectionType */
+                    $reflectionType = $reflectionClass->getProperty($key)->getType();
+
+                    if ($reflectionType !== null && ! $reflectionType->allowsNull()) {
+                        continue;
+                    }
+                }
+
                 $this->{$key} = $value;
             }
         })->bindTo($object, $className)();

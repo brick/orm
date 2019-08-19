@@ -9,14 +9,8 @@ use Brick\ORM\Tests\Resources\Models\User;
 
 abstract class UserEvent extends Event
 {
-    /**
-     * @var User
-     */
-    protected $user;
+    protected User $user;
 
-    /**
-     * @param User $user
-     */
     public function __construct(User $user)
     {
         parent::__construct();
@@ -24,9 +18,6 @@ abstract class UserEvent extends Event
         $this->user = $user;
     }
 
-    /**
-     * @return User
-     */
     public function getUser() : User
     {
         return $this->user;

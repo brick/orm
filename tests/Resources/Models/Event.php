@@ -9,35 +9,20 @@ namespace Brick\ORM\Tests\Resources\Models;
  */
 abstract class Event
 {
-    /**
-     * @var int
-     */
-    protected $id;
+    protected int $id;
 
-    /**
-     * @var int
-     */
-    protected $time;
+    protected int $time;
 
-    /**
-     * Event constructor.
-     */
     public function __construct()
     {
         $this->time = 1234567890; // hardcoded for tests
     }
 
-    /**
-     * @return int
-     */
     public function getId() : int
     {
         return $this->id;
     }
 
-    /**
-     * @return int
-     */
     public function getTime() : int
     {
         return $this->time;

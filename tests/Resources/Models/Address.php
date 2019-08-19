@@ -9,40 +9,19 @@ namespace Brick\ORM\Tests\Resources\Models;
  */
 class Address
 {
-    /**
-     * @var string
-     */
-    protected $street;
+    protected string $street;
 
-    /**
-     * @var string
-     */
-    protected $city;
+    protected string $city;
 
     /**
      * This property is mapped to a "zipcode" field.
-     *
-     * @var string|null
      */
-    protected $postcode;
+    protected ?string $postcode;
 
-    /**
-     * @var Country
-     */
-    protected $country;
+    protected Country $country;
 
-    /**
-     * @var bool
-     */
-    protected $isPoBox;
+    protected bool $isPoBox;
 
-    /**
-     * @param string  $street
-     * @param string  $city
-     * @param string  $postcode
-     * @param Country $country
-     * @param bool    $isPoBox
-     */
     public function __construct(string $street, string $city, string $postcode, Country $country, bool $isPoBox)
     {
         $this->street   = $street;
@@ -52,41 +31,26 @@ class Address
         $this->isPoBox  = $isPoBox;
     }
 
-    /**
-     * @return string
-     */
     public function getStreet() : string
     {
         return $this->street;
     }
 
-    /**
-     * @return string
-     */
     public function getCity() : string
     {
         return $this->city;
     }
 
-    /**
-     * @return string
-     */
     public function getPostcode() : string
     {
         return $this->postcode;
     }
 
-    /**
-     * @return Country
-     */
     public function getCountry() : Country
     {
         return $this->country;
     }
 
-    /**
-     * @return bool
-     */
     public function isPoBox() : bool
     {
         return $this->isPoBox;

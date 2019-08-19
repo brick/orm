@@ -11,20 +11,10 @@ use Brick\ORM\Tests\Resources\Objects\Geometry;
  */
 class GeoAddress
 {
-    /**
-     * @var Address
-     */
-    protected $address;
+    protected Address $address;
 
-    /**
-     * @var Geometry
-     */
-    protected $location;
+    protected Geometry $location;
 
-    /**
-     * @param Address  $address
-     * @param Geometry $location
-     */
     public function __construct(Address $address, Geometry $location)
     {
         $this->address  = $address;

@@ -11,133 +11,81 @@ use Brick\ORM\Tests\Resources\Models\Event\UserEvent;
  */
 class User
 {
-    /**
-     * @var int
-     */
-    protected $id;
+    protected int $id;
 
-    /**
-     * @var string
-     */
-    protected $name;
+    protected string $name;
 
     /**
      * An embedded address, with no field name prefix.
-     *
-     * @var Address|null
      */
-    protected $billingAddress;
+    protected ?Address $billingAddress = null;
 
     /**
      * An embedded geo address, with a field name prefix.
-     *
-     * @var GeoAddress|null
      */
-    protected $deliveryAddress;
+    protected ?GeoAddress $deliveryAddress = null;
 
     /**
      * A reference to a entity in an inheritance hierarchy, requiring the discriminator value in the User table to know
      * the correct target class.
-     *
-     * @var UserEvent|null
      */
-    protected $lastEvent;
+    protected ?UserEvent $lastEvent = null;
 
     /**
      * A property mapped to JSON datatype.
-     *
-     * @var array
      */
-    protected $data = ['any' => 'data'];
+    protected array $data = ['any' => 'data'];
 
     /**
      * A transient property, that should not be persisted.
-     *
-     * @var array
      */
-    protected $transient = [];
+    protected array $transient = [];
 
-    /**
-     * @param string $name
-     */
     public function __construct(string $name)
     {
         $this->name = $name;
     }
 
-    /**
-     * @return int
-     */
     public function getId() : int
     {
         return $this->id;
     }
 
-    /**
-     * @return string
-     */
     public function getName() : string
     {
         return $this->name;
     }
 
-    /**
-     * @param string $name
-     *
-     * @return void
-     */
     public function setName(string $name) : void
     {
         $this->name = $name;
     }
 
-    /**
-     * @return Address|null
-     */
     public function getBillingAddress() : ?Address
     {
         return $this->billingAddress;
     }
 
-    /**
-     * @param Address|null $billingAddress
-     *
-     * @return void
-     */
     public function setBillingAddress(?Address $billingAddress) : void
     {
         $this->billingAddress = $billingAddress;
     }
 
-    /**
-     * @return GeoAddress|null
-     */
     public function getDeliveryAddress() : ?GeoAddress
     {
         return $this->deliveryAddress;
     }
 
-    /**
-     * @param GeoAddress|null $deliveryAddress
-     *
-     * @return void
-     */
     public function setDeliveryAddress(?GeoAddress $deliveryAddress) : void
     {
         $this->deliveryAddress = $deliveryAddress;
     }
 
-    /**
-     * @return array
-     */
     public function getData() : array
     {
         return $this->data;
     }
 
-    /**
-     * @return array
-     */
     public function getTransient() : array
     {
         return $this->transient;

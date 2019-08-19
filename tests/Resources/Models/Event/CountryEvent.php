@@ -9,14 +9,8 @@ use Brick\ORM\Tests\Resources\Models\Country;
 
 abstract class CountryEvent extends Event
 {
-    /**
-     * @var Country
-     */
-    protected $country;
+    protected Country $country;
 
-    /**
-     * @param Country $country
-     */
     public function __construct(Country $country)
     {
         parent::__construct();
@@ -24,9 +18,6 @@ abstract class CountryEvent extends Event
         $this->country = $country;
     }
 
-    /**
-     * @return Country
-     */
     public function getCountry() : Country
     {
         return $this->country;

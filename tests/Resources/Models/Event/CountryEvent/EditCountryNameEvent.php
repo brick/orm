@@ -9,15 +9,8 @@ use Brick\ORM\Tests\Resources\Models\Country;
 
 class EditCountryNameEvent extends CountryEvent
 {
-    /**
-     * @var string
-     */
-    protected $newName;
+    protected string $newName;
 
-    /**
-     * @param Country   $country
-     * @param string $newName
-     */
     public function __construct(Country $country, string $newName)
     {
         parent::__construct($country);
@@ -25,9 +18,6 @@ class EditCountryNameEvent extends CountryEvent
         $this->newName = $newName;
     }
 
-    /**
-     * @return string
-     */
     public function getNewName() : string
     {
         return $this->newName;

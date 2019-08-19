@@ -824,21 +824,23 @@ class Gateway
             $outputValues[] = $classMetadata->discriminatorValue;
         }
 
-        foreach ($propValues as $prop => $value) {
-            if (! isset($classMetadata->propertyMappings[$prop])) {
-                // Non-persistent property
-                continue;
+        foreach ($classMetadata->propertyMappings as $prop => $propertyMapping) {
+            if (! array_key_exists($prop, $propValues)) {
+                if (in_array($prop, $classMetadata->idProperties)) {
+                    // auto-increment id is allowed to be uninitialized
+                    continue;
+                }
+
+                $message = sprintf('Entity of class %s cannot be save()d because property $%s is not set.', $classMetadata->className, $prop);
+
+                if ($propertyMapping->isNullable()) {
+                    $message .= ' Did you forget to initialize it to null?';
+                }
+
+                throw new \RuntimeException($message);
             }
 
-            $propertyMapping = $classMetadata->propertyMappings[$prop];
-
-            // @todo workaround to avoid sending NULL values for non-initialized properties,
-            //       such as an auto-increment id in a new object. Remove for PHP 7.4 when these fields will be
-            //       uninitialized instead of null, and will be naturally skipped.
-            if ($value === null && ! $propertyMapping->isNullable()) {
-                continue;
-            }
-
+            $value = $propValues[$prop];
             $expressionsAndOutputValues = $propertyMapping->convertPropToFields($value);
 
             foreach ($propertyMapping->getFieldNames() as $fieldNameIndex => $fieldName) {

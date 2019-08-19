@@ -9,25 +9,12 @@ namespace Brick\ORM\Tests\Resources\Models;
  */
 class Follow
 {
-    /**
-     * @var User
-     */
-    protected $follower;
+    protected User $follower;
 
-    /**
-     * @var User
-     */
-    protected $followee;
+    protected User $followee;
 
-    /**
-     * @var int
-     */
-    protected $since;
+    protected int $since;
 
-    /**
-     * @param User $follower
-     * @param User $followee
-     */
     public function __construct(User $follower, User $followee)
     {
         $this->follower = $follower;
@@ -35,25 +22,16 @@ class Follow
         $this->since    = time();
     }
 
-    /**
-     * @return User
-     */
     public function getFollower() : User
     {
         return $this->follower;
     }
 
-    /**
-     * @return User
-     */
     public function getFollowee() : User
     {
         return $this->followee;
     }
 
-    /**
-     * @return int
-     */
     public function getSince() : int
     {
         return $this->since;

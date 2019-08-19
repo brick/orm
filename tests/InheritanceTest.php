@@ -174,8 +174,10 @@ class InheritanceTest extends AbstractTestCase
 
         try {
             $event->getCountry();
-        } catch (\PHPUnit\Framework\Error\Notice $notice) {
-            return;
+        } catch (\Error $error) {
+            if (strpos($error->getMessage(), 'must not be accessed before initialization') !== false) {
+                return;
+            }
         }
 
         $this->fail('This property should not be set in partial object.');
@@ -416,8 +418,10 @@ class InheritanceTest extends AbstractTestCase
 
         try {
             $event->getNewName();
-        } catch (\PHPUnit\Framework\Error\Notice $notice) {
-            return;
+        } catch (\Error $error) {
+            if (strpos($error->getMessage(), 'must not be accessed before initialization') !== false) {
+                return;
+            }
         }
 
         $this->fail('This property should not be set in partial object.');

@@ -12,15 +12,9 @@ class EditUserBillingAddressEvent extends UserEvent
 {
     /**
      * This property purposefully has the same name and different type as another property in a sibling class.
-     *
-     * @var Address
      */
-    protected $newAddress;
+    protected Address $newAddress;
 
-    /**
-     * @param User    $user
-     * @param Address $newBillingAddress
-     */
     public function __construct(User $user, Address $newBillingAddress)
     {
         parent::__construct($user);

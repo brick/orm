@@ -36,8 +36,6 @@ class ObjectFactoryTest extends TestCase
         $this->assertSame(User::class, get_class($user));
 
         $this->assertSame([
-            "\0*\0id" => null,
-            "\0*\0name" => null,
             "\0*\0billingAddress" => null,
             "\0*\0deliveryAddress" => null,
             "\0*\0lastEvent" => null,
@@ -46,8 +44,6 @@ class ObjectFactoryTest extends TestCase
         ], (array) $user);
 
         $this->assertSame([
-            'id' => null,
-            'name' => null,
             'billingAddress' => null,
             'deliveryAddress' => null,
             'lastEvent' => null,

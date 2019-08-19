@@ -9,26 +9,12 @@ use Brick\ORM\Tests\Resources\Models\User;
 
 class FollowUserEvent extends Event
 {
-    /**
-     * @var User
-     */
-    protected $follower;
+    protected User $follower;
 
-    /**
-     * @var User
-     */
-    protected $followee;
+    protected User $followee;
 
-    /**
-     * @var bool
-     */
-    protected $isFollow;
+    protected bool $isFollow;
 
-    /**
-     * @param User $follower
-     * @param User $followee
-     * @param bool $isFollow
-     */
     public function __construct(User $follower, User $followee, bool $isFollow)
     {
         parent::__construct();
@@ -38,25 +24,16 @@ class FollowUserEvent extends Event
         $this->isFollow = $isFollow;
     }
 
-    /**
-     * @return User
-     */
     public function getFollower() : User
     {
         return $this->follower;
     }
 
-    /**
-     * @return User
-     */
     public function getFollowee() : User
     {
         return $this->followee;
     }
 
-    /**
-     * @return bool
-     */
     public function isFollow() : bool
     {
         return $this->isFollow;
