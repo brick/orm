@@ -287,11 +287,11 @@ class Configuration
      */
     public function setClassMetadataFile(string $classMetadataFile) : Configuration
     {
-        $this->classMetadataFile = $classMetadataFile;
-
         if (substr($classMetadataFile, -4) !== '.php') {
             throw new \InvalidArgumentException('The ClassMetadata file path must have a .php extension.');
         }
+
+        $this->classMetadataFile = $classMetadataFile;
 
         return $this;
     }
