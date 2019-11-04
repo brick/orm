@@ -781,7 +781,7 @@ class Gateway
      * @throws Exception\NoIdentityException         If saving an entity with a non-autoincrement identity which is not set.
      * @throws \Brick\Db\DbException                 If a database error occurs.
      */
-    public function save(object $entity) : void
+    public function add(object $entity) : void
     {
         $class = $this->getEntityClass($entity);
 
@@ -793,13 +793,13 @@ class Gateway
             foreach ($classMetadata->idProperties as $idProperty) {
                 if (isset($propValues[$idProperty])) {
                     // @todo custom exception
-                    throw new \RuntimeException('Cannot save() an entity with an autoincrement identity already set. Use update() instead.');
+                    throw new \RuntimeException('Cannot add() an entity with an autoincrement identity already set. Use update() instead.');
                 }
             }
         } else {
             foreach ($classMetadata->idProperties as $idProperty) {
                 if (! isset($propValues[$idProperty])) {
-                    throw new Exception\NoIdentityException('Cannot save() an entity with a non-autoincrement identity not set.');
+                    throw new Exception\NoIdentityException('Cannot add() an entity with a non-autoincrement identity not set.');
                 }
             }
         }
@@ -821,7 +821,7 @@ class Gateway
                     continue;
                 }
 
-                $message = sprintf('Entity of class %s cannot be save()d because property $%s is not set.', $classMetadata->className, $prop);
+                $message = sprintf('Entity of class %s cannot be add()ed because property $%s is not set.', $classMetadata->className, $prop);
 
                 if ($propertyMapping->isNullable()) {
                     $message .= ' Did you forget to initialize it to null?';

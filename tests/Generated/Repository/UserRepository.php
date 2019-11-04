@@ -49,9 +49,9 @@ class UserRepository
         return $this->gateway->existsIdentity(User::class, ['id' => $id]);
     }
 
-    public function save(User $user) : void
+    public function add(User $user) : void
     {
-        $this->gateway->save($user);
+        $this->gateway->add($user);
     }
 
     public function update(User $user) : void

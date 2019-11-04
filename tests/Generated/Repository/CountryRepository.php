@@ -49,9 +49,9 @@ class CountryRepository
         return $this->gateway->existsIdentity(Country::class, ['code' => $code]);
     }
 
-    public function save(Country $country) : void
+    public function add(Country $country) : void
     {
-        $this->gateway->save($country);
+        $this->gateway->add($country);
     }
 
     public function update(Country $country) : void

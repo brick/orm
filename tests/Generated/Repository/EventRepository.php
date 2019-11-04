@@ -49,9 +49,9 @@ class EventRepository
         return $this->gateway->existsIdentity(Event::class, ['id' => $id]);
     }
 
-    public function save(Event $event) : void
+    public function add(Event $event) : void
     {
-        $this->gateway->save($event);
+        $this->gateway->add($event);
     }
 
     public function update(Event $event) : void

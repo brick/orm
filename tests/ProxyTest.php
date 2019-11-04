@@ -27,14 +27,14 @@ class ProxyTest extends AbstractTestCase
 
         $userId = (function() : int {
             $country = new Country('GB', 'United Kingdom');
-            self::$countryRepository->save($country);
+            self::$countryRepository->add($country);
 
             $user = new User('John Smith');
 
             $billingAddress = new Address('123 Unknown Road', 'London', 'WC2E9XX', $country, false);
             $user->setBillingAddress($billingAddress);
 
-            self::$userRepository->save($user);
+            self::$userRepository->add($user);
             self::$logger->reset();
 
             return $user->getId();

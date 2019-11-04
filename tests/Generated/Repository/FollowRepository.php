@@ -50,9 +50,9 @@ class FollowRepository
         return $this->gateway->existsIdentity(Follow::class, ['follower' => $follower, 'followee' => $followee]);
     }
 
-    public function save(Follow $follow) : void
+    public function add(Follow $follow) : void
     {
-        $this->gateway->save($follow);
+        $this->gateway->add($follow);
     }
 
     public function update(Follow $follow) : void

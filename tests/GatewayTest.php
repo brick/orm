@@ -21,17 +21,17 @@ class GatewayTest extends AbstractTestCase
         return false;
     }
 
-    public function testSaveCountry() : void
+    public function testAddCountry() : void
     {
         $country = new Country('GB', 'United Kingdom');
-        self::$countryRepository->save($country);
+        self::$countryRepository->add($country);
 
         $this->assertDebugStatementCount(1);
         $this->assertDebugStatement(0, 'INSERT INTO Country (code, name) VALUES (?, ?)', 'GB', 'United Kingdom');
     }
 
     /**
-     * @depends testSaveCountry
+     * @depends testAddCountry
      */
     public function testLoadUnknownCountry() : void
     {
@@ -66,14 +66,14 @@ class GatewayTest extends AbstractTestCase
      *
      * @return User
      */
-    public function testSaveUser(Country $country) : User
+    public function testAddUser(Country $country) : User
     {
         $user = new User('John Smith');
 
         $billingAddress = new Address('123 Unknown Road', 'London', 'WC2E9XX', $country, false);
         $user->setBillingAddress($billingAddress);
 
-        self::$userRepository->save($user);
+        self::$userRepository->add($user);
 
         $this->assertDebugStatementCount(1);
         $this->assertDebugStatement(0,
@@ -93,7 +93,7 @@ class GatewayTest extends AbstractTestCase
     }
 
     /**
-     * @depends testSaveUser
+     * @depends testAddUser
      *
      * @param User $user
      *

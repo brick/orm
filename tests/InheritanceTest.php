@@ -42,14 +42,14 @@ class InheritanceTest extends AbstractTestCase
     /**
      * @return int
      */
-    public function testSaveCreateCountryEvent() : int
+    public function testAddCreateCountryEvent() : int
     {
         $country = new Country('FR', 'France');
-        self::$countryRepository->save($country);
+        self::$countryRepository->add($country);
         self::$logger->reset();
 
         $event = new Event\CountryEvent\CreateCountryEvent($country);
-        self::$eventRepository->save($event);
+        self::$eventRepository->add($event);
 
         $this->assertDebugStatementCount(1);
         $this->assertDebugStatement(0,
@@ -61,7 +61,7 @@ class InheritanceTest extends AbstractTestCase
     }
 
     /**
-     * @depends testSaveCreateCountryEvent
+     * @depends testAddCreateCountryEvent
      *
      * @param int $eventId
      *
@@ -83,7 +83,7 @@ class InheritanceTest extends AbstractTestCase
     }
 
     /**
-     * @depends testSaveCreateCountryEvent
+     * @depends testAddCreateCountryEvent
      * @dataProvider providerLoadCreateCountryEventUsingClass
      *
      * @param string $class   The class name to request.
@@ -120,7 +120,7 @@ class InheritanceTest extends AbstractTestCase
     }
 
     /**
-     * @depends testSaveCreateCountryEvent
+     * @depends testAddCreateCountryEvent
      * @dataProvider providerLoadCreateCountryEventUsingWrongClass
      *
      * @param string $class   The class name to request.
@@ -153,7 +153,7 @@ class InheritanceTest extends AbstractTestCase
     }
 
     /**
-     * @depends testSaveCreateCountryEvent
+     * @depends testAddCreateCountryEvent
      *
      * @param int $eventId The ID of the event to load.
      *
@@ -184,7 +184,7 @@ class InheritanceTest extends AbstractTestCase
     }
 
     /**
-     * @depends testSaveCreateCountryEvent
+     * @depends testAddCreateCountryEvent
      * @expectedException \Brick\ORM\Exception\UnknownPropertyException
      * @expectedExceptionMessage Class "Brick\ORM\Tests\Resources\Models\Event" has no persistent property named "country".
      *
@@ -198,7 +198,7 @@ class InheritanceTest extends AbstractTestCase
     }
 
     /**
-     * @depends testSaveCreateCountryEvent
+     * @depends testAddCreateCountryEvent
      *
      * @param int $eventId The ID of the event to load.
      *
@@ -220,7 +220,7 @@ class InheritanceTest extends AbstractTestCase
     }
 
     /**
-     * @depends testSaveCreateCountryEvent
+     * @depends testAddCreateCountryEvent
      *
      * @param int $eventId The ID of the event to load.
      *
@@ -251,7 +251,7 @@ class InheritanceTest extends AbstractTestCase
     }
 
     /**
-     * @depends testSaveCreateCountryEvent
+     * @depends testAddCreateCountryEvent
      *
      * @param int $eventId The ID of the event to load.
      *
@@ -280,17 +280,17 @@ class InheritanceTest extends AbstractTestCase
     }
 
     /**
-     * @depends testSaveCreateCountryEvent
+     * @depends testAddCreateCountryEvent
      *
      * @return int
      */
-    public function testSaveEditCountryNameEvent() : int
+    public function testAddEditCountryNameEvent() : int
     {
         $country = self::$countryRepository->load('FR');
         self::$logger->reset();
 
         $event = new Event\CountryEvent\EditCountryNameEvent($country, 'République Française');
-        self::$eventRepository->save($event);
+        self::$eventRepository->add($event);
 
         $this->assertDebugStatementCount(1);
         $this->assertDebugStatement(0,
@@ -302,7 +302,7 @@ class InheritanceTest extends AbstractTestCase
     }
 
     /**
-     * @depends testSaveEditCountryNameEvent
+     * @depends testAddEditCountryNameEvent
      *
      * @param int $eventId
      *
@@ -325,7 +325,7 @@ class InheritanceTest extends AbstractTestCase
     }
 
     /**
-     * @depends testSaveEditCountryNameEvent
+     * @depends testAddEditCountryNameEvent
      * @dataProvider providerLoadEditCountryNameEventUsingClass
      *
      * @param string $class   The class name to request.
@@ -363,7 +363,7 @@ class InheritanceTest extends AbstractTestCase
     }
 
     /**
-     * @depends testSaveEditCountryNameEvent
+     * @depends testAddEditCountryNameEvent
      * @dataProvider providerLoadEditCountryNameEventUsingWrongClass
      *
      * @param string $class   The class name to request.
@@ -396,7 +396,7 @@ class InheritanceTest extends AbstractTestCase
     }
 
     /**
-     * @depends testSaveEditCountryNameEvent
+     * @depends testAddEditCountryNameEvent
      *
      * @param int $eventId The ID of the event to load.
      *
@@ -430,14 +430,14 @@ class InheritanceTest extends AbstractTestCase
     /**
      * @return int[]
      */
-    public function testSaveCreateUserEvent() : array
+    public function testAddCreateUserEvent() : array
     {
         $user = new User('John');
-        self::$userRepository->save($user);
+        self::$userRepository->add($user);
         self::$logger->reset();
 
         $event = new Event\UserEvent\CreateUserEvent($user);
-        self::$eventRepository->save($event);
+        self::$eventRepository->add($event);
 
         $this->assertDebugStatementCount(1);
         $this->assertDebugStatement(0,
@@ -449,7 +449,7 @@ class InheritanceTest extends AbstractTestCase
     }
 
     /**
-     * @depends testSaveCreateUserEvent
+     * @depends testAddCreateUserEvent
      *
      * @param int[] $ids The user and event IDs.
      *
@@ -473,7 +473,7 @@ class InheritanceTest extends AbstractTestCase
     }
 
     /**
-     * @depends testSaveCreateUserEvent
+     * @depends testAddCreateUserEvent
      * @dataProvider providerLoadCreateUserEventUsingClass
      *
      * @param string $class The class name to request.
@@ -512,7 +512,7 @@ class InheritanceTest extends AbstractTestCase
     }
 
     /**
-     * @depends testSaveCreateUserEvent
+     * @depends testAddCreateUserEvent
      * @dataProvider providerLoadCreateUserEventUsingWrongClass
      *
      * @param string $class The class name to request.
@@ -547,13 +547,13 @@ class InheritanceTest extends AbstractTestCase
     }
 
     /**
-     * @depends testSaveCreateUserEvent
+     * @depends testAddCreateUserEvent
      *
      * @param int[] $ids The User and (unused here) Event IDs.
      *
      * @return int[]
      */
-    public function testSaveEditUserNameEvent(array $ids) : array
+    public function testAddEditUserNameEvent(array $ids) : array
     {
         [$userId] = $ids;
 
@@ -561,7 +561,7 @@ class InheritanceTest extends AbstractTestCase
         self::$logger->reset();
 
         $event = new Event\UserEvent\EditUserNameEvent($user, 'Ben');
-        self::$eventRepository->save($event);
+        self::$eventRepository->add($event);
 
         $this->assertDebugStatementCount(1);
         $this->assertDebugStatement(0,
@@ -573,7 +573,7 @@ class InheritanceTest extends AbstractTestCase
     }
 
     /**
-     * @depends testSaveEditUserNameEvent
+     * @depends testAddEditUserNameEvent
      *
      * @param int[] $ids The User and Event IDs.
      *
@@ -598,7 +598,7 @@ class InheritanceTest extends AbstractTestCase
     }
 
     /**
-     * @depends testSaveEditUserNameEvent
+     * @depends testAddEditUserNameEvent
      * @dataProvider providerLoadEditUserNameEventUsingClass
      *
      * @param string $class The class name to request.
@@ -638,7 +638,7 @@ class InheritanceTest extends AbstractTestCase
     }
 
     /**
-     * @depends testSaveEditUserNameEvent
+     * @depends testAddEditUserNameEvent
      * @dataProvider providerLoadEditUserNameEventUsingWrongClass
      *
      * @param string $class The class name to request.

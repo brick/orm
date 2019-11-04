@@ -49,9 +49,9 @@ class CLASS_NAMERepository
         return $this->gateway->existsIdentity(CLASS_NAME::class, IDENTITY_ARRAY);
     }
 
-    public function save(CLASS_NAME $ENTITY_PROP_NAME) : void
+    public function add(CLASS_NAME $ENTITY_PROP_NAME) : void
     {
-        $this->gateway->save($ENTITY_PROP_NAME);
+        $this->gateway->add($ENTITY_PROP_NAME);
     }
 
     public function update(CLASS_NAME $ENTITY_PROP_NAME) : void
