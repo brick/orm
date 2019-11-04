@@ -17,7 +17,7 @@ use Brick\ORM\PropertyMapping\EntityMapping;
  * time. Use the generated repositories instead. You have been warned.
  *
  * Current limitations:
- * - No support for private properties (for simplicity, performuance, ease of requesting property names in load(), and lazy initialization proxies)
+ * - No support for private properties (for simplicity, performance, ease of requesting property names in load(), and lazy initialization proxies)
  * - No support for update() on mutated identities: explicitly remove() the previous identity then add() the new one
  *
  * @internal
