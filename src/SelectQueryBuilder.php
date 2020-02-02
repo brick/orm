@@ -168,6 +168,10 @@ class SelectQueryBuilder
             $query .= ' SKIP LOCKED';
         }
 
+        if ($this->options & Options::NOWAIT) {
+            $query .= ' NOWAIT';
+        }
+
         return $query;
     }
 }

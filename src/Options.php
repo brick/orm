@@ -25,7 +25,12 @@ class Options
     public const SKIP_LOCKED = 1 << 2;
 
     /**
+     * Throws an error if the entity is already locked.
+     */
+    public const NOWAIT = 1 << 3;
+
+    /**
      * Refreshes the entity if it is already present in the identity map, overwriting any in-memory changes.
      */
-    public const REFRESH = 1 << 3;
+    public const REFRESH = 1 << 4;
 }

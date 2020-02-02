@@ -261,6 +261,8 @@ class GatewayTest extends AbstractTestCase
             [Options::LOCK_WRITE, 'FOR UPDATE'],
             [Options::LOCK_READ | Options::SKIP_LOCKED, 'FOR SHARE SKIP LOCKED'],
             [Options::LOCK_WRITE | Options::SKIP_LOCKED, 'FOR UPDATE SKIP LOCKED'],
+            [Options::LOCK_READ | Options::NOWAIT, 'FOR SHARE NOWAIT'],
+            [Options::LOCK_WRITE | Options::NOWAIT, 'FOR UPDATE NOWAIT'],
         ];
     }
 }
