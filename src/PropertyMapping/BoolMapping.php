@@ -22,7 +22,7 @@ class BoolMapping extends BuiltinTypeMapping
     /**
      * {@inheritdoc}
      */
-    public function convertInputValuesToProp(Gateway $gateway, array $values)
+    public function convertInputValuesToProp(Gateway $gateway, array $values) : mixed
     {
         if ($values[0] === null) {
             return null;
@@ -34,7 +34,7 @@ class BoolMapping extends BuiltinTypeMapping
     /**
      * {@inheritdoc}
      */
-    public function convertPropToFields($propValue) : array
+    public function convertPropToFields(mixed $propValue) : array
     {
         if ($propValue === null) {
             return [

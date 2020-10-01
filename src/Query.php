@@ -58,7 +58,7 @@ class Query
      *
      * @throws \InvalidArgumentException If the operator is invalid.
      */
-    public function addPredicate(string $property, string $operator, $value) : Query
+    public function addPredicate(string $property, string $operator, mixed $value) : Query
     {
         $this->predicates[] = new QueryPredicate($property, $operator, $value);
 

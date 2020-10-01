@@ -10,10 +10,7 @@ class QueryPredicate
 
     private string $operator;
 
-    /**
-     * @var mixed
-     */
-    private $value;
+    private mixed $value;
 
     /**
      * @param string $property The property name, optionally including dots for sub-properties.
@@ -22,7 +19,7 @@ class QueryPredicate
      *
      * @throws \InvalidArgumentException If the operator is invalid.
      */
-    public function __construct(string $property, string $operator, $value)
+    public function __construct(string $property, string $operator, mixed $value)
     {
         if (! in_array($operator, ['=', '!=',  '>', '<', '>=', '<='])) {
             throw new \InvalidArgumentException(sprintf('Unknown operator "%s".', $operator));
@@ -52,7 +49,7 @@ class QueryPredicate
     /**
      * @return mixed
      */
-    public function getValue()
+    public function getValue() : mixed
     {
         return $this->value;
     }

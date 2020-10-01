@@ -51,7 +51,7 @@ class CLASS_NAMEProxy extends CLASS_NAME implements Proxy
      *
      * @return mixed
      */
-    public function __get(string $name)
+    public function __get(string $name) : mixed
     {
         if (! $this->__isInitialized) {
             $loadProps = [];

@@ -79,7 +79,7 @@ class GeometryMapping implements PropertyMapping
     /**
      * {@inheritdoc}
      */
-    public function convertInputValuesToProp(Gateway $gateway, array $values)
+    public function convertInputValuesToProp(Gateway $gateway, array $values) : mixed
     {
         [$wkt, $srid] = $values;
 
@@ -93,7 +93,7 @@ class GeometryMapping implements PropertyMapping
     /**
      * {@inheritdoc}
      */
-    public function convertPropToFields($propValue) : array
+    public function convertPropToFields(mixed $propValue) : array
     {
         if ($propValue === null) {
             return [

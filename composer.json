@@ -8,14 +8,11 @@
   ],
   "license": "MIT",
   "require": {
-    "php": ">=7.4",
+    "php": "^8.0",
     "brick/db": "dev-interfaces"
   },
   "require-dev": {
-    "phpunit/phpunit": "^7.5"
-  },
-  "suggest": {
-    "ext-json": "To map properties to JSON data types"
+    "phpunit/phpunit": "^9.0"
   },
   "autoload": {
     "psr-4": {

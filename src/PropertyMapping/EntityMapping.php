@@ -125,7 +125,7 @@ class EntityMapping implements PropertyMapping
     /**
      * {@inheritdoc}
      */
-    public function convertInputValuesToProp(Gateway $gateway, array $values)
+    public function convertInputValuesToProp(Gateway $gateway, array $values) : mixed
     {
         $currentIndex = 0;
 
@@ -167,7 +167,7 @@ class EntityMapping implements PropertyMapping
      *
      * {@inheritdoc}
      */
-    public function convertPropToFields($propValue) : array
+    public function convertPropToFields(mixed $propValue) : array
     {
         $result = [];
 

@@ -70,7 +70,7 @@ interface PropertyMapping
      *
      * @return mixed The property value.
      */
-    public function convertInputValuesToProp(Gateway $gateway, array $values);
+    public function convertInputValuesToProp(Gateway $gateway, array $values) : mixed;
 
     /**
      * Converts the given property to SQL expressions and values for each database field it is mapped to.
@@ -101,5 +101,5 @@ interface PropertyMapping
      *
      * @return array
      */
-    public function convertPropToFields($propValue) : array;
+    public function convertPropToFields(mixed $propValue) : array;
 }
