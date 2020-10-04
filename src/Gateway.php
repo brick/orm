@@ -85,7 +85,7 @@ class Gateway
     public function nativeQuery(string $className, string $query, array $parameters = []) : array
     {
         $statement = $this->connection->query($query, $parameters);
-        $rows = $statement->fetchAll(true);
+        $rows = $statement->fetchAllAssociative();
 
         $result = [];
 
@@ -504,7 +504,7 @@ class Gateway
 
         $result = [];
 
-        while (null !== $inputValues = $statement->fetch()) {
+        foreach ($statement->iterateNumeric() as $inputValues) {
             $index = 0;
             $propValues = [];
 
