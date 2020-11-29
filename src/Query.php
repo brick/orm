@@ -14,9 +14,11 @@ class Query
     /**
      * The properties to load, or null to load the full entity.
      *
+     * @psalm-var list<string>|null
+     *
      * @var string[]|null
      */
-    private ?array $properties = null;
+    private array|null $properties = null;
 
     /**
      * @var QueryPredicate[]
@@ -28,9 +30,9 @@ class Query
      */
     private array $orderBy = [];
 
-    private ?int $limit = null;
+    private int|null $limit = null;
 
-    private ?int $offset = null;
+    private int|null $offset = null;
 
     /**
      * @psalm-param class-string $className
@@ -108,7 +110,7 @@ class Query
     /**
      * @return string[]|null
      */
-    public function getProperties() : ?array
+    public function getProperties() : array|null
     {
         return $this->properties;
     }
@@ -129,18 +131,12 @@ class Query
         return $this->orderBy;
     }
 
-    /**
-     * @return int|null
-     */
-    public function getLimit() : ?int
+    public function getLimit() : int|null
     {
         return $this->limit;
     }
 
-    /**
-     * @return int|null
-     */
-    public function getOffset() : ?int
+    public function getOffset() : int|null
     {
         return $this->offset;
     }

@@ -12,7 +12,7 @@ class EntityMetadata extends ClassMetadata
      * This property will only be set if the entity is part of an inheritance hierarchy.
      * For other entities, this property will be null.
      */
-    public ?string $discriminatorColumn;
+    public string|null $discriminatorColumn;
 
     /**
      * The discriminator value.
@@ -64,7 +64,7 @@ class EntityMetadata extends ClassMetadata
      *
      * @psalm-var class-string<Proxy>|null
      */
-    public ?string $proxyClassName;
+    public string|null $proxyClassName;
 
     /**
      * The database table name.

@@ -27,7 +27,7 @@ class CLASS_NAMERepository
         $this->gateway = $gateway;
     }
 
-    public function load($IDENTITY_PROPS, int $options = 0, string ...$props) : ?CLASS_NAME
+    public function load($IDENTITY_PROPS, int $options = 0, string ...$props) : CLASS_NAME|null
     {
         /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->gateway->load(CLASS_NAME::class, IDENTITY_ARRAY, $options, ...$props);

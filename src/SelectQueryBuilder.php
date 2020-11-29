@@ -26,7 +26,7 @@ class SelectQueryBuilder
     /**
      * An optional table alias.
      */
-    private ?string $tableAlias;
+    private string|null $tableAlias;
 
     /**
      * @var string[]
@@ -52,7 +52,7 @@ class SelectQueryBuilder
      * @param string      $tableName    The table name.
      * @param string|null $tableAlias   An optional table alias.
      */
-    public function __construct(array $selectFields, string $tableName, ?string $tableAlias = null)
+    public function __construct(array $selectFields, string $tableName, string|null $tableAlias = null)
     {
         $this->selectFields = $selectFields;
         $this->tableName    = $tableName;

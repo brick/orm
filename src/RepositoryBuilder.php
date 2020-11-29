@@ -6,17 +6,17 @@ namespace Brick\ORM;
 
 class RepositoryBuilder
 {
-    private ?string $repositoryNamespace = null;
+    private string|null $repositoryNamespace = null;
 
     /**
      * @psalm-var class-string|null
      */
-    private ?string $entityClassName = null;
+    private string|null $entityClassName = null;
 
     /**
      * @psalm-var array<string, string>|null
      */
-    private ?array $identityProps = null;
+    private array|null $identityProps = null;
 
     /**
      * @param string $namespace The namespace of the repository.

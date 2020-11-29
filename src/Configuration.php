@@ -6,17 +6,17 @@ namespace Brick\ORM;
 
 class Configuration
 {
-    private ?string $proxyNamespace = null;
+    private string|null $proxyNamespace = null;
 
-    private ?string $proxyDir = null;
+    private string|null $proxyDir = null;
 
-    private ?string $repositoryNamespace = null;
+    private string|null $repositoryNamespace = null;
 
-    private ?string $repositoryDir = null;
+    private string|null $repositoryDir = null;
 
-    private ?string $classMetadataFile = null;
+    private string|null $classMetadataFile = null;
 
-    private ?string $baseEntityNamespace = null;
+    private string|null $baseEntityNamespace = null;
 
     /**
      * @var ClassConfiguration[]
@@ -74,13 +74,9 @@ class Configuration
     }
 
     /**
-     * @param string|null $entityClass
-     *
-     * @return string
-     *
      * @throws \LogicException
      */
-    public function getProxyNamespace(?string $entityClass = null) : string
+    public function getProxyNamespace(string|null $entityClass = null) : string
     {
         if ($this->proxyNamespace === null) {
             throw new \LogicException('Proxy namespace is not set.');
@@ -208,7 +204,7 @@ class Configuration
      *
      * @throws \LogicException
      */
-    public function getRepositoryNamespace(?string $entityClass = null) : string
+    public function getRepositoryNamespace(string|null $entityClass = null) : string
     {
         if ($this->repositoryNamespace === null) {
             throw new \LogicException('Repository namespace is not set.');
@@ -336,10 +332,7 @@ class Configuration
         return $this;
     }
 
-    /**
-     * @return string|null
-     */
-    public function getBaseEntityNamespace() : ?string
+    public function getBaseEntityNamespace() : string|null
     {
         return $this->baseEntityNamespace;
     }

@@ -36,7 +36,7 @@ class Gateway
     /**
      * The identity map, to keep references to managed entities, if any.
      */
-    private ?IdentityMap $identityMap;
+    private IdentityMap|null $identityMap;
 
     /**
      * Whether to use lazy-loading proxies to reference entities whose identity is known, but data is not yet known.
@@ -204,7 +204,7 @@ class Gateway
      *
      * @throws \RuntimeException If a property name does not exist.
      */
-    public function load(string $class, array $id, int $options = 0, string ...$props) : ?object
+    public function load(string $class, array $id, int $options = 0, string ...$props) : object|null
     {
         $query = new Query($class);
 
@@ -239,7 +239,7 @@ class Gateway
      * @throws Exception\UnknownEntityClassException If the class name is not a known entity class.
      * @throws Exception\UnknownPropertyException    If an unknown property is given.
      */
-    public function loadProps(string $class, array $id, array $props, int $options = 0) : ?array
+    public function loadProps(string $class, array $id, array $props, int $options = 0) : array|null
     {
         $query = new Query($class);
         $query->setProperties(...$props);
@@ -690,7 +690,7 @@ class Gateway
      * @throws Exception\UnknownPropertyException    If the query targets an unknown property.
      * @throws Exception\NonUniqueResultException    If the query returns more than one result.
      */
-    public function findOne(Query $query, int $options = 0) : ?object
+    public function findOne(Query $query, int $options = 0) : object|null
     {
         $entities = $this->find($query, $options);
         $count = count($entities);

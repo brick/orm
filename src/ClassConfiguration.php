@@ -45,7 +45,7 @@ abstract class ClassConfiguration
      *
      * @throws \LogicException
      */
-    public function getPersistentProperties(?string $className = null) : array
+    public function getPersistentProperties(string|null $className = null) : array
     {
         if ($className === null) {
             $reflectionClass = $this->reflectionClass;

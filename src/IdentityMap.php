@@ -40,7 +40,7 @@ class IdentityMap
      *
      * @return object|null The entity, or null if not found.
      */
-    public function get(string $class, array $identity) : ?object
+    public function get(string $class, array $identity) : object|null
     {
         $ref = & $this->entities[$class];
 

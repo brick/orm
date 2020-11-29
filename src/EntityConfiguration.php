@@ -8,9 +8,9 @@ use ReflectionNamedType;
 
 class EntityConfiguration extends ClassConfiguration
 {
-    private ?string $belongsTo = null;
+    private string|null $belongsTo = null;
 
-    private ?string $tableName = null;
+    private string|null $tableName = null;
 
     private bool $isAutoIncrement = false;
 
@@ -21,12 +21,12 @@ class EntityConfiguration extends ClassConfiguration
      *
      * @var string[]|null
      */
-    private ?array $identityProperties = null;
+    private array|null $identityProperties = null;
 
     /**
      * The discriminator column name, or null if not set.
      */
-    private ?string $discriminatorColumn = null;
+    private string|null $discriminatorColumn = null;
 
     /**
      * A map of discriminator values to entity class names, or an empty array if not set.
@@ -53,10 +53,7 @@ class EntityConfiguration extends ClassConfiguration
         return $this;
     }
 
-    /**
-     * @return string|null
-     */
-    public function getBelongsTo() : ?string
+    public function getBelongsTo() : string|null
     {
         return $this->belongsTo;
     }
@@ -252,10 +249,8 @@ class EntityConfiguration extends ClassConfiguration
 
     /**
      * Returns the discriminator column name, or null if inheritance is not in use.
-     *
-     * @return string|null
      */
-    public function getDiscriminatorColumn() : ?string
+    public function getDiscriminatorColumn() : string|null
     {
         return $this->discriminatorColumn;
     }

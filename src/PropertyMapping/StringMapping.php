@@ -14,7 +14,7 @@ class StringMapping extends BuiltinTypeMapping
     /**
      * {@inheritdoc}
      */
-    public function getType() : ?string
+    public function getType() : string|null
     {
         return 'string';
     }
