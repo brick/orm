@@ -78,6 +78,8 @@ class JsonMapping implements PropertyMapping
      */
     public function convertInputValuesToProp(Gateway $gateway, array $values) : mixed
     {
+        /** @var array{string|null} $values */
+
         if ($values[0] === null) {
             return null;
         }

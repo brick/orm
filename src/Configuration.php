@@ -385,7 +385,7 @@ class Configuration
     }
 
     /**
-     * @return array<string, class-string<PropertyMapping>>
+     * @psalm-return array<string, class-string<PropertyMapping>>
      */
     public function getCustomMappings() : array
     {
@@ -419,6 +419,8 @@ class Configuration
     }
 
     /**
+     * @psalm-param class-string $class
+     *
      * @param string $class
      * @param string ...$properties
      *
@@ -434,6 +436,8 @@ class Configuration
     /**
      * Returns the list of transient properties for the given class name.
      *
+     * @psalm-param class-string $class
+     *
      * @param string $class
      *
      * @return string[]
@@ -444,6 +448,8 @@ class Configuration
     }
 
     /**
+     * @psalm-param class-string $class
+     *
      * @param string $class
      * @param string $property
      * @param string $fieldName
@@ -473,6 +479,8 @@ class Configuration
      * Sets field name prefixes for entity/embeddable properties.
      *
      * If not set, the field name prefix defaults to the property name followed by an underscore character.
+     *
+     * @psalm-param class-string $class
      *
      * @param string $class
      * @param string $property

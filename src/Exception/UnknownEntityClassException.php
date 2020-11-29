@@ -10,6 +10,8 @@ namespace Brick\ORM\Exception;
 class UnknownEntityClassException extends ORMException
 {
     /**
+     * @psalm-param class-string $class
+     *
      * @param string $class
      *
      * @return UnknownEntityClassException

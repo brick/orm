@@ -17,6 +17,8 @@ class EntityConfiguration extends ClassConfiguration
     /**
      * The list of identity properties, or null if not set.
      *
+     * @psalm-var list<string>|null
+     *
      * @var string[]|null
      */
     private ?array $identityProperties = null;
@@ -37,6 +39,8 @@ class EntityConfiguration extends ClassConfiguration
 
     /**
      * Sets the root entity of the aggregate this entity belongs to.
+     *
+     * @psalm-param class-string $className
      *
      * @param string $className
      *
@@ -170,6 +174,8 @@ class EntityConfiguration extends ClassConfiguration
     /**
      * Returns the list of properties that are part of the entity's identity.
      *
+     * @psalm-return list<string>
+     *
      * @return string[]
      *
      * @throws \LogicException
@@ -196,6 +202,8 @@ class EntityConfiguration extends ClassConfiguration
      * classes, and root classes that are common to several entities (so-called MappedSuperclass in other ORM).
      *
      * Note: only single table inheritance is supported for now.
+     *
+     * @psalm-param array<int|string, class-string> $discriminatorMap
      *
      * @param string $discriminatorColumn The discriminator column name.
      * @param array  $discriminatorMap    A map of discriminator value to concrete entity class name.
@@ -257,7 +265,7 @@ class EntityConfiguration extends ClassConfiguration
      *
      * If no inheritance is mapped, an empty array is returned.
      *
-     * @return string[]
+     * @psalm-return array<int|string, class-string>
      */
     public function getDiscriminatorMap() : array
     {

@@ -12,7 +12,7 @@ interface PropertyMapping
     /**
      * Returns the PHP type of the property, or null if the mapping can handle mixed types (such as JSON columns).
      *
-     * @return string
+     * @return string|null
      */
     public function getType() : ?string;
 
@@ -25,6 +25,8 @@ interface PropertyMapping
 
     /**
      * Returns the list of database field names the property maps to.
+     *
+     * @psalm-return list<string>
      *
      * @return string[]
      */
@@ -54,6 +56,10 @@ interface PropertyMapping
      *
      * If no transformation is required, this method should return the input parameter unchanged.
      *
+     * @psalm-param list<string> $fieldNames
+     *
+     * @psalm-return list<string>
+     *
      * @param string[] $fieldNames The field names.
      *
      * @return string[] The list of fields to read, optionally wrapped with SQL code.
@@ -64,6 +70,8 @@ interface PropertyMapping
      * Converts the given database values to a property value.
      *
      * The input array will contain one value for each getFieldToInputValuesSQL() entry, in the same order.
+     *
+     * @psalm-param list<mixed> $values
      *
      * @param Gateway $gateway
      * @param mixed[] $values The list of database values.
@@ -96,6 +104,8 @@ interface PropertyMapping
      *     ['?', $value2],
      *     ['ST_GeomFromText(?, ?)', $wkt, $srid]
      * ]
+     *
+     * @psalm-return list<list<mixed>>
      *
      * @param mixed $propValue The property value.
      *

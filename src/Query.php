@@ -6,6 +6,9 @@ namespace Brick\ORM;
 
 class Query
 {
+    /**
+     * @psalm-var class-string
+     */
     private string $className;
 
     /**
@@ -30,7 +33,7 @@ class Query
     private ?int $offset = null;
 
     /**
-     * @param string $className
+     * @psalm-param class-string $className
      */
     public function __construct(string $className)
     {
@@ -95,7 +98,7 @@ class Query
     }
 
     /**
-     * @return string
+     * @psalm-return class-string
      */
     public function getClassName() : string
     {

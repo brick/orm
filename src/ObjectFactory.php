@@ -39,6 +39,8 @@ class ObjectFactory
      * Transient properties are still initialized to their default value, if any.
      * Properties may be initialized by passing a map of property name to value.
      *
+     * @psalm-param array<string, mixed> $values
+     *
      * @param ClassMetadata $classMetadata The class metadata of the entity or embeddable.
      * @param array         $values        An optional map of property name to value to write.
      *
@@ -92,6 +94,8 @@ class ObjectFactory
      * Instantiates a data transfer object with a nested array of scalar values.
      *
      * The class must have public properties only, and no constructor.
+     *
+     * @psalm-suppress MixedMethodCall We know that DTOs have no constructor.
      *
      * @template T
      *
@@ -212,6 +216,7 @@ class ObjectFactory
                 /** @psalm-var class-string $typeName */
                 $typeName = $type->getName();
 
+                /** @psalm-var array<string, mixed> $value */
                 return $this->instantiateDTO($typeName, $value);
             };
         }
@@ -224,6 +229,11 @@ class ObjectFactory
      *
      * Properties that are not initialized, or have been unset(), are not included in the array.
      * This method assumes that there are no private properties in parent classes.
+     *
+     * @psalm-suppress MixedInferredReturnType
+     * @psalm-suppress MixedReturnStatement
+     *
+     * @psalm-return array<string, mixed>
      *
      * @param object $object The object to read.
      *
@@ -241,6 +251,8 @@ class ObjectFactory
      * Writes an object's properties.
      *
      * This method does not support writing private properties in parent classes.
+     *
+     * @psalm-param array<string, mixed> $values
      *
      * @param object $object The object to write.
      * @param array  $values A map of property names to values.

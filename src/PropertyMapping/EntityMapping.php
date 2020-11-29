@@ -130,6 +130,7 @@ class EntityMapping implements PropertyMapping
         $currentIndex = 0;
 
         if ($this->classMetadata->discriminatorColumn !== null) {
+            /** @var int|string|null $discriminatorValue */
             $discriminatorValue = $values[$currentIndex++];
 
             if ($discriminatorValue === null) {
@@ -165,19 +166,23 @@ class EntityMapping implements PropertyMapping
     /**
      * @todo use Gateway::getIdentity() instead; currently does not check that the object has an identity
      *
+     * @psalm-suppress MixedArrayAccess Psalm does not understand references
+     * @psalm-suppress MixedArrayAssignment Psalm does not understand references
+     *
      * {@inheritdoc}
      */
     public function convertPropToFields(mixed $propValue) : array
     {
         $result = [];
 
+        /** @var object|null $entity */
         $entity = $propValue;
 
         if ($this->classMetadata->discriminatorColumn !== null) {
             if ($entity === null) {
                 $result[] = ['NULL'];
             } else {
-                $class = get_class($propValue);
+                $class = get_class($entity);
                 $discriminatorValue = $this->classMetadata->inverseDiscriminatorMap[$class];
                 $result[] = ['?', $discriminatorValue];
             }

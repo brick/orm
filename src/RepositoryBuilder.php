@@ -41,7 +41,9 @@ class RepositoryBuilder
     }
 
     /**
-     * @param array<string, string> $props An associative array of property name to type.
+     * @psalm-param array<string, string> $props
+     *
+     * @param array $props An associative array of property name to type.
      *
      * @return void
      */

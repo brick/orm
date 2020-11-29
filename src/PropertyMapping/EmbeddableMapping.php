@@ -8,6 +8,7 @@ use Brick\ORM\EmbeddableMetadata;
 use Brick\ORM\ObjectFactory;
 use Brick\ORM\Gateway;
 use Brick\ORM\PropertyMapping;
+use ReflectionObject;
 
 /**
  * @internal
@@ -143,6 +144,7 @@ class EmbeddableMapping implements PropertyMapping
     {
         $result = [];
 
+        /** @var object|null $entity */
         $entity = $propValue;
 
         if ($entity !== null) {
@@ -153,7 +155,7 @@ class EmbeddableMapping implements PropertyMapping
             if ($entity === null) {
                 $idPropValue = null;
             } else {
-                /** @psalm-suppress PossiblyUndefinedVariable */
+                /** @psalm-var ReflectionObject $r */
                 $p = $r->getProperty($prop);
                 $p->setAccessible(true);
                 $idPropValue = $p->getValue($entity);

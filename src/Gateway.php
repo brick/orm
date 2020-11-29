@@ -113,6 +113,8 @@ class Gateway
      * @psalm-suppress TypeDoesNotContainType
      *
      * @psalm-param array<string, mixed> $values
+     *
+     * @psalm-return array<string, mixed>
      */
     private function nestValues(array $values) : array
     {
@@ -157,9 +159,9 @@ class Gateway
     }
 
     /**
-     * @param string $table           The table name.
-     * @param array  $updates         The list of 'key = value' pairs to update.
-     * @param array  $whereConditions The list of 'key = value' WHERE conditions.
+     * @param string   $table           The table name.
+     * @param string[] $updates         The list of 'key = value' pairs to update.
+     * @param string[] $whereConditions The list of 'key = value' WHERE conditions.
      *
      * @return string
      */
@@ -172,8 +174,8 @@ class Gateway
     }
 
     /**
-     * @param string $table           The table name.
-     * @param array  $whereConditions The list of 'key = value' WHERE conditions.
+     * @param string   $table           The table name.
+     * @param string[] $whereConditions The list of 'key = value' WHERE conditions.
      *
      * @return string
      */
@@ -189,6 +191,9 @@ class Gateway
      *
      * An optional array of property names can be provided, to load a partial object.
      * By default, all properties will be loaded and set.
+     *
+     * @psalm-param class-string $class
+     * @psalm-param array<string, mixed> $id
      *
      * @param string $class    The entity class name.
      * @param array  $id       The identity, as a map of property name to value.
@@ -216,6 +221,12 @@ class Gateway
 
     /**
      * Loads an entity's properties.
+     *
+     * @psalm-param class-string $class
+     * @psalm-param array<string, mixed> $id
+     * @psalm-param list<string> $props
+     *
+     * @psalm-return array<string, mixed>
      *
      * @param string   $class    The entity class name.
      * @param array    $id       The identity, as a map of property name to value.
@@ -282,6 +293,8 @@ class Gateway
     /**
      * Finds entities using a query object.
      *
+     * @psalm-suppress MixedOperand See: https://github.com/vimeo/psalm/issues/4739
+     *
      * @param Query $query   The query object.
      * @param int   $options A bitmask of options to use.
      *
@@ -346,10 +359,10 @@ class Gateway
      * - the class name of the entity as a string;
      * - a map of property name to value as an array.
      *
+     * @psalm-return list<array{class-string, array<string, mixed>}>
+     *
      * @param Query $query   The query object.
      * @param int   $options A bitmask of options to use.
-     *
-     * @return array
      *
      * @throws Exception\UnknownEntityClassException If the query's class name is not a known entity class.
      * @throws Exception\UnknownPropertyException    If the query targets an unknown property.
@@ -399,6 +412,8 @@ class Gateway
                 $fieldNames[$key] = $mainTableAlias . '.' . $fieldName;
             }
 
+            // https://github.com/vimeo/psalm/issues/4741
+            /** @var list<string> $fieldNames */
             $fieldToInputValuesSQL = $propertyMapping->getFieldToInputValuesSQL($fieldNames);
 
             foreach ($fieldToInputValuesSQL as $selectField) {
@@ -420,6 +435,8 @@ class Gateway
                         $fieldNames[$key] = $mainTableAlias . '.' . $fieldName;
                     }
 
+                    // https://github.com/vimeo/psalm/issues/4741
+                    /** @var list<string> $fieldNames */
                     $fieldToInputValuesSQL = $propertyMapping->getFieldToInputValuesSQL($fieldNames);
 
                     foreach ($fieldToInputValuesSQL as $selectField) {
@@ -475,6 +492,7 @@ class Gateway
                 foreach ($fieldNames as $fieldNameIndex => $fieldName) {
                     foreach ($expressionsAndOutputValues[$fieldNameIndex] as $index => $expressionOrValue) {
                         if ($index === 0) {
+                            /** @var string $expressionOrValue */
                             $whereConditions[] = $tableAlias . '.' . $fieldNames[$fieldNameIndex] . ' ' . $operator . ' ' . $expressionOrValue;
                         } else {
                             $outputValues[] = $expressionOrValue;
@@ -516,6 +534,7 @@ class Gateway
             $propValues = [];
 
             if ($classMetadata->discriminatorColumn !== null) {
+                /** @var int|string $discriminatorValue */
                 $discriminatorValue = $inputValues[$index++];
                 $actualClass = $classMetadata->discriminatorMap[$discriminatorValue];
 
@@ -697,6 +716,9 @@ class Gateway
      * No check is performed to see if the entity actually exists in the database.
      * Only properties part of the identity will be set.
      *
+     * @psalm-param class-string $class
+     * @psalm-param array<string, mixed> $id
+     *
      * @param string $class The entity class name.
      * @param array  $id    The identity, as a map of property name to value.
      *
@@ -729,6 +751,9 @@ class Gateway
     }
 
     /**
+     * @psalm-param array<string, mixed> $id
+     * @psalm-param list<int|string> $scalarId
+     *
      * @param EntityMetadata $classMetadata The entity metadata.
      * @param array          $id            The identity, as a map of property name to value.
      * @param array          $scalarId      The identity, as a list of scalar values.
@@ -772,6 +797,9 @@ class Gateway
      * Returns whether an entity with the given identity exists in the database.
      *
      * @todo faster implementation
+     *
+     * @psalm-param class-string $class
+     * @psalm-param array<string, mixed> $id
      *
      * @param string $class The entity class name.
      * @param array  $id    The identity, as a map of property name to value.
@@ -854,6 +882,8 @@ class Gateway
                 foreach ($expressionsAndOutputValues[$fieldNameIndex] as $index => $expressionOrValue) {
                     if ($index === 0) {
                         $fieldNames[] = $fieldName; // @todo quote field name
+
+                        /** @var string $expressionOrValue */
                         $sqlExpressions[] = $expressionOrValue;
                     } else {
                         $outputValues[] = $expressionOrValue;
@@ -878,18 +908,20 @@ class Gateway
 
             $this->objectFactory->write($entity, [$prop => $value]);
 
+            /** @var int|string $value */
             $identity = [$value];
         }
 
         if ($this->identityMap !== null) {
             if ($identity === null) {
                 $identity = [];
+
                 foreach ($classMetadata->idProperties as $idProperty) {
                     $identity[$idProperty] = $propValues[$idProperty];
                 }
-            }
 
-            $identity = $this->getScalarIdentity($classMetadata, $identity);
+                $identity = $this->getScalarIdentity($classMetadata, $identity);
+            }
 
             $this->identityMap->set($classMetadata->rootClassName, $identity, $entity);
         }
@@ -950,6 +982,10 @@ class Gateway
      *
      * This results in an immediate UPDATE statement being executed against the database.
      *
+     * @psalm-param class-string $class
+     * @psalm-param array<string, mixed> $values
+     * @psalm-param array<string, mixed> $id
+     *
      * @param string $class
      * @param array  $values A map of updatable property name to value.
      * @param array  $id     A map of identity property name to value.
@@ -977,6 +1013,7 @@ class Gateway
             foreach ($propertyMapping->getFieldNames() as $fieldNameIndex => $fieldName) { // @todo quote field name
                 foreach ($expressionsAndOutputValues[$fieldNameIndex] as $index => $expressionOrValue) {
                     if ($index === 0) {
+                        /** @var string $expressionOrValue */
                         $updates[] = $fieldName . ' = ' . $expressionOrValue;
                     } else {
                         $outputValues[] = $expressionOrValue;
@@ -993,6 +1030,7 @@ class Gateway
             foreach ($propertyMapping->getFieldNames() as $fieldNameIndex => $fieldName) { // @todo quote field name
                 foreach ($expressionsAndOutputValues[$fieldNameIndex] as $index => $expressionOrValue) {
                     if ($index === 0) {
+                        /** @var string $expressionOrValue */
                         $whereConditions[] = $fieldName . ' = ' . $expressionOrValue;
                     } else {
                         $outputValues[] = $expressionOrValue;
@@ -1029,6 +1067,9 @@ class Gateway
      *
      * This results in an immediate DELETE statement being executed against the database.
      *
+     * @psalm-param class-string $class
+     * @psalm-param array<string, mixed> $id
+     *
      * @param string $class The entity class name.
      * @param array  $id    The identity, as a map of property name to value.
      *
@@ -1048,6 +1089,7 @@ class Gateway
             foreach ($propertyMapping->getFieldNames() as $fieldNameIndex => $fieldName) { // @todo quote field name
                 foreach ($expressionsAndOutputValues[$fieldNameIndex] as $index => $expressionOrValue) {
                     if ($index === 0) {
+                        /** @var string $expressionOrValue */
                         $whereConditions[] = $fieldName . ' = ' . $expressionOrValue;
                     } else {
                         $outputValues[] = $expressionOrValue;
@@ -1062,6 +1104,10 @@ class Gateway
     }
 
     /**
+     * @psalm-param class-string $class
+     *
+     * @psalm-return array<string, mixed>
+     *
      * @param string $class  The entity class name. Must be validated.
      * @param object $entity The entity.
      *
@@ -1090,6 +1136,10 @@ class Gateway
     /**
      * Returns the identity of the given identity, as a list of scalar values.
      *
+     * @psalm-param array<string, mixed> $identity
+     *
+     * @psalm-return list<int|string>
+     *
      * @param EntityMetadata $classMetadata The entity class metadata.
      * @param array          $identity      The object's identity, as a map of property name to value.
      *                                      Must contain a valid entry for each identity property.
@@ -1108,6 +1158,8 @@ class Gateway
 
             if ($propertyMapping instanceof EntityMapping) {
                 $targetClassMetadata = $propertyMapping->classMetadata;
+
+                /** @var object $value */
                 $targetId = $this->getIdentity($targetClassMetadata->className, $value);
 
                 foreach ($this->getScalarIdentity($targetClassMetadata, $targetId) as $value) {
@@ -1115,6 +1167,7 @@ class Gateway
                 }
             } else {
                 // This is guaranteed to be an IntMapping or StringMapping, we can use the value directly.
+                /** @var int|string $value */
                 $result[] = $value;
             }
         }
@@ -1125,9 +1178,7 @@ class Gateway
     /**
      * Returns the FQCN of the given object.
      *
-     * @param object $entity
-     *
-     * @return string
+     * @psalm-return class-string
      *
      * @throws Exception\UnknownEntityClassException If the object is not a known entity.
      */

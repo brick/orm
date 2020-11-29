@@ -28,6 +28,9 @@ class SelectQueryBuilder
      */
     private ?string $tableAlias;
 
+    /**
+     * @var string[]
+     */
     private array $joins = [];
 
     /**
@@ -132,6 +135,8 @@ class SelectQueryBuilder
     }
 
     /**
+     * @psalm-suppress MixedOperand See: https://github.com/vimeo/psalm/issues/4739
+     *
      * @return string
      */
     public function build() : string

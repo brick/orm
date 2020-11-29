@@ -20,7 +20,7 @@ class EntityMetadata extends ClassMetadata
      * This property will only be set if the entity is a concrete class in an inheritance hierarchy.
      * For other entities and abstract entities, this property will be null.
      */
-    public ?string $discriminatorValue;
+    public int|string|null $discriminatorValue;
 
     /**
      * The discriminator map for inheritance.
@@ -29,6 +29,8 @@ class EntityMetadata extends ClassMetadata
      * If the entity is not part of an inheritance hierarchy, this will be an empty array.
      *
      * This property is set, and is the same, for all classes in the inheritance hiearchy.
+     *
+     * @psalm-var array<int|string, class-string>
      */
     public array $discriminatorMap;
 
@@ -39,6 +41,8 @@ class EntityMetadata extends ClassMetadata
      * If the entity is not part of an inheritance hierarchy, this will be an empty array.
      *
      * This property is set, and is the same, for all classes in the inheritance hiearchy.
+     *
+     * @psalm-var array<class-string, int|string>
      */
     public array $inverseDiscriminatorMap;
 
@@ -47,6 +51,8 @@ class EntityMetadata extends ClassMetadata
      *
      * If the entity is not part of an inheritance hierarchy, or is itself the root of the hierarchy, this will be the
      * same as the entity class name.
+     *
+     * @psalm-var class-string
      */
     public string $rootClassName;
 
@@ -56,7 +62,7 @@ class EntityMetadata extends ClassMetadata
      * This property is only set if the class is a concrete entity.
      * For abstract entities, this property will be null.
      *
-     * @psalm-var class-string<Proxy>
+     * @psalm-var class-string<Proxy>|null
      */
     public ?string $proxyClassName;
 
@@ -71,6 +77,8 @@ class EntityMetadata extends ClassMetadata
      * This list must not intersect with $nonIdProperties.
      * The union of $idProperties and $nonIdProperties must be equal to $properties.
      *
+     * @psalm-var list<string>
+     *
      * @var string[]
      */
     public array $idProperties;
@@ -81,6 +89,8 @@ class EntityMetadata extends ClassMetadata
      * This list must not intersect with $idProperties.
      * The union of $idProperties and $nonIdProperties must be equal to $properties.
      *
+     * @psalm-var list<string>
+     *
      * @var string[]
      */
     public array $nonIdProperties;
@@ -90,12 +100,16 @@ class EntityMetadata extends ClassMetadata
      *
      * Properties declared in parent classes are not included here.
      *
+     * @psalm-var list<string>
+     *
      * @var string[]
      */
     public array $selfNonIdProperties;
 
     /**
      * The list of child entity class names, if any.
+     *
+     * @psalm-var list<class-string>
      *
      * @var string[]
      */

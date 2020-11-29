@@ -28,6 +28,13 @@ class IdentityMap
     /**
      * Retrieves an entity from the identity map.
      *
+     * @psalm-suppress MixedArrayAccess
+     * @psalm-suppress MixedInferredReturnType
+     * @psalm-suppress MixedReturnStatement
+     *
+     * @psalm-param class-string $class
+     * @psalm-param list<int|string> $identity
+     *
      * @param string $class    The root entity class name.
      * @param array  $identity The list of scalar values that form the entity's identity.
      *
@@ -49,6 +56,11 @@ class IdentityMap
      *
      * If the entity already exists in the identity map, this method does nothing.
      * If another entity already exists under this identity, an exception is thrown.
+     *
+     * @psalm-suppress MixedArrayAccess
+     *
+     * @psalm-param class-string $class
+     * @psalm-param list<int|string> $identity
      *
      * @param string $class    The root entity class name.
      * @param array  $identity The list of scalar values that form the entity's identity.
