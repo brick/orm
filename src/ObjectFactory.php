@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Brick\ORM;
 
+use ReflectionNamedType;
+
 /**
  * Creates, reads and writes persistent objects.
  *
@@ -180,13 +182,12 @@ class ObjectFactory
      */
     private function getPropertyValueConverter(\ReflectionProperty $property) : \Closure
     {
-        /** @var \ReflectionType|null $type */
         $type = $property->getType();
 
         $propertyName = $property->getName();
         $className = $property->getDeclaringClass()->getName();
 
-        if ($type !== null) {
+        if ($type instanceof ReflectionNamedType) {
             $propertyType = $type->getName();
 
             if ($type->isBuiltin()) {
