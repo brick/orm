@@ -49,11 +49,6 @@ class CLASS_NAMEProxy extends CLASS_NAME implements Proxy
         unset($UNSET_NON_ID_PROPS);
     }
 
-    /**
-     * @param string $name
-     *
-     * @return mixed
-     */
     public function __get(string $name) : mixed
     {
         if (! $this->__isInitialized) {

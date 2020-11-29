@@ -21,11 +21,15 @@ class Query
     private array|null $properties = null;
 
     /**
+     * @psalm-var list<QueryPredicate>
+     *
      * @var QueryPredicate[]
      */
     private array $predicates = [];
 
     /**
+     * @psalm-var list<QueryOrderBy>
+     *
      * @var QueryOrderBy[]
      */
     private array $orderBy = [];
@@ -42,11 +46,6 @@ class Query
         $this->className = $className;
     }
 
-    /**
-     * @param string ...$properties
-     *
-     * @return Query
-     */
     public function setProperties(string ...$properties) : Query
     {
         $this->properties = $properties;
@@ -55,12 +54,6 @@ class Query
     }
 
     /**
-     * @param string $property
-     * @param string $operator
-     * @param mixed  $value
-     *
-     * @return Query
-     *
      * @throws \InvalidArgumentException If the operator is invalid.
      */
     public function addPredicate(string $property, string $operator, mixed $value) : Query
@@ -74,8 +67,6 @@ class Query
      * @param string $property  The property to order by.
      * @param string $direction The order direction, 'ASC' or 'DESC'.
      *
-     * @return Query
-     *
      * @throws \InvalidArgumentException If the order direction is invalid.
      */
     public function addOrderBy(string $property, string $direction = 'ASC') : Query
@@ -85,12 +76,6 @@ class Query
         return $this;
     }
 
-    /**
-     * @param int $limit
-     * @param int $offset
-     *
-     * @return Query
-     */
     public function setLimit(int $limit, int $offset = 0) : Query
     {
         $this->limit  = $limit;
@@ -108,6 +93,8 @@ class Query
     }
 
     /**
+     * @psalm-return list<string>|null
+     *
      * @return string[]|null
      */
     public function getProperties() : array|null
@@ -116,6 +103,8 @@ class Query
     }
 
     /**
+     * @psalm-return list<QueryPredicate>
+     *
      * @return QueryPredicate[]
      */
     public function getPredicates() : array
@@ -124,6 +113,8 @@ class Query
     }
 
     /**
+     * @psalm-return list<QueryOrderBy>
+     *
      * @return QueryOrderBy[]
      */
     public function getOrderBy() : array

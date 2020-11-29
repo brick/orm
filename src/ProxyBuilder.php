@@ -14,14 +14,14 @@ class ProxyBuilder
     private string|null $entityClassName = null;
 
     /**
+     * @psalm-var list<string>|null
+     *
      * @var string[]|null
      */
     private array|null $nonIdProps = null;
 
     /**
      * @param string $namespace The namespace of the proxy class.
-     *
-     * @return void
      */
     public function setProxyNamespace(string $namespace) : void
     {
@@ -32,8 +32,6 @@ class ProxyBuilder
      * @psalm-param class-string $className
      *
      * @param string $className The FQCN of the entity.
-     *
-     * @return void
      */
     public function setEntityClassName(string $className) : void
     {
@@ -41,9 +39,9 @@ class ProxyBuilder
     }
 
     /**
-     * @param string[] $props The list of non-identity properties.
+     * @psalm-param list<string> $props
      *
-     * @return void
+     * @param string[] $props The list of non-identity properties.
      */
     public function setNonIdProps(array $props) : void
     {
@@ -52,8 +50,6 @@ class ProxyBuilder
 
     /**
      * Builds and returns the proxy source code.
-     *
-     * @return string
      *
      * @throws \RuntimeException If data are missing.
      * @throws \ReflectionException If a class does not exist.

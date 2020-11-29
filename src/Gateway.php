@@ -29,6 +29,8 @@ class Gateway
     /**
      * The entity metadata, indexed by class name.
      *
+     * @psalm-var array<class-string, EntityMetadata>
+     *
      * @var EntityMetadata[]
      */
     private array $classMetadata;
@@ -50,12 +52,11 @@ class Gateway
     /**
      * Gateway constructor.
      *
-     * @param Connection       $connection
+     * @psalm-param array<class-string, EntityMetadata> $classMetadata
+     *
      * @param EntityMetadata[] $classMetadata
-     * @param IdentityMap|null $identityMap
-     * @param bool             $useProxies
      */
-    public function __construct(Connection $connection, array $classMetadata, ?IdentityMap $identityMap = null, bool $useProxies = false)
+    public function __construct(Connection $connection, array $classMetadata, IdentityMap|null $identityMap = null, bool $useProxies = false)
     {
         $this->connection    = $connection;
         $this->classMetadata = $classMetadata;
@@ -144,11 +145,12 @@ class Gateway
      *
      * The arrays of fields and values must have the same number of elements.
      *
+     * @psalm-param list<string> $fields
+     * @psalm-param list<string> $expressions
+     *
      * @param string   $table       The table name.
      * @param string[] $fields      The list of field names.
      * @param string[] $expressions The list of SQL expressions.
-     *
-     * @return string
      */
     private function getInsertSQL(string $table, array $fields, array $expressions) : string
     {
@@ -159,11 +161,12 @@ class Gateway
     }
 
     /**
+     * @psalm-param list<string> $updates
+     * @psalm-param list<string> $whereConditions
+     *
      * @param string   $table           The table name.
      * @param string[] $updates         The list of 'key = value' pairs to update.
      * @param string[] $whereConditions The list of 'key = value' WHERE conditions.
-     *
-     * @return string
      */
     private function getUpdateSQL(string $table, array $updates, array $whereConditions) : string
     {
@@ -174,10 +177,10 @@ class Gateway
     }
 
     /**
+     * @psalm-param list<string> $whereConditions
+     *
      * @param string   $table           The table name.
      * @param string[] $whereConditions The list of 'key = value' WHERE conditions.
-     *
-     * @return string
      */
     private function getDeleteSQL(string $table, array $whereConditions) : string
     {
@@ -267,8 +270,6 @@ class Gateway
      * @param int    $options  A bitmask of options to use.
      * @param string ...$props An optional list of properties to hydrate.
      *
-     * @return void
-     *
      * @throws Exception\UnknownEntityClassException If the object is not a known entity.
      * @throws Exception\UnknownPropertyException    If an unknown property is given.
      * @throws Exception\NoIdentityException         If the entity has no identity.
@@ -294,6 +295,8 @@ class Gateway
      * Finds entities using a query object.
      *
      * @psalm-suppress MixedOperand See: https://github.com/vimeo/psalm/issues/4739
+     *
+     * @psalm-return list<object>
      *
      * @param Query $query   The query object.
      * @param int   $options A bitmask of options to use.
@@ -722,8 +725,6 @@ class Gateway
      * @param string $class The entity class name.
      * @param array  $id    The identity, as a map of property name to value.
      *
-     * @return object
-     *
      * @throws Exception\NoIdentityException If an entity with no identity is part of the given identity.
      */
     public function getReference(string $class, array $id) : object
@@ -757,8 +758,6 @@ class Gateway
      * @param EntityMetadata $classMetadata The entity metadata.
      * @param array          $id            The identity, as a map of property name to value.
      * @param array          $scalarId      The identity, as a list of scalar values.
-     *
-     * @return object
      */
     private function instantiate(EntityMetadata $classMetadata, array $id, array $scalarId) : object
     {
@@ -781,8 +780,6 @@ class Gateway
      *
      * @param object $entity The entity to check.
      *
-     * @return bool
-     *
      * @throws Exception\UnknownEntityClassException If the object is not a known entity.
      * @throws Exception\NoIdentityException         If the entity has no identity.
      */
@@ -803,8 +800,6 @@ class Gateway
      *
      * @param string $class The entity class name.
      * @param array  $id    The identity, as a map of property name to value.
-     *
-     * @return bool
      */
     public function existsIdentity(string $class, array $id) : bool
     {
@@ -818,8 +813,6 @@ class Gateway
      * If an identity map is in use, the object is added to the identity map on successful completion of the INSERT.
      *
      * @param object $entity The entity to save.
-     *
-     * @return void
      *
      * @throws \RuntimeException
      * @throws Exception\UnknownEntityClassException If the object is not a known entity.
@@ -938,8 +931,6 @@ class Gateway
      * @param object $entity   The entity to update.
      * @param string ...$props An optional list of properties to update.
      *
-     * @return void
-     *
      * @throws Exception\UnknownEntityClassException If the object is not a known entity.
      * @throws Exception\UnknownPropertyException    If an unknown property is given.
      * @throws Exception\NoIdentityException         If the entity has no identity.
@@ -989,8 +980,6 @@ class Gateway
      * @param string $class
      * @param array  $values A map of updatable property name to value.
      * @param array  $id     A map of identity property name to value.
-     *
-     * @return void
      *
      * @throws Exception\UnknownPropertyException If an unknown property is given.
      */
@@ -1051,8 +1040,6 @@ class Gateway
      *
      * @param object $entity The entity to remove.
      *
-     * @return void
-     *
      * @throws Exception\UnknownEntityClassException If the object is not a known entity.
      */
     public function remove(object $entity) : void
@@ -1072,8 +1059,6 @@ class Gateway
      *
      * @param string $class The entity class name.
      * @param array  $id    The identity, as a map of property name to value.
-     *
-     * @return void
      */
     public function removeIdentity(string $class, array $id) : void
     {

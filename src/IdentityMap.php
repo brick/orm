@@ -32,7 +32,7 @@ class IdentityMap
      * @psalm-suppress MixedInferredReturnType
      * @psalm-suppress MixedReturnStatement
      *
-     * @psalm-param class-string $class
+     * @psalm-param class-string     $class
      * @psalm-param list<int|string> $identity
      *
      * @param string $class    The root entity class name.
@@ -59,14 +59,12 @@ class IdentityMap
      *
      * @psalm-suppress MixedArrayAccess
      *
-     * @psalm-param class-string $class
+     * @psalm-param class-string     $class
      * @psalm-param list<int|string> $identity
      *
      * @param string $class    The root entity class name.
      * @param array  $identity The list of scalar values that form the entity's identity.
      * @param object $entity   The entity to add.
-     *
-     * @return void
      *
      * @throws IdentityConflictException If another instance with the same identity already exists.
      */

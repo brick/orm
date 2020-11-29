@@ -11,17 +11,11 @@ use Brick\ORM\Gateway;
  */
 class IntMapping extends BuiltinTypeMapping
 {
-    /**
-     * {@inheritdoc}
-     */
     public function getType() : string|null
     {
         return 'int';
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function convertInputValuesToProp(Gateway $gateway, array $values) : mixed
     {
         if ($values[0] === null) {
@@ -31,9 +25,6 @@ class IntMapping extends BuiltinTypeMapping
         return (int) $values[0];
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function convertPropToFields(mixed $propValue) : array
     {
         if ($propValue === null) {

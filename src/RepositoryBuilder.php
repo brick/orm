@@ -20,8 +20,6 @@ class RepositoryBuilder
 
     /**
      * @param string $namespace The namespace of the repository.
-     *
-     * @return void
      */
     public function setRepositoryNamespace(string $namespace) : void
     {
@@ -32,8 +30,6 @@ class RepositoryBuilder
      * @psalm-param class-string $className
      *
      * @param string $className The FQCN of the entity.
-     *
-     * @return void
      */
     public function setEntityClassName(string $className) : void
     {
@@ -44,8 +40,6 @@ class RepositoryBuilder
      * @psalm-param array<string, string> $props
      *
      * @param array $props An associative array of property name to type.
-     *
-     * @return void
      */
     public function setIdentityProps(array $props) : void
     {
@@ -54,8 +48,6 @@ class RepositoryBuilder
 
     /**
      * Builds and returns the repository source code.
-     *
-     * @return string
      *
      * @throws \RuntimeException If data are missing.
      * @throws \ReflectionException If a class does not exist.
@@ -147,10 +139,6 @@ class RepositoryBuilder
      * Returns a suitable parameter name for a class name.
      *
      * Examples: 'User' => 'user', 'ABBREntity' => 'abbrEntity'.
-     *
-     * @param string $className
-     *
-     * @return string
      */
     private function getParamNameForClassName(string $className) : string
     {
@@ -179,10 +167,6 @@ class RepositoryBuilder
 
     /**
      * Checks if an ASCII letter is uppercase.
-     *
-     * @param string $letter
-     *
-     * @return bool
      */
     private function isUppercase(string $letter) : bool
     {

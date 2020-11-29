@@ -11,11 +11,6 @@ class UnknownPropertyException extends ORMException
 {
     /**
      * @psalm-param class-string $class
-     *
-     * @param string $class
-     * @param string $property
-     *
-     * @return UnknownPropertyException
      */
     public static function unknownProperty(string $class, string $property) : self
     {
@@ -24,11 +19,6 @@ class UnknownPropertyException extends ORMException
 
     /**
      * @psalm-param class-string $class
-     *
-     * @param string $class
-     * @param string $dottedProperty
-     *
-     * @return UnknownPropertyException
      */
     public static function invalidDottedProperty(string $class, string $dottedProperty) : self
     {

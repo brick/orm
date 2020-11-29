@@ -16,6 +16,8 @@ abstract class ClassMetadata
     /**
      * The list of persistent properties.
      *
+     * @psalm-var list<string>
+     *
      * @var string[]
      */
     public array $properties;

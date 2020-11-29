@@ -41,10 +41,6 @@ class EntityConfiguration extends ClassConfiguration
      * Sets the root entity of the aggregate this entity belongs to.
      *
      * @psalm-param class-string $className
-     *
-     * @param string $className
-     *
-     * @return EntityConfiguration
      */
     public function belongsTo(string $className) : EntityConfiguration
     {
@@ -62,10 +58,6 @@ class EntityConfiguration extends ClassConfiguration
      * Sets the table name.
      *
      * If not set, it will default to the entity short name (i.e. the name without the namespace).
-     *
-     * @param string $tableName
-     *
-     * @return EntityConfiguration
      */
     public function setTableName(string $tableName) : EntityConfiguration
     {
@@ -78,8 +70,6 @@ class EntityConfiguration extends ClassConfiguration
      * Returns the table name.
      *
      * If not set, it will default to the entity short name (i.e. the name without the namespace).
-     *
-     * @return string
      */
     public function getTableName() : string
     {
@@ -92,8 +82,6 @@ class EntityConfiguration extends ClassConfiguration
 
     /**
      * Sets whether the database table uses an auto-increment identity field.
-     *
-     * @return EntityConfiguration
      */
     public function setAutoIncrement() : EntityConfiguration
     {
@@ -104,8 +92,6 @@ class EntityConfiguration extends ClassConfiguration
 
     /**
      * Returns whether the database table uses an auto-increment identity field.
-     *
-     * @return bool
      *
      * @throws \LogicException
      */
@@ -149,10 +135,6 @@ class EntityConfiguration extends ClassConfiguration
     }
 
     /**
-     * @param string ...$identityProperties
-     *
-     * @return EntityConfiguration
-     *
      * @throws \InvalidArgumentException
      */
     public function setIdentityProperties(string ...$identityProperties) : EntityConfiguration
@@ -204,8 +186,6 @@ class EntityConfiguration extends ClassConfiguration
      *
      * @param string $discriminatorColumn The discriminator column name.
      * @param array  $discriminatorMap    A map of discriminator value to concrete entity class name.
-     *
-     * @return EntityConfiguration
      *
      * @throws \InvalidArgumentException If the discriminator map is empty, a class name does not exist, or is not a subclass of the root entity class.
      */
@@ -299,9 +279,9 @@ class EntityConfiguration extends ClassConfiguration
     }
 
     /**
-     * @param string[] $properties The list of property names to check.
+     * @psalm-param list<string> $properties
      *
-     * @return void
+     * @param string[] $properties The list of property names to check.
      *
      * @throws \InvalidArgumentException If a property does not exist.
      */

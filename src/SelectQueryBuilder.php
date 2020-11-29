@@ -14,6 +14,8 @@ class SelectQueryBuilder
     /**
      * The fields to SELECT.
      *
+     * @psalm-var list<string>
+     *
      * @var string[]
      */
     private array $selectFields;
@@ -29,16 +31,22 @@ class SelectQueryBuilder
     private string|null $tableAlias;
 
     /**
+     * @psalm-var list<string>
+     *
      * @var string[]
      */
     private array $joins = [];
 
     /**
+     * @psalm-var list<string>
+     *
      * @var string[]
      */
     private array $whereConditions = [];
 
     /**
+     * @psalm-var list<string>
+     *
      * @var string[]
      */
     private array $orderBy = [];
@@ -48,6 +56,8 @@ class SelectQueryBuilder
     private int $options = 0;
 
     /**
+     * @psalm-param list<string> $selectFields
+     *
      * @param string[]    $selectFields The fields or expressions to SELECT.
      * @param string      $tableName    The table name.
      * @param string|null $tableAlias   An optional table alias.
@@ -60,12 +70,12 @@ class SelectQueryBuilder
     }
 
     /**
+     * @psalm-param list<string> $joinConditions
+     *
      * @param string   $joinType       The JOIN type, such as INNER or LEFT.
      * @param string   $tableName      The table name.
      * @param string   $tableAlias     The table alias.
      * @param string[] $joinConditions The list of A=B join conditions.
-     *
-     * @return void
      */
     public function addJoin(string $joinType, string $tableName, string $tableAlias, array $joinConditions) : void
     {
@@ -80,10 +90,11 @@ class SelectQueryBuilder
      * The conditions will be AND'ed or OR'ed together, according to the given operator, and AND'ed as a whole to the
      * existing conditions.
      *
+     * @psalm-param list<string> $whereConditions
+     * @psalm-param 'AND'|'OR'   $operator
+     *
      * @param string[] $whereConditions The WHERE conditions.
      * @param string   $operator        The operator, 'AND' or 'OR'.
-     *
-     * @return void
      */
     public function addWhereConditions(array $whereConditions, string $operator = 'AND') : void
     {
@@ -99,22 +110,16 @@ class SelectQueryBuilder
     }
 
     /**
+     * @psalm-param 'ASC'|'DESC' $direction
+     *
      * @param string $expression The expression to order by.
      * @param string $direction  The order direction, 'ASC' or 'DESC'.
-     *
-     * @return void
      */
     public function addOrderBy(string $expression, string $direction = 'ASC') : void
     {
         $this->orderBy[] = $expression . ' ' . $direction;
     }
 
-    /**
-     * @param int $limit
-     * @param int $offset
-     *
-     * @return void
-     */
     public function setLimit(int $limit, int $offset = 0) : void
     {
         $this->limit = ' LIMIT ' . $limit;
@@ -126,8 +131,6 @@ class SelectQueryBuilder
 
     /**
      * @param int $options A bitmask of options.
-     *
-     * @return void
      */
     public function setOptions(int $options) : void
     {
@@ -136,8 +139,6 @@ class SelectQueryBuilder
 
     /**
      * @psalm-suppress MixedOperand See: https://github.com/vimeo/psalm/issues/4739
-     *
-     * @return string
      */
     public function build() : string
     {

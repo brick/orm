@@ -39,6 +39,8 @@ abstract class ClassConfiguration
     /**
      * @psalm-param class-string|null $className
      *
+     * @psalm-return list<string>
+     *
      * @param string|null $className The entity class name, or null to use the root entity (this entity)'s class name.
      *
      * @return string[]
@@ -93,8 +95,6 @@ abstract class ClassConfiguration
      * @param string               $propertyName       The property name.
      * @param EntityMetadata[]     $entityMetadata     A map of FQCN to EntityMetadata instances.
      * @param EmbeddableMetadata[] $embeddableMetadata A map of FQCN to EmbeddableMetadata instances.
-     *
-     * @return PropertyMapping
      *
      * @throws \LogicException
      */

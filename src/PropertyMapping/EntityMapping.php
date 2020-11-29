@@ -34,17 +34,11 @@ class EntityMapping implements PropertyMapping
         $this->isNullable      = $isNullable;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getType() : string|null
     {
         return $this->classMetadata->className;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function isNullable() : bool
     {
         return $this->isNullable;
@@ -52,8 +46,6 @@ class EntityMapping implements PropertyMapping
 
     /**
      * @todo precompute for better performance
-     *
-     * {@inheritdoc}
      */
     public function getFieldNames() : array
     {
@@ -74,8 +66,6 @@ class EntityMapping implements PropertyMapping
 
     /**
      * @todo precompute for better performance
-     *
-     * {@inheritdoc}
      */
     public function getInputValuesCount() : int
     {
@@ -95,8 +85,6 @@ class EntityMapping implements PropertyMapping
 
     /**
      * @todo precompute for better performance
-     *
-     * {@inheritdoc}
      */
     public function getFieldToInputValuesSQL(array $fieldNames) : array
     {
@@ -122,9 +110,6 @@ class EntityMapping implements PropertyMapping
         return $wrappedFields;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function convertInputValuesToProp(Gateway $gateway, array $values) : mixed
     {
         $currentIndex = 0;
@@ -168,8 +153,6 @@ class EntityMapping implements PropertyMapping
      *
      * @psalm-suppress MixedArrayAccess Psalm does not understand references
      * @psalm-suppress MixedArrayAssignment Psalm does not understand references
-     *
-     * {@inheritdoc}
      */
     public function convertPropToFields(mixed $propValue) : array
     {

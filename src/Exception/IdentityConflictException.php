@@ -15,8 +15,6 @@ class IdentityConflictException extends ORMException
      *
      * @param string $className      The entity class name.
      * @param array  $scalarIdentity The identity, as a list of scalar values.
-     *
-     * @return IdentityConflictException
      */
     public static function identityMapConflict(string $className, array $scalarIdentity) : self
     {

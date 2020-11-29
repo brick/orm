@@ -13,10 +13,6 @@ class ORMException extends \Exception
      * Returns a parsable string representation of the given string, hex-encoding every non-printable ASCII char.
      *
      * Example: "ABC\xFE\xFF"
-     *
-     * @param string $string
-     *
-     * @return string
      */
     protected static function exportString(string $string) : string
     {
@@ -42,8 +38,6 @@ class ORMException extends \Exception
      *
      * @param array $scalarIdentity The identity, as a list of scalar values. Must contain at least one entry.
      *                              Each entry must be an int or a string.
-     *
-     * @return string
      */
     protected static function exportScalarIdentity(array $scalarIdentity) : string
     {

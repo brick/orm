@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Brick\ORM;
 
+use Closure;
+use ReflectionClass;
 use ReflectionNamedType;
 
 /**
@@ -19,7 +21,9 @@ class ObjectFactory
     /**
      * A map of fully qualified class name to ReflectionClass instance.
      *
-     * @var \ReflectionClass[]
+     * @psalm-var array<class-string, ReflectionClass>
+     *
+     * @var ReflectionClass[]
      */
     private array $classes = [];
 
@@ -28,7 +32,9 @@ class ObjectFactory
      *
      * Each closure converts a property value to the correct type.
      *
-     * @var \Closure[][]
+     * @psalm-var array<class-string, array<string, Closure>>
+     *
+     * @var Closure[][]
      */
     private array $propertyConverters = [];
 
@@ -43,8 +49,6 @@ class ObjectFactory
      *
      * @param ClassMetadata $classMetadata The class metadata of the entity or embeddable.
      * @param array         $values        An optional map of property name to value to write.
-     *
-     * @return object
      *
      * @throws \ReflectionException If the class does not exist.
      */
@@ -126,9 +130,13 @@ class ObjectFactory
     }
 
     /**
+     * Returns the property converters for the given class, indexed by property name.
+     *
      * @psalm-param class-string $className
      *
-     * @return \Closure[]
+     * @psalm-return array<string, Closure>
+     *
+     * @return Closure[]
      *
      * @throws \ReflectionException      If the class does not exist.
      * @throws \InvalidArgumentException If the class is not a valid DTO or an unexpected value is found.
@@ -188,7 +196,7 @@ class ObjectFactory
      *
      * @throws \InvalidArgumentException If an unexpected value is found.
      */
-    private function getPropertyValueConverter(\ReflectionProperty $property) : \Closure
+    private function getPropertyValueConverter(\ReflectionProperty $property) : Closure
     {
         $type = $property->getType();
 
@@ -256,8 +264,6 @@ class ObjectFactory
      *
      * @param object $object The object to write.
      * @param array  $values A map of property names to values.
-     *
-     * @return void
      */
     public function write(object $object, array $values) : void
     {

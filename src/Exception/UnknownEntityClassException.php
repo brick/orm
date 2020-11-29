@@ -11,10 +11,6 @@ class UnknownEntityClassException extends ORMException
 {
     /**
      * @psalm-param class-string $class
-     *
-     * @param string $class
-     *
-     * @return UnknownEntityClassException
      */
     public static function unknownEntityClass(string $class) : self
     {

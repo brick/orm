@@ -8,6 +8,9 @@ class QueryOrderBy
 {
     private string $property;
 
+    /**
+     * @psalm-var 'ASC'|'DESC'
+     */
     private string $direction;
 
     /**
@@ -28,16 +31,13 @@ class QueryOrderBy
         $this->direction = $direction;
     }
 
-    /**
-     * @return string
-     */
     public function getProperty() : string
     {
         return $this->property;
     }
 
     /**
-     * @return string
+     * @psalm-return 'ASC'|'DESC'
      */
     public function getDirection() : string
     {

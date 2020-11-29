@@ -8,9 +8,6 @@ class TableAliasGenerator
 {
     private int $number = 0;
 
-    /**
-     * @return string
-     */
     public function generate() : string
     {
         $this->number++;

@@ -21,11 +21,6 @@ class JsonMapping implements PropertyMapping
      */
     public bool $objectAsArray;
 
-    /**
-     * @param string $fieldName
-     * @param bool   $isNullable
-     * @param bool   $objectAsArray
-     */
     public function __construct(string $fieldName, bool $isNullable, bool $objectAsArray)
     {
         $this->fieldName = $fieldName;
@@ -33,49 +28,31 @@ class JsonMapping implements PropertyMapping
         $this->objectAsArray = $objectAsArray;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function isNullable() : bool
     {
         return $this->isNullable;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getFieldNames() : array
     {
         return [$this->fieldName];
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getInputValuesCount() : int
     {
         return 1;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getFieldToInputValuesSQL(array $fieldNames) : array
     {
         return $fieldNames;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getType() : string|null
     {
         return null;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function convertInputValuesToProp(Gateway $gateway, array $values) : mixed
     {
         /** @var array{string|null} $values */
@@ -87,9 +64,6 @@ class JsonMapping implements PropertyMapping
         return json_decode($values[0], $this->objectAsArray);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function convertPropToFields(mixed $propValue) : array
     {
         if ($propValue === null) {

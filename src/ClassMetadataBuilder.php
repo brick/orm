@@ -18,24 +18,27 @@ class ClassMetadataBuilder
     private Configuration $configuration;
 
     /**
+     * @psalm-var array<class-string, EntityMetadata>
+     *
      * @var EntityMetadata[]
      */
     private array $entityMetadata;
 
     /**
+     * @psalm-var array<class-string, EmbeddableMetadata>
+     *
      * @var EmbeddableMetadata[]
      */
     private array $embeddableMetadata;
 
-    /**
-     * @param Configuration $configuration
-     */
     public function __construct(Configuration $configuration)
     {
         $this->configuration = $configuration;
     }
 
     /**
+     * @psalm-return array<class-string, EntityMetadata>
+     *
      * @return EntityMetadata[] A map of FQCN to EntityMetadata instances for all entities.
      */
     public function build() : array
@@ -73,12 +76,6 @@ class ClassMetadataBuilder
 
     /**
      * @psalm-param class-string $className
-     *
-     * @param EntityMetadata      $classMetadata
-     * @param string              $className
-     * @param EntityConfiguration $entityConfiguration
-     *
-     * @return void
      *
      * @throws \LogicException
      */
@@ -181,12 +178,6 @@ class ClassMetadataBuilder
 
     /**
      * @psalm-param class-string $className
-     *
-     * @param EmbeddableMetadata      $classMetadata
-     * @param string                  $className
-     * @param EmbeddableConfiguration $embeddableConfiguration
-     *
-     * @return void
      */
     private function fillEmbeddableMetadata(EmbeddableMetadata $classMetadata, string $className, EmbeddableConfiguration $embeddableConfiguration) : void
     {

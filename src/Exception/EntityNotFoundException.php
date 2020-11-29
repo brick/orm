@@ -18,8 +18,6 @@ class EntityNotFoundException extends ORMException
      *
      * @param string $className      The entity class name.
      * @param array  $scalarIdentity The identity, as a list of int or string values.
-     *
-     * @return EntityNotFoundException
      */
     public static function entityNotFound(string $className, array $scalarIdentity) : self
     {

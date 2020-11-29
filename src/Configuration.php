@@ -19,12 +19,16 @@ class Configuration
     private string|null $baseEntityNamespace = null;
 
     /**
+     * @psalm-var array<class-string, ClassConfiguration>
+     *
      * @var ClassConfiguration[]
      */
     private array $classes = [];
 
     /**
      * A map of entity/embeddable class names to lists of transient property names.
+     *
+     * @psalm-var array<class-string, list<string>>
      *
      * @var string[][]
      */
@@ -36,6 +40,8 @@ class Configuration
      * The mappings are usually inferred from the PHP type, but can be overridden here.
      * This is typically used to map a mixed/array type property to a JSON column.
      *
+     * @psalm-var array<class-string, array<string, PropertyMapping>>
+     *
      * @var PropertyMapping[][]
      */
     private array $customPropertyMappings = [];
@@ -43,12 +49,16 @@ class Configuration
     /**
      * A map of entity/embeddable class names to property names to field names.
      *
+     * @psalm-var array<class-string, array<string, string>>
+     *
      * @var string[][]
      */
     private array $fieldNames = [];
 
     /**
      * A map of entity/embeddable class names to property names to field name prefixes.
+     *
+     * @psalm-var array<class-string, array<string, string>>
      *
      * @var string[][]
      */
@@ -61,11 +71,6 @@ class Configuration
      */
     private array $customMappings = [];
 
-    /**
-     * @param string $proxyNamespace
-     *
-     * @return Configuration
-     */
     public function setProxyNamespace(string $proxyNamespace) : Configuration
     {
         $this->proxyNamespace = $proxyNamespace;
@@ -138,11 +143,6 @@ class Configuration
         return $this->getProxyNamespace() . '\\' . $entityClass . 'Proxy';
     }
 
-    /**
-     * @param string $entityClass
-     *
-     * @return string
-     */
     public function getProxyFileName(string $entityClass) : string
     {
         if ($this->baseEntityNamespace !== null) {
@@ -159,11 +159,6 @@ class Configuration
         return $this->getProxyDir() . DIRECTORY_SEPARATOR . str_replace('\\', DIRECTORY_SEPARATOR, $entityClass) . 'Proxy.php';
     }
 
-    /**
-     * @param string $proxyDir
-     *
-     * @return Configuration
-     */
     public function setProxyDir(string $proxyDir) : Configuration
     {
         $this->proxyDir = $proxyDir;
@@ -172,8 +167,6 @@ class Configuration
     }
 
     /**
-     * @return string
-     *
      * @throws \LogicException
      */
     public function getProxyDir() : string
@@ -185,11 +178,6 @@ class Configuration
         return $this->proxyDir;
     }
 
-    /**
-     * @param string $repositoryNamespace
-     *
-     * @return Configuration
-     */
     public function setRepositoryNamespace(string $repositoryNamespace) : Configuration
     {
         $this->repositoryNamespace = $repositoryNamespace;
@@ -198,10 +186,6 @@ class Configuration
     }
 
     /**
-     * @param string|null $entityClass
-     *
-     * @return string
-     *
      * @throws \LogicException
      */
     public function getRepositoryNamespace(string|null $entityClass = null) : string
@@ -234,11 +218,6 @@ class Configuration
         return $this->repositoryNamespace . '\\' . substr($entityClass, 0, $pos);
     }
 
-    /**
-     * @param string $entityClass
-     *
-     * @return string
-     */
     public function getRepositoryFileName(string $entityClass) : string
     {
         if ($this->baseEntityNamespace !== null) {
@@ -255,11 +234,6 @@ class Configuration
         return $this->getRepositoryDir() . DIRECTORY_SEPARATOR . str_replace('\\', DIRECTORY_SEPARATOR, $entityClass) . 'Repository.php';
     }
 
-    /**
-     * @param string $repositoryDir
-     *
-     * @return Configuration
-     */
     public function setRepositoryDir(string $repositoryDir) : Configuration
     {
         $this->repositoryDir = $repositoryDir;
@@ -268,8 +242,6 @@ class Configuration
     }
 
     /**
-     * @return string
-     *
      * @throws \LogicException
      */
     public function getRepositoryDir() : string
@@ -283,10 +255,6 @@ class Configuration
 
     /**
      * Sets the path to the PHP file where the ClassMetadata will be stored.
-     *
-     * @param string $classMetadataFile
-     *
-     * @return Configuration
      */
     public function setClassMetadataFile(string $classMetadataFile) : Configuration
     {
@@ -300,8 +268,6 @@ class Configuration
     }
 
     /**
-     * @return string
-     *
      * @throws \LogicException
      */
     public function getClassMetadataFile() : string
@@ -320,10 +286,6 @@ class Configuration
      *
      * For example, by default App\Model\User's repository would live in RepositoryNamespace\App\Model\UserRepository,
      * while with a base entity namespace of App\Model it would live in RepositoryNamespace\UserRepository.
-     *
-     * @param string $namespace
-     *
-     * @return Configuration
      */
     public function setBaseEntityNamespace(string $namespace) : Configuration
     {
@@ -367,8 +329,6 @@ class Configuration
      *
      * @param string $className       The mapped class name.
      * @param string $propertyMapping The PropertyMapping implementation class name.
-     *
-     * @return Configuration
      */
     public function addCustomMapping(string $className, string $propertyMapping) : Configuration
     {
@@ -390,11 +350,7 @@ class Configuration
      *
      * @todo Naming of addCustomMapping() / setCustomPropertyMapping() is a bit confusing
      *
-     * @param string          $class
-     * @param string          $property
-     * @param PropertyMapping $mapping
-     *
-     * @return Configuration
+     * @psalm-param class-string $class
      */
     public function setCustomPropertyMapping(string $class, string $property, PropertyMapping $mapping) : Configuration
     {
@@ -404,6 +360,8 @@ class Configuration
     }
 
     /**
+     * @psalm-return array<class-string, array<string, PropertyMapping>>
+     *
      * @return PropertyMapping[][]
      */
     public function getCustomPropertyMappings() : array
@@ -413,11 +371,6 @@ class Configuration
 
     /**
      * @psalm-param class-string $class
-     *
-     * @param string $class
-     * @param string ...$properties
-     *
-     * @return Configuration
      */
     public function setTransientProperties(string $class, string ...$properties) : Configuration
     {
@@ -431,7 +384,7 @@ class Configuration
      *
      * @psalm-param class-string $class
      *
-     * @param string $class
+     * @psalm-return list<string>
      *
      * @return string[]
      */
@@ -442,12 +395,6 @@ class Configuration
 
     /**
      * @psalm-param class-string $class
-     *
-     * @param string $class
-     * @param string $property
-     * @param string $fieldName
-     *
-     * @return Configuration
      */
     public function setFieldName(string $class, string $property, string $fieldName) : Configuration
     {
@@ -460,6 +407,8 @@ class Configuration
      * Sets custom field names for builtin type properties.
      *
      * If not set, the field name defaults to the property name.
+     *
+     * @psalm-return array<class-string, array<string, string>>
      *
      * @return string[][]
      */
@@ -474,12 +423,6 @@ class Configuration
      * If not set, the field name prefix defaults to the property name followed by an underscore character.
      *
      * @psalm-param class-string $class
-     *
-     * @param string $class
-     * @param string $property
-     * @param string $fieldNamePrefix
-     *
-     * @return Configuration
      */
     public function setFieldNamePrefix(string $class, string $property, string $fieldNamePrefix) : Configuration
     {
@@ -489,6 +432,8 @@ class Configuration
     }
 
     /**
+     * @psalm-return array<class-string, array<string, string>>
+     *
      * @return string[][]
      */
     public function getFieldNamePrefixes() : array
@@ -499,6 +444,8 @@ class Configuration
     /**
      * Returns the class configurations, indexed by FQCN.
      *
+     * @psalm-return array<class-string, ClassConfiguration>
+     *
      * @return ClassConfiguration[]
      */
     public function getClasses() : array
@@ -508,6 +455,8 @@ class Configuration
 
     /**
      * Returns the entity configurations, indexed by FQCN.
+     *
+     * @psalm-return array<class-string, EntityConfiguration>
      *
      * @return EntityConfiguration[]
      */

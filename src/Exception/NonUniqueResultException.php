@@ -9,11 +9,6 @@ namespace Brick\ORM\Exception;
  */
 class NonUniqueResultException extends ORMException
 {
-    /**
-     * @param int $resultCount
-     *
-     * @return NonUniqueResultException
-     */
     public static function nonUniqueResult(int $resultCount) : self
     {
         return new self(sprintf('The query returned %d results, when at most 1 was expected.', $resultCount));

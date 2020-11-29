@@ -36,17 +36,11 @@ class EmbeddableMapping implements PropertyMapping
         $this->isNullable      = $isNullable;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getType() : string|null
     {
         return $this->classMetadata->className;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function isNullable() : bool
     {
         return $this->isNullable;
@@ -54,8 +48,6 @@ class EmbeddableMapping implements PropertyMapping
 
     /**
      * @todo precompute for better performance
-     *
-     * {@inheritdoc}
      */
     public function getFieldNames() : array
     {
@@ -72,8 +64,6 @@ class EmbeddableMapping implements PropertyMapping
 
     /**
      * @todo precompute for better performance
-     *
-     * {@inheritdoc}
      */
     public function getInputValuesCount() : int
     {
@@ -89,8 +79,6 @@ class EmbeddableMapping implements PropertyMapping
 
     /**
      * @todo precompute for better performance
-     *
-     * {@inheritdoc}
      */
     public function getFieldToInputValuesSQL(array $fieldNames) : array
     {
@@ -112,9 +100,6 @@ class EmbeddableMapping implements PropertyMapping
         return $wrappedFields;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function convertInputValuesToProp(Gateway $gateway, array $values) : mixed
     {
         $currentIndex = 0;
@@ -137,9 +122,6 @@ class EmbeddableMapping implements PropertyMapping
         return $objectFactory->instantiate($this->classMetadata, $propValues);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function convertPropToFields(mixed $propValue) : array
     {
         $result = [];

@@ -19,8 +19,6 @@ class CLASS_NAMERepository
 
     /**
      * Class constructor.
-     *
-     * @param Gateway $gateway
      */
     public function __construct(Gateway $gateway)
     {

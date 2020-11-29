@@ -30,25 +30,16 @@ class QueryPredicate
         $this->value    = $value;
     }
 
-    /**
-     * @return string
-     */
     public function getProperty() : string
     {
         return $this->property;
     }
 
-    /**
-     * @return string
-     */
     public function getOperator() : string
     {
         return $this->operator;
     }
 
-    /**
-     * @return mixed
-     */
     public function getValue() : mixed
     {
         return $this->value;

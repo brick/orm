@@ -16,8 +16,6 @@ interface PropertyMapping
 
     /**
      * Returns whether the property is nullable.
-     *
-     * @return bool
      */
     public function isNullable() : bool;
 
@@ -34,8 +32,6 @@ interface PropertyMapping
      * Returns the number of database values required to compute the property value.
      *
      * This must return the number entries returned by getFieldToInputValuesSQL().
-     *
-     * @return int
      */
     public function getInputValuesCount() : int;
 
@@ -71,7 +67,6 @@ interface PropertyMapping
      *
      * @psalm-param list<mixed> $values
      *
-     * @param Gateway $gateway
      * @param mixed[] $values The list of database values.
      *
      * @return mixed The property value.
@@ -106,8 +101,6 @@ interface PropertyMapping
      * @psalm-return list<list<mixed>>
      *
      * @param mixed $propValue The property value.
-     *
-     * @return array
      */
     public function convertPropToFields(mixed $propValue) : array;
 }
