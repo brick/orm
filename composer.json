@@ -12,7 +12,8 @@
     "brick/db": "dev-interfaces"
   },
   "require-dev": {
-    "phpunit/phpunit": "^9.0"
+    "phpunit/phpunit": "^9.0",
+    "vimeo/psalm": "^4.2"
   },
   "autoload": {
     "psr-4": {

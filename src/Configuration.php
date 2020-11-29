@@ -57,7 +57,7 @@ class Configuration
     /**
      * A map of class names to custom property mapping classes.
      *
-     * @var PropertyMapping[]
+     * @var array<string, class-string<PropertyMapping>>
      */
     private array $customMappings = [];
 
@@ -366,6 +366,9 @@ class Configuration
     /**
      * Adds a custom mapping that applies by default to all properties of the given type.
      *
+     * @psalm-param class-string $className
+     * @psalm-param class-string<PropertyMapping> $propertyMapping
+     *
      * @param string $className       The mapped class name.
      * @param string $propertyMapping The PropertyMapping implementation class name.
      *
@@ -379,7 +382,7 @@ class Configuration
     }
 
     /**
-     * @return PropertyMapping[}
+     * @return array<string, class-string<PropertyMapping>>
      */
     public function getCustomMappings() : array
     {

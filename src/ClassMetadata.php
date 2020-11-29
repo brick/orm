@@ -23,7 +23,7 @@ abstract class ClassMetadata
      *
      * The keys of this array must be equal to $properties.
      *
-     * @var PropertyMapping[]
+     * @var array<string, PropertyMapping>
      */
     public array $propertyMappings;
 }

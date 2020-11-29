@@ -102,6 +102,9 @@ class Gateway
      *
      * Example: ['foo' => 'FOO', 'bar__baz' => 'BAZ'] would turn into ['foo' => 'FOO', 'bar' => ['baz' => 'BAZ']].
      *
+     * @psalm-suppress EmptyArrayAccess
+     * @psalm-suppress TypeDoesNotContainType
+     *
      * @param array $values
      *
      * @return array
@@ -597,7 +600,7 @@ class Gateway
 
             // Note: no need to JOIN if performing comparisons against the entity's identity only.
             // Only JOIN if the entity is not the last element of the dotted property.
-            if (($index !== $count - 1) && ! isset($tableAliases[$joinProp]) && $propertyMapping instanceof EntityMapping) {
+            if (($index !== $count - 1) && ! isset($tableAliases[$joinProp])) {
                 $tableAlias = $tableAliasGenerator->generate();
                 $tableAliases[$joinProp] = $tableAlias;
 
@@ -725,6 +728,8 @@ class Gateway
         if ($this->useProxies) {
             // Return a lazy-loading proxy, with the identity set and other properties lazy-loaded on first access.
             $proxyClass = $classMetadata->proxyClassName;
+
+            assert($proxyClass !== null);
 
             return new $proxyClass($this, $id, $scalarId);
         }
