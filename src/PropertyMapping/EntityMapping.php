@@ -188,6 +188,7 @@ class EntityMapping implements PropertyMapping
         $identity = [];
 
         if ($entity !== null) {
+            /** @psalm-suppress PossiblyInvalidFunctionCall bindTo() should never return false here */
             (function() use ($idProperties, & $identity) {
                 foreach ($idProperties as $prop) {
                     $identity[$prop] = $this->{$prop};

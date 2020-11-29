@@ -153,6 +153,7 @@ class EmbeddableMapping implements PropertyMapping
             if ($entity === null) {
                 $idPropValue = null;
             } else {
+                /** @psalm-suppress PossiblyUndefinedVariable */
                 $p = $r->getProperty($prop);
                 $p->setAccessible(true);
                 $idPropValue = $p->getValue($entity);

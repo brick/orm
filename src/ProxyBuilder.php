@@ -8,8 +8,14 @@ class ProxyBuilder
 {
     private ?string $proxyNamespace = null;
 
+    /**
+     * @psalm-var class-string|null
+     */
     private ?string $entityClassName = null;
 
+    /**
+     * @var string[]|null
+     */
     private ?array $nonIdProps = null;
 
     /**
@@ -23,6 +29,8 @@ class ProxyBuilder
     }
 
     /**
+     * @psalm-param class-string $className
+     *
      * @param string $className The FQCN of the entity.
      *
      * @return void
@@ -33,7 +41,7 @@ class ProxyBuilder
     }
 
     /**
-     * @param array $props The list of non-identity properties.
+     * @param string[] $props The list of non-identity properties.
      *
      * @return void
      */
@@ -52,16 +60,16 @@ class ProxyBuilder
      */
     public function build() : string
     {
-        $checks = [
-            $this->proxyNamespace,
-            $this->entityClassName,
-            $this->nonIdProps
-        ];
+        if ($this->proxyNamespace === null) {
+            throw new \RuntimeException('Missing proxy namespace.');
+        }
 
-        foreach ($checks as $check) {
-            if ($check === null) {
-                throw new \RuntimeException('Missing data to build proxy.');
-            }
+        if ($this->entityClassName === null) {
+            throw new \RuntimeException('Missing entity class name.');
+        }
+
+        if ($this->nonIdProps === null) {
+            throw new \RuntimeException('Missing non-id props.');
         }
 
         $imports = [

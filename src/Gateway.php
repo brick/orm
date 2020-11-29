@@ -74,6 +74,12 @@ class Gateway
      * DTOs may contain other DTOs; to select values for nested DTOs, use the 'property__nestedProperty' syntax.
      * Properties pointing to a nested DTO will be initialized only if at least one nested property value is selected.
      *
+     * @template T
+     *
+     * @psalm-param class-string<T> $className
+     *
+     * @psalm-return T[]
+     *
      * @param string $className  The name of the class to instantiate.
      * @param string $query      The SQL query.
      * @param array  $parameters The bound parameters.
@@ -103,11 +109,10 @@ class Gateway
      * Example: ['foo' => 'FOO', 'bar__baz' => 'BAZ'] would turn into ['foo' => 'FOO', 'bar' => ['baz' => 'BAZ']].
      *
      * @psalm-suppress EmptyArrayAccess
+     * @psalm-suppress PossiblyNullArrayAccess
      * @psalm-suppress TypeDoesNotContainType
      *
-     * @param array $values
-     *
-     * @return array
+     * @psalm-param array<string, mixed> $values
      */
     private function nestValues(array $values) : array
     {
@@ -436,8 +441,6 @@ class Gateway
         $selectBuilder->setOptions($options);
 
         foreach ($query->getPredicates() as $predicate) {
-            /** @var string $tableAlias */
-            /** @var PropertyMapping $propertyMapping */
             [$tableAlias, $propertyMapping] = $this->addJoins($classMetadata, $selectBuilder, $tableAliasGenerator, $mainTableAlias, $tableAliases, $predicate->getProperty());
 
             $operator = $predicate->getOperator();
@@ -488,8 +491,6 @@ class Gateway
             // @todo There is currently an unnecessary JOIN when ordering by an identity field of a related entity;
             // example: ->addOrderBy('relatedEntity.id'); this could be avoided by reading the value from the base entity instead.
 
-            /** @var string $tableAlias */
-            /** @var PropertyMapping $propertyMapping */
             [$tableAlias, $propertyMapping] = $this->addJoins($classMetadata, $selectBuilder, $tableAliasGenerator, $mainTableAlias, $tableAliases, $orderBy->getProperty());
 
             foreach ($propertyMapping->getFieldNames() as $fieldName) {
@@ -498,7 +499,10 @@ class Gateway
         }
 
         if (null !== $limit = $query->getLimit()) {
-            $selectBuilder->setLimit($limit, $query->getOffset());
+            $offset = $query->getOffset();
+            assert($offset !== null);
+
+            $selectBuilder->setLimit($limit, $offset);
         }
 
         $sql = $selectBuilder->build();
@@ -561,6 +565,13 @@ class Gateway
      * Adds joins for the given property, returns the alias of the table to read from, and the property mapping.
      *
      * @todo Quick & dirty. Refactor.
+     *
+     * @psalm-param array<string, string> $tableAliases
+     *
+     * @psalm-return array{string, PropertyMapping}
+     *
+     * @psalm-suppress LessSpecificReturnStatement
+     * @psalm-suppress MoreSpecificReturnType
      *
      * @throws Exception\UnknownPropertyException
      */
@@ -644,6 +655,7 @@ class Gateway
             }
         }
 
+        /** @psalm-suppress PossiblyUndefinedVariable */
         return [$tableAlias, $propertyMapping];
     }
 
@@ -871,6 +883,7 @@ class Gateway
 
         if ($this->identityMap !== null) {
             if ($identity === null) {
+                $identity = [];
                 foreach ($classMetadata->idProperties as $idProperty) {
                     $identity[$idProperty] = $propValues[$idProperty];
                 }

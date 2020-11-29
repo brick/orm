@@ -8,8 +8,14 @@ class RepositoryBuilder
 {
     private ?string $repositoryNamespace = null;
 
+    /**
+     * @psalm-var class-string|null
+     */
     private ?string $entityClassName = null;
 
+    /**
+     * @psalm-var array<string, string>|null
+     */
     private ?array $identityProps = null;
 
     /**
@@ -23,6 +29,8 @@ class RepositoryBuilder
     }
 
     /**
+     * @psalm-param class-string $className
+     *
      * @param string $className The FQCN of the entity.
      *
      * @return void
@@ -33,7 +41,7 @@ class RepositoryBuilder
     }
 
     /**
-     * @param array $props An associative array of property name to type.
+     * @param array<string, string> $props An associative array of property name to type.
      *
      * @return void
      */
@@ -52,16 +60,16 @@ class RepositoryBuilder
      */
     public function build() : string
     {
-        $checks = [
-            $this->repositoryNamespace,
-            $this->entityClassName,
-            $this->identityProps
-        ];
+        if ($this->repositoryNamespace === null) {
+            throw new \RuntimeException('Missing repository namespace.');
+        }
 
-        foreach ($checks as $check) {
-            if ($check === null) {
-                throw new \RuntimeException('Missing data to build repository.');
-            }
+        if ($this->entityClassName === null) {
+            throw new \RuntimeException('Missing entity class name.');
+        }
+
+        if ($this->identityProps === null) {
+            throw new \RuntimeException('Missing identity props.');
         }
 
         $imports = [
@@ -98,6 +106,7 @@ class RepositoryBuilder
             if (in_array($typeLower, $builtInTypes, true)) {
                 $type = $typeLower;
             } else {
+                /** @psalm-var class-string $type */
                 $imports[] = $type;
                 $type = (new \ReflectionClass($type))->getShortName();
             }

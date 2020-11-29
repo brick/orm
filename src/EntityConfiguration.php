@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Brick\ORM;
 
+use ReflectionNamedType;
+
 class EntityConfiguration extends ClassConfiguration
 {
     private ?string $belongsTo = null;
@@ -26,6 +28,8 @@ class EntityConfiguration extends ClassConfiguration
 
     /**
      * A map of discriminator values to entity class names, or an empty array if not set.
+     *
+     * @psalm-var array<int|string, class-string>
      *
      * @var string[]
      */
@@ -118,17 +122,24 @@ class EntityConfiguration extends ClassConfiguration
 
             $reflectionProperty = $this->reflectionClass->getProperty($identityProperties[0]);
 
-            /** @var \ReflectionNamedType|null $propertyType */
             $propertyType = $reflectionProperty->getType();
 
-            $type = $propertyType->getName();
+            if ($propertyType instanceof ReflectionNamedType) {
+                $type = $propertyType->getName();
 
-            if ($type !== 'int' && $type !== 'string') {
+                if ($type !== 'int' && $type !== 'string') {
+                    throw new \LogicException(sprintf(
+                        'The entity "%s" has an auto-increment identity that maps to an unsupported type "%s", ' .
+                        'only int and string are allowed.',
+                        $this->getClassName(),
+                        $type
+                    ));
+                }
+            } else {
                 throw new \LogicException(sprintf(
-                    'The entity "%s" has an auto-increment identity that maps to an unsupported type "%s", ' .
+                    'The entity "%s" has an auto-increment identity that maps to an untyped or union type property, ' .
                     'only int and string are allowed.',
-                    $this->getClassName(),
-                    $type
+                    $this->getClassName()
                 ));
             }
         }
@@ -261,6 +272,8 @@ class EntityConfiguration extends ClassConfiguration
      *
      * If this entity is not part of an inheritance hierarchy, an array with a single ReflectionClass instance, for this
      * entity, is returned.
+     *
+     * @psalm-return class-string[]
      *
      * @return string[] The list of all class names in the hierarchy.
      */

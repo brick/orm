@@ -338,9 +338,7 @@ class Configuration
     }
 
     /**
-     * @param string $className
-     *
-     * @return EntityConfiguration
+     * @psalm-param class-string $className
      */
     public function addEntity(string $className) : EntityConfiguration
     {
@@ -351,9 +349,7 @@ class Configuration
     }
 
     /**
-     * @param string $className
-     *
-     * @return EmbeddableConfiguration
+     * @psalm-param class-string $className
      */
     public function addEmbeddable(string $className) : EmbeddableConfiguration
     {

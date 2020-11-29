@@ -58,6 +58,7 @@ class ObjectFactory
 
         $object = $reflectionClass->newInstanceWithoutConstructor();
 
+        /** @psalm-suppress PossiblyInvalidFunctionCall bindTo() should never return false here */
         (function() use ($classMetadata, $values, $reflectionClass) {
             // Unset persistent properties
             // @todo PHP 7.4: for even better performance, only unset typed properties that have a default value, as
@@ -92,10 +93,12 @@ class ObjectFactory
      *
      * The class must have public properties only, and no constructor.
      *
-     * @param string $className
-     * @param array  $values
+     * @template T
      *
-     * @return object
+     * @psalm-param class-string<T> $className
+     * @psalm-param array<string, mixed> $values
+     *
+     * @psalm-return T
      *
      * @throws \ReflectionException      If the class does not exist.
      * @throws \InvalidArgumentException If the class is not a valid DTO or an unexpected value is found.
@@ -119,7 +122,7 @@ class ObjectFactory
     }
 
     /**
-     * @param string $className
+     * @psalm-param class-string $className
      *
      * @return \Closure[]
      *
@@ -174,9 +177,7 @@ class ObjectFactory
     }
 
     /**
-     * @param \ReflectionProperty $property
-     *
-     * @return \Closure
+     * @psalm-return Closure(mixed): mixed
      *
      * @throws \InvalidArgumentException If an unexpected value is found.
      */
@@ -205,7 +206,10 @@ class ObjectFactory
                     throw new \InvalidArgumentException(sprintf('Expected array for property $%s of class %s, got %s.', $propertyName, $className, gettype($value)));
                 }
 
-                return $this->instantiateDTO($type->getName(), $value);
+                /** @psalm-var class-string $typeName */
+                $typeName = $type->getName();
+
+                return $this->instantiateDTO($typeName, $value);
             };
         }
 
@@ -224,6 +228,7 @@ class ObjectFactory
      */
     public function read(object $object) : array
     {
+        /** @psalm-suppress PossiblyInvalidFunctionCall bindTo() should never return false here */
         return (function() {
             return get_object_vars($this);
         })->bindTo($object, $object)();
@@ -241,6 +246,7 @@ class ObjectFactory
      */
     public function write(object $object, array $values) : void
     {
+        /** @psalm-suppress PossiblyInvalidFunctionCall bindTo() should never return false here */
         (function() use ($values) {
             foreach ($values as $key => $value) {
                 $this->{$key} = $value;

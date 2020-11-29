@@ -70,6 +70,8 @@ class ClassMetadataBuilder
     }
 
     /**
+     * @psalm-param class-string $className
+     *
      * @param EntityMetadata      $classMetadata
      * @param string              $className
      * @param EntityConfiguration $entityConfiguration
@@ -176,6 +178,8 @@ class ClassMetadataBuilder
     }
 
     /**
+     * @psalm-param class-string $className
+     *
      * @param EmbeddableMetadata      $classMetadata
      * @param string                  $className
      * @param EmbeddableConfiguration $embeddableConfiguration

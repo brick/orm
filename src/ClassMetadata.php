@@ -8,6 +8,8 @@ abstract class ClassMetadata
 {
     /**
      * The entity or embeddable class name.
+     *
+     * @psalm-var class-string
      */
     public string $className;
 

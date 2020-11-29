@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Brick\ORM;
 
+use ReflectionNamedType;
+
 abstract class ClassConfiguration
 {
     protected Configuration $configuration;
@@ -11,8 +13,7 @@ abstract class ClassConfiguration
     protected \ReflectionClass $reflectionClass;
 
     /**
-     * @param Configuration $configuration
-     * @param string        $className
+     * @psalm-param class-string $className
      *
      * @throws \InvalidArgumentException
      */
@@ -28,7 +29,7 @@ abstract class ClassConfiguration
     }
 
     /**
-     * @return string
+     * @psalm-return class-string
      */
     public function getClassName() : string
     {
@@ -36,6 +37,8 @@ abstract class ClassConfiguration
     }
 
     /**
+     * @psalm-param class-string|null $className
+     *
      * @param string|null $className The entity class name, or null to use the root entity (this entity)'s class name.
      *
      * @return string[]
@@ -84,10 +87,12 @@ abstract class ClassConfiguration
     }
 
     /**
+     * @psalm-param class-string $className
+     *
      * @param string               $className          The entity class name.
      * @param string               $propertyName       The property name.
      * @param EntityMetadata[]     $entityMetadata     A map of FQCN to EntityMetadata instances.
-     * @maram EmbeddableMetadata[] $embeddableMetadata A map of FQCN to EmbeddableMetadata instances.
+     * @param EmbeddableMetadata[] $embeddableMetadata A map of FQCN to EmbeddableMetadata instances.
      *
      * @return PropertyMapping
      *
@@ -107,8 +112,12 @@ abstract class ClassConfiguration
 
         $reflectionProperty = new \ReflectionProperty($className, $propertyName);
 
-        /** @var \ReflectionNamedType|null $propertyType */
         $propertyType = $reflectionProperty->getType();
+
+        if (! $propertyType instanceof ReflectionNamedType) {
+            throw new \LogicException('Property does not have a single type.');
+        }
+
         $typeName = $propertyType->getName();
         $allowsNull = $propertyType->allowsNull();
 
