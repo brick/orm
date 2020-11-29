@@ -116,22 +116,13 @@ abstract class ClassConfiguration
         $fieldName = $fieldNames[$className][$propertyName] ?? $propertyName;
 
         if ($propertyType->isBuiltin()) {
-            switch ($typeName) {
-                case 'int':
-                    return new PropertyMapping\IntMapping($fieldName, $allowsNull);
-
-                case 'string':
-                    return new PropertyMapping\StringMapping($fieldName, $allowsNull);
-
-                case 'bool':
-                    return new PropertyMapping\BoolMapping($fieldName, $allowsNull);
-
-                case 'array':
-                    throw new \LogicException(sprintf('Cannot persist type "array" in %s::$%s; you can store an array as JSON if you wish, by configuring a custom JsonMapping instance.', $className, $propertyName));
-
-                default:
-                    throw new \LogicException(sprintf('Cannot persist type "%s" in %s::$%s.', $typeName, $className, $propertyName));
-            }
+            return match($typeName) {
+                'int'    => new PropertyMapping\IntMapping($fieldName, $allowsNull),
+                'string' => new PropertyMapping\StringMapping($fieldName, $allowsNull),
+                'bool'   => new PropertyMapping\BoolMapping($fieldName, $allowsNull),
+                'array'  => throw new \LogicException(sprintf('Cannot persist type "array" in %s::$%s; you can store an array as JSON if you wish, by configuring a custom JsonMapping instance.', $className, $propertyName)),
+                default  => throw new \LogicException(sprintf('Cannot persist type "%s" in %s::$%s.', $typeName, $className, $propertyName))
+            };
         }
 
         $customMappings = $this->configuration->getCustomMappings();

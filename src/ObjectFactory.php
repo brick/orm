@@ -190,31 +190,22 @@ class ObjectFactory
             $propertyType = $type->getName();
 
             if ($type->isBuiltin()) {
-                switch ($propertyType) {
-                    case 'string':
-                        return fn ($value) => $value;
-
-                    case 'int':
-                        return fn ($value) => (int) $value;
-
-                    case 'float':
-                        return fn ($value) => (float) $value;
-
-                    case 'bool':
-                        return fn ($value) => (bool) $value;
-
-                    default:
-                        throw new \InvalidArgumentException(sprintf('Unexpected non-scalar type "%s" for property $%s in class %s.', $propertyType, $propertyName, $className));
-                }
-            } else {
-                return function($value) use ($propertyName, $className, $type) {
-                    if (! is_array($value)) {
-                        throw new \InvalidArgumentException(sprintf('Expected array for property $%s of class %s, got %s.', $propertyName, $className, gettype($value)));
-                    }
-
-                    return $this->instantiateDTO($type->getName(), $value);
+                return match ($propertyType) {
+                    'string' => fn ($value) => $value,
+                    'int'    => fn ($value) => (int) $value,
+                    'float'  => fn ($value) => (float) $value,
+                    'bool'   => fn ($value) => (bool) $value,
+                    default  => throw new \InvalidArgumentException(sprintf('Unexpected non-scalar type "%s" for property $%s in class %s.', $propertyType, $propertyName, $className))
                 };
             }
+
+            return function($value) use ($propertyName, $className, $type) {
+                if (! is_array($value)) {
+                    throw new \InvalidArgumentException(sprintf('Expected array for property $%s of class %s, got %s.', $propertyName, $className, gettype($value)));
+                }
+
+                return $this->instantiateDTO($type->getName(), $value);
+            };
         }
 
         return fn ($value) => $value;
