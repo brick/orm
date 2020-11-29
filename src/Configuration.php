@@ -113,6 +113,13 @@ class Configuration
     /**
      * Returns the proxy class name for the given entity class name.
      *
+     * @psalm-param class-string $entityClass
+     *
+     * @psalm-return class-string<Proxy>
+     *
+     * @psalm-suppress LessSpecificReturnStatement
+     * @psalm-suppress MoreSpecificReturnType
+     *
      * @param string $entityClass the FQCN of the entity.
      *
      * @return string The FQCN of the proxy.

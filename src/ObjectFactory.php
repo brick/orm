@@ -179,6 +179,9 @@ class ObjectFactory
     /**
      * @psalm-return Closure(mixed): mixed
      *
+     * @psalm-suppress MissingClosureParamType
+     * @psalm-suppress MissingClosureReturnType
+     *
      * @throws \InvalidArgumentException If an unexpected value is found.
      */
     private function getPropertyValueConverter(\ReflectionProperty $property) : \Closure

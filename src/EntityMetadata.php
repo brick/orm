@@ -56,7 +56,7 @@ class EntityMetadata extends ClassMetadata
      * This property is only set if the class is a concrete entity.
      * For abstract entities, this property will be null.
      *
-     * @psalm-param class-string<Proxy>
+     * @psalm-var class-string<Proxy>
      */
     public ?string $proxyClassName;
 

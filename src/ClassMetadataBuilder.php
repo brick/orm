@@ -10,6 +10,8 @@ use Brick\ORM\PropertyMapping\StringMapping;
 
 /**
  * Builds ClassMetadata instances for all entities.
+ *
+ * @psalm-suppress PropertyNotSetInConstructor
  */
 class ClassMetadataBuilder
 {
