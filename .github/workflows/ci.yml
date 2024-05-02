@@ -1,0 +1,97 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+env:
+  PSALM_PHP_VERSION: "8.3"
+  COVERAGE_PHP_VERSION: "8.3"
+
+jobs:
+  psalm:
+    name: Psalm
+    runs-on: ubuntu-22.04
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ env.PSALM_PHP_VERSION }}
+
+      - name: Install composer dependencies
+        uses: ramsey/composer-install@v3
+
+      - name: Run Psalm
+        run: vendor/bin/psalm --show-info=false --find-unused-psalm-suppress --no-progress
+
+  phpunit:
+    name: PHPUnit
+    runs-on: ubuntu-22.04
+
+    strategy:
+      fail-fast: false
+      matrix:
+        php-version:
+          - "8.1"
+          - "8.2"
+          - "8.3"
+        deps:
+          - "highest"
+        include:
+          - php-version: "8.1"
+            deps: "lowest"
+
+    services:
+      mysql:
+        image: "mysql:8.0"
+        ports:
+          - "3306:3306"
+        options: >-
+          --health-cmd "mysqladmin ping --silent"
+        env:
+          MYSQL_ROOT_PASSWORD: password
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php-version }}
+          coverage: pcov
+
+      - name: Install composer dependencies
+        uses: ramsey/composer-install@v3
+        with:
+          dependency-versions: ${{ matrix.deps }}
+
+      - name: Run PHPUnit
+        run: vendor/bin/phpunit --fail-on-skipped
+        if: ${{ matrix.php-version != env.COVERAGE_PHP_VERSION }}
+        env:
+          DB_HOST: 127.0.0.1
+          DB_PORT: 3306
+          DB_USERNAME: root
+          DB_PASSWORD: password
+
+      - name: Run PHPUnit with coverage
+        run: |
+          mkdir -p build/logs
+          vendor/bin/phpunit --fail-on-skipped --coverage-clover build/logs/clover.xml
+        if: ${{ matrix.php-version == env.COVERAGE_PHP_VERSION }}
+        env:
+          DB_HOST: 127.0.0.1
+          DB_PORT: 3306
+          DB_USERNAME: root
+          DB_PASSWORD: password
+
+      - name: Upload coverage report to Coveralls
+        run: vendor/bin/php-coveralls --coverage_clover=build/logs/clover.xml -v
+        env:
+          COVERALLS_REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        if: ${{ matrix.php-version == env.COVERAGE_PHP_VERSION }}

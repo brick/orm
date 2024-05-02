@@ -51,7 +51,7 @@ abstract class AbstractTestCase extends TestCase
     abstract protected static function useProxies() : bool;
 
     /**
-     * @todo schema is MySQL only for now, and test server is hardcoded
+     * @todo schema is MySQL only for now
      *
      * {@inheritdoc}
      */
@@ -59,9 +59,25 @@ abstract class AbstractTestCase extends TestCase
     {
         self::$logger = new DebugLogger();
 
-        $pdo = new \PDO('mysql:host=localhost;dbname=test', 'root', '');
+        $dbHost = getenv('DB_HOST');
+        $dbPort = getenv('DB_PORT');
+        $dbUsername = getenv('DB_USERNAME');
+        $dbPassword = getenv('DB_PASSWORD');
+
+        self::assertNotFalse($dbHost, 'Environment variable DB_HOST is not set');
+        self::assertNotFalse($dbPort, 'Environment variable DB_PORT is not set');
+        self::assertNotFalse($dbUsername, 'Environment variable DB_USERNAME is not set');
+        self::assertNotFalse($dbPassword, 'Environment variable DB_PASSWORD is not set');
+
+        $dsn = sprintf('mysql:host=%s;port=%s', $dbHost, $dbPort);
+        $pdo = new \PDO($dsn, $dbUsername, $dbPassword);
         $driverConnection = new PDOConnection($pdo);
         $connection = new Connection($driverConnection, self::$logger);
+
+        $connection->exec('DROP DATABASE IF EXISTS orm_tests');
+        $connection->exec('CREATE DATABASE orm_tests');
+        $connection->exec('USE orm_tests');
+
         $classMetadata = require __DIR__ . '/Generated/ClassMetadata.php';
 
         self::$connection = $connection;
