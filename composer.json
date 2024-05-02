@@ -8,10 +8,11 @@
   ],
   "license": "MIT",
   "require": {
-    "php": "^8.0",
+    "php": "^8.1",
     "brick/db": "dev-interfaces"
   },
   "require-dev": {
+    "ext-pdo": "*",
     "phpunit/phpunit": "^9.0",
     "vimeo/psalm": "4.2.1"
   },
