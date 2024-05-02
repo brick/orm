@@ -150,9 +150,6 @@ class EntityMapping implements PropertyMapping
 
     /**
      * @todo use Gateway::getIdentity() instead; currently does not check that the object has an identity
-     *
-     * @psalm-suppress MixedArrayAccess Psalm does not understand references
-     * @psalm-suppress MixedArrayAssignment Psalm does not understand references
      */
     public function convertPropToFields(mixed $propValue) : array
     {
@@ -176,7 +173,7 @@ class EntityMapping implements PropertyMapping
         $identity = [];
 
         if ($entity !== null) {
-            /** @psalm-suppress PossiblyInvalidFunctionCall bindTo() should never return false here */
+            /** @psalm-suppress PossiblyNullFunctionCall bindTo() should never return null here */
             (function() use ($idProperties, & $identity) {
                 foreach ($idProperties as $prop) {
                     $identity[$prop] = $this->{$prop};

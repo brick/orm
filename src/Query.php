@@ -48,7 +48,7 @@ class Query
 
     public function setProperties(string ...$properties) : Query
     {
-        $this->properties = $properties;
+        $this->properties = array_values($properties);
 
         return $this;
     }

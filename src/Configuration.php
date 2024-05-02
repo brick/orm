@@ -374,7 +374,7 @@ class Configuration
      */
     public function setTransientProperties(string $class, string ...$properties) : Configuration
     {
-        $this->transientProperties[$class] = $properties;
+        $this->transientProperties[$class] = array_values($properties);
 
         return $this;
     }

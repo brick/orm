@@ -129,15 +129,16 @@ class EmbeddableMapping implements PropertyMapping
         /** @var object|null $entity */
         $entity = $propValue;
 
-        if ($entity !== null) {
-            $r = new \ReflectionObject($entity);
-        }
+        $r = null;
 
         foreach ($this->classMetadata->properties as $prop) {
             if ($entity === null) {
                 $idPropValue = null;
             } else {
-                /** @psalm-var ReflectionObject $r */
+                if ($r === null) {
+                    $r = new ReflectionObject($entity);
+                }
+
                 $p = $r->getProperty($prop);
                 $idPropValue = $p->getValue($entity);
             }

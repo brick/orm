@@ -137,9 +137,6 @@ class SelectQueryBuilder
         $this->options = $options;
     }
 
-    /**
-     * @psalm-suppress MixedOperand See: https://github.com/vimeo/psalm/issues/4739
-     */
     public function build() : string
     {
         $query = 'SELECT ' . implode(', ', $this->selectFields) . ' FROM ' . $this->tableName;

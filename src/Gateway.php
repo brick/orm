@@ -280,6 +280,7 @@ class Gateway
         $class = $this->getEntityClass($entity);
         $identity = $this->getIdentity($class, $entity);
 
+        $props = array_values($props);
         $values = $this->loadProps($class, $identity, $props, $options);
 
         if ($values === null) {
@@ -293,8 +294,6 @@ class Gateway
 
     /**
      * Finds entities using a query object.
-     *
-     * @psalm-suppress MixedOperand See: https://github.com/vimeo/psalm/issues/4739
      *
      * @psalm-return list<object>
      *
@@ -492,7 +491,7 @@ class Gateway
             } else {
                 $expressionsAndOutputValues = $propertyMapping->convertPropToFields($value);
 
-                foreach ($fieldNames as $fieldNameIndex => $fieldName) {
+                foreach ($fieldNames as $fieldNameIndex => $_) {
                     foreach ($expressionsAndOutputValues[$fieldNameIndex] as $index => $expressionOrValue) {
                         if ($index === 0) {
                             /** @var string $expressionOrValue */
@@ -591,9 +590,6 @@ class Gateway
      * @psalm-param array<string, string> $tableAliases
      *
      * @psalm-return array{string, PropertyMapping}
-     *
-     * @psalm-suppress LessSpecificReturnStatement
-     * @psalm-suppress MoreSpecificReturnType
      *
      * @throws Exception\UnknownPropertyException
      */

@@ -64,7 +64,7 @@ class ObjectFactory
 
         $object = $reflectionClass->newInstanceWithoutConstructor();
 
-        /** @psalm-suppress PossiblyInvalidFunctionCall bindTo() should never return false here */
+        /** @psalm-suppress PossiblyNullFunctionCall bindTo() should never return null here */
         (function() use ($classMetadata, $values, $reflectionClass) {
             // Unset persistent properties
             // @todo PHP 7.4: for even better performance, only unset typed properties that have a default value, as
@@ -79,7 +79,6 @@ class ObjectFactory
                     // @todo temporary fix: do not set null values when typed property is not nullable;
                     //       needs investigation to see why these null values are being passed in the first place
 
-                    /** @var \ReflectionType|null $reflectionType */
                     $reflectionType = $reflectionClass->getProperty($key)->getType();
 
                     if ($reflectionType !== null && ! $reflectionType->allowsNull()) {
@@ -221,11 +220,8 @@ class ObjectFactory
                     throw new \InvalidArgumentException(sprintf('Expected array for property $%s of class %s, got %s.', $propertyName, $className, gettype($value)));
                 }
 
-                /** @psalm-var class-string $typeName */
-                $typeName = $type->getName();
-
                 /** @psalm-var array<string, mixed> $value */
-                return $this->instantiateDTO($typeName, $value);
+                return $this->instantiateDTO($type->getName(), $value);
             };
         }
 
@@ -249,7 +245,7 @@ class ObjectFactory
      */
     public function read(object $object) : array
     {
-        /** @psalm-suppress PossiblyInvalidFunctionCall bindTo() should never return false here */
+        /** @psalm-suppress PossiblyNullFunctionCall bindTo() should never return null here */
         return (function() {
             return get_object_vars($this);
         })->bindTo($object, $object)();
@@ -267,7 +263,7 @@ class ObjectFactory
      */
     public function write(object $object, array $values) : void
     {
-        /** @psalm-suppress PossiblyInvalidFunctionCall bindTo() should never return false here */
+        /** @psalm-suppress PossiblyNullFunctionCall bindTo() should never return null here */
         (function() use ($values) {
             foreach ($values as $key => $value) {
                 $this->{$key} = $value;

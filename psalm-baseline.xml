@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<files psalm-version="5.24.0@462c80e31c34e58cc4f750c656be3927e80e550e">
+  <file src="src/Gateway.php">
+    <MixedInferredReturnType>
+      <code><![CDATA[array<string, mixed>]]></code>
+    </MixedInferredReturnType>
+    <MixedReturnStatement>
+      <code><![CDATA[$result]]></code>
+    </MixedReturnStatement>
+    <MixedReturnTypeCoercion>
+      <code><![CDATA[[$tableAlias, $propertyMapping]]]></code>
+      <code><![CDATA[array{string, PropertyMapping}]]></code>
+    </MixedReturnTypeCoercion>
+  </file>
+  <file src="src/IdentityMap.php">
+    <UnsupportedPropertyReferenceUsage>
+      <code><![CDATA[$ref = & $this->entities[$class]]]></code>
+      <code><![CDATA[$ref = & $this->entities[$class]]]></code>
+    </UnsupportedPropertyReferenceUsage>
+  </file>
+  <file src="src/PropertyMapping/BoolMapping.php">
+    <PossiblyUndefinedArrayOffset>
+      <code><![CDATA[$values[0]]]></code>
+    </PossiblyUndefinedArrayOffset>
+  </file>
+  <file src="src/PropertyMapping/IntMapping.php">
+    <PossiblyUndefinedArrayOffset>
+      <code><![CDATA[$values[0]]]></code>
+    </PossiblyUndefinedArrayOffset>
+  </file>
+  <file src="src/PropertyMapping/StringMapping.php">
+    <PossiblyUndefinedArrayOffset>
+      <code><![CDATA[$values[0]]]></code>
+    </PossiblyUndefinedArrayOffset>
+  </file>
+</files>

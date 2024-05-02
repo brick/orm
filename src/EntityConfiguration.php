@@ -143,6 +143,8 @@ class EntityConfiguration extends ClassConfiguration
             throw new \InvalidArgumentException('The list of identity properties cannot be empty.');
         }
 
+        $identityProperties = array_values($identityProperties);
+
         $this->checkProperties($identityProperties);
 
         $this->identityProperties = $identityProperties;
