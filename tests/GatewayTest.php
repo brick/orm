@@ -10,6 +10,8 @@ use Brick\ORM\Tests\Resources\Models\Country;
 use Brick\ORM\Tests\Resources\Models\GeoAddress;
 use Brick\ORM\Tests\Resources\Models\User;
 use Brick\ORM\Tests\Resources\Objects\Geometry;
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\Depends;
 
 class GatewayTest extends AbstractTestCase
 {
@@ -30,9 +32,7 @@ class GatewayTest extends AbstractTestCase
         $this->assertDebugStatement(0, 'INSERT INTO Country (code, name) VALUES (?, ?)', 'GB', 'United Kingdom');
     }
 
-    /**
-     * @depends testAddCountry
-     */
+    #[Depends('testAddCountry')]
     public function testLoadUnknownCountry() : void
     {
         $this->assertNull(self::$countryRepository->load('XX'));
@@ -41,11 +41,7 @@ class GatewayTest extends AbstractTestCase
         $this->assertDebugStatement(0, 'SELECT a.code, a.name FROM Country AS a WHERE a.code = ?', 'XX');
     }
 
-    /**
-     * @depends testLoadUnknownCountry
-     *
-     * @return Country
-     */
+    #[Depends('testLoadUnknownCountry')]
     public function testLoadCountry() : Country
     {
         $country = self::$countryRepository->load('GB');
@@ -59,13 +55,7 @@ class GatewayTest extends AbstractTestCase
         return $country;
     }
 
-    /**
-     * @depends testLoadCountry
-     *
-     * @param Country $country
-     *
-     * @return User
-     */
+    #[Depends('testLoadCountry')]
     public function testAddUser(Country $country) : User
     {
         $user = new User('John Smith');
@@ -92,13 +82,7 @@ class GatewayTest extends AbstractTestCase
         return $user;
     }
 
-    /**
-     * @depends testAddUser
-     *
-     * @param User $user
-     *
-     * @return int
-     */
+    #[Depends('testAddUser')]
     public function testUpdateUser(User $user) : int
     {
         $address = $user->getBillingAddress();
@@ -124,13 +108,7 @@ class GatewayTest extends AbstractTestCase
         return $user->getId();
     }
 
-    /**
-     * @depends testUpdateUser
-     *
-     * @param int $userId
-     *
-     * @return int
-     */
+    #[Depends('testUpdateUser')]
     public function testLoadPartialUser(int $userId) : int
     {
         $user = self::$userRepository->load($userId, 0, 'name');
@@ -156,13 +134,7 @@ class GatewayTest extends AbstractTestCase
         return $userId;
     }
 
-    /**
-     * @depends testLoadPartialUser
-     *
-     * @param int $userId
-     *
-     * @return User
-     */
+    #[Depends('testLoadPartialUser')]
     public function testLoadUser(int $userId) : User
     {
         $user = self::$userRepository->load($userId);
@@ -194,13 +166,7 @@ class GatewayTest extends AbstractTestCase
         return $user;
     }
 
-    /**
-     * @depends testLoadUser
-     *
-     * @param User $user
-     *
-     * @return int
-     */
+    #[Depends('testLoadUser')]
     public function testRemoveUser(User $user) : int
     {
         self::$userRepository->remove($user);
@@ -211,13 +177,7 @@ class GatewayTest extends AbstractTestCase
         return $user->getId();
     }
 
-    /**
-     * @depends testRemoveUser
-     *
-     * @param int $userId
-     *
-     * @return void
-     */
+    #[Depends('testRemoveUser')]
     public function testLoadRemovedUser(int $userId) : void
     {
         $user = self::$userRepository->load($userId);
@@ -236,13 +196,12 @@ class GatewayTest extends AbstractTestCase
     }
 
     /**
-     * @dataProvider providerLoadWithLock
-     *
      * @param int    $options
      * @param string $sqlSuffix
      *
      * @return void
      */
+    #[DataProvider('providerLoadWithLock')]
     public function testLoadWithLock(int $options, string $sqlSuffix) : void
     {
         self::$countryRepository->load('XX', $options);
@@ -251,10 +210,7 @@ class GatewayTest extends AbstractTestCase
         $this->assertDebugStatement(0, 'SELECT a.code, a.name FROM Country AS a WHERE a.code = ? ' . $sqlSuffix, 'XX');
     }
 
-    /**
-     * @return array
-     */
-    public function providerLoadWithLock() : array
+    public static function providerLoadWithLock() : array
     {
         return [
             [Options::LOCK_READ, 'FOR SHARE'],

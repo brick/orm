@@ -4,11 +4,13 @@ declare(strict_types=1);
 
 namespace Brick\ORM\Tests;
 
-use Brick\ORM\Options;
+use Brick\ORM\Exception\UnknownPropertyException;
 use Brick\ORM\Query;
 use Brick\ORM\Tests\Resources\Models\Country;
 use Brick\ORM\Tests\Resources\Models\Event;
 use Brick\ORM\Tests\Resources\Models\User;
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\Depends;
 
 class InheritanceTest extends AbstractTestCase
 {
@@ -60,13 +62,7 @@ class InheritanceTest extends AbstractTestCase
         return $event->getId();
     }
 
-    /**
-     * @depends testAddCreateCountryEvent
-     *
-     * @param int $eventId
-     *
-     * @return void
-     */
+    #[Depends('testAddCreateCountryEvent')]
     public function testLoadCreateCountryEvent(int $eventId) : void
     {
         $event = self::$eventRepository->load($eventId);
@@ -83,15 +79,14 @@ class InheritanceTest extends AbstractTestCase
     }
 
     /**
-     * @depends testAddCreateCountryEvent
-     * @dataProvider providerLoadCreateCountryEventUsingClass
-     *
      * @param string $class   The class name to request.
      * @param string $sql     The expected SQL query.
      * @param int    $eventId The ID of the event to load.
      *
      * @return void
      */
+    #[Depends('testAddCreateCountryEvent')]
+    #[DataProvider('providerLoadCreateCountryEventUsingClass')]
     public function testLoadCreateCountryEventUsingClass(string $class, string $sql, int $eventId) : void
     {
         $event = self::$gateway->load($class, ['id' => $eventId]);
@@ -107,10 +102,7 @@ class InheritanceTest extends AbstractTestCase
         $this->assertDebugStatement(0, $sql, $eventId);
     }
 
-    /**
-     * @return array
-     */
-    public function providerLoadCreateCountryEventUsingClass() : array
+    public static function providerLoadCreateCountryEventUsingClass() : array
     {
         return [
             [Event::class, self::LOAD_EVENT_SQL],
@@ -120,14 +112,13 @@ class InheritanceTest extends AbstractTestCase
     }
 
     /**
-     * @depends testAddCreateCountryEvent
-     * @dataProvider providerLoadCreateCountryEventUsingWrongClass
-     *
      * @param string $class   The class name to request.
      * @param int    $eventId The ID of the event to load.
      *
      * @return void
      */
+    #[Depends('testAddCreateCountryEvent')]
+    #[DataProvider('providerLoadCreateCountryEventUsingWrongClass')]
     public function testLoadCreateCountryEventUsingWrongClass(string $class, int $eventId) : void
     {
         $this->expectException(\Exception::class);
@@ -136,10 +127,7 @@ class InheritanceTest extends AbstractTestCase
         self::$gateway->load($class, ['id' => $eventId]);
     }
 
-    /**
-     * @return array
-     */
-    public function providerLoadCreateCountryEventUsingWrongClass() : array
+    public static function providerLoadCreateCountryEventUsingWrongClass() : array
     {
         return [
             [Event\CountryEvent\EditCountryNameEvent::class],
@@ -153,12 +141,11 @@ class InheritanceTest extends AbstractTestCase
     }
 
     /**
-     * @depends testAddCreateCountryEvent
-     *
      * @param int $eventId The ID of the event to load.
      *
      * @return void
      */
+    #[Depends('testAddCreateCountryEvent')]
     public function testLoadPartialCreateCountryEvent(int $eventId) : void
     {
         $event = self::$eventRepository->load($eventId, 0, 'id', 'time');
@@ -184,26 +171,21 @@ class InheritanceTest extends AbstractTestCase
     }
 
     /**
-     * @depends testAddCreateCountryEvent
-     * @expectedException \Brick\ORM\Exception\UnknownPropertyException
-     * @expectedExceptionMessage Class "Brick\ORM\Tests\Resources\Models\Event" has no persistent property named "country".
-     *
      * @param int $eventId The ID of the event to load.
-     *
-     * @return void
      */
+    #[Depends('testAddCreateCountryEvent')]
     public function testLoadPartialEventUsingPropertyFromChildClass(int $eventId) : void
     {
+        $this->expectException(UnknownPropertyException::class);
+        $this->expectExceptionMessage('Class "Brick\ORM\Tests\Resources\Models\Event" has no persistent property named "country".');
+
         self::$eventRepository->load($eventId, 0, 'time', 'country');
     }
 
     /**
-     * @depends testAddCreateCountryEvent
-     *
      * @param int $eventId The ID of the event to load.
-     *
-     * @return void
      */
+    #[Depends('testAddCreateCountryEvent')]
     public function testLoadPartialCreateCountryEventUsingClass(int $eventId) : void
     {
         $event = self::$gateway->load(Event\CountryEvent::class, ['id' => $eventId], 0, 'id', 'time', 'country');
@@ -220,12 +202,9 @@ class InheritanceTest extends AbstractTestCase
     }
 
     /**
-     * @depends testAddCreateCountryEvent
-     *
      * @param int $eventId The ID of the event to load.
-     *
-     * @return void
      */
+    #[Depends('testAddCreateCountryEvent')]
     public function testQueryCreateCountryEvent(int $eventId) : void
     {
         $query = new Query(Event::class);
@@ -251,12 +230,9 @@ class InheritanceTest extends AbstractTestCase
     }
 
     /**
-     * @depends testAddCreateCountryEvent
-     *
      * @param int $eventId The ID of the event to load.
-     *
-     * @return void
      */
+    #[Depends('testAddCreateCountryEvent')]
     public function testQueryCreateCountryEventWithJoin(int $eventId) : void
     {
         $query = new Query(Event\CountryEvent::class);
@@ -279,11 +255,7 @@ class InheritanceTest extends AbstractTestCase
         $this->assertDebugStatement(0, $expectedQuery, $eventId, 'France');
     }
 
-    /**
-     * @depends testAddCreateCountryEvent
-     *
-     * @return int
-     */
+    #[Depends('testAddCreateCountryEvent')]
     public function testAddEditCountryNameEvent() : int
     {
         $country = self::$countryRepository->load('FR');
@@ -301,13 +273,7 @@ class InheritanceTest extends AbstractTestCase
         return $event->getId();
     }
 
-    /**
-     * @depends testAddEditCountryNameEvent
-     *
-     * @param int $eventId
-     *
-     * @return void
-     */
+    #[Depends('testAddEditCountryNameEvent')]
     public function testLoadEditCountryNameEvent(int $eventId) : void
     {
         $event = self::$eventRepository->load($eventId);
@@ -325,15 +291,12 @@ class InheritanceTest extends AbstractTestCase
     }
 
     /**
-     * @depends testAddEditCountryNameEvent
-     * @dataProvider providerLoadEditCountryNameEventUsingClass
-     *
      * @param string $class   The class name to request.
      * @param string $sql     The expected SQL query.
      * @param int    $eventId The ID of the event to load.
-     *
-     * @return void
      */
+    #[Depends('testAddEditCountryNameEvent')]
+    #[DataProvider('providerLoadEditCountryNameEventUsingClass')]
     public function testLoadEditCountryNameEventUsingClass(string $class, string $sql, int $eventId) : void
     {
         $event = self::$gateway->load($class, ['id' => $eventId]);
@@ -350,10 +313,7 @@ class InheritanceTest extends AbstractTestCase
         $this->assertDebugStatement(0, $sql, $eventId);
     }
 
-    /**
-     * @return array
-     */
-    public function providerLoadEditCountryNameEventUsingClass() : array
+    public static function providerLoadEditCountryNameEventUsingClass() : array
     {
         return [
             [Event::class, self::LOAD_EVENT_SQL],
@@ -363,14 +323,11 @@ class InheritanceTest extends AbstractTestCase
     }
 
     /**
-     * @depends testAddEditCountryNameEvent
-     * @dataProvider providerLoadEditCountryNameEventUsingWrongClass
-     *
      * @param string $class   The class name to request.
      * @param int    $eventId The ID of the event to load.
-     *
-     * @return void
      */
+    #[Depends('testAddEditCountryNameEvent')]
+    #[DataProvider('providerLoadEditCountryNameEventUsingWrongClass')]
     public function testLoadEditCountryNameEventUsingWrongClass(string $class, int $eventId) : void
     {
         $this->expectException(\Exception::class);
@@ -379,10 +336,7 @@ class InheritanceTest extends AbstractTestCase
         self::$gateway->load($class, ['id' => $eventId]);
     }
 
-    /**
-     * @return array
-     */
-    public function providerLoadEditCountryNameEventUsingWrongClass() : array
+    public static function providerLoadEditCountryNameEventUsingWrongClass() : array
     {
         return [
             [Event\CountryEvent\CreateCountryEvent::class],
@@ -396,12 +350,9 @@ class InheritanceTest extends AbstractTestCase
     }
 
     /**
-     * @depends testAddEditCountryNameEvent
-     *
      * @param int $eventId The ID of the event to load.
-     *
-     * @return void
      */
+    #[Depends('testAddEditCountryNameEvent')]
     public function testLoadPartialEditCountryNameEventUsingClass(int $eventId) : void
     {
         $event = self::$gateway->load(Event\CountryEvent::class, ['id' => $eventId], 0, 'id', 'time', 'country');
@@ -449,12 +400,9 @@ class InheritanceTest extends AbstractTestCase
     }
 
     /**
-     * @depends testAddCreateUserEvent
-     *
      * @param int[] $ids The user and event IDs.
-     *
-     * @return void
      */
+    #[Depends('testAddCreateUserEvent')]
     public function testLoadCreateUserEvent(array $ids) : void
     {
         [$userId, $eventId] = $ids;
@@ -473,15 +421,14 @@ class InheritanceTest extends AbstractTestCase
     }
 
     /**
-     * @depends testAddCreateUserEvent
-     * @dataProvider providerLoadCreateUserEventUsingClass
-     *
      * @param string $class The class name to request.
      * @param string $sql   The expected SQL query.
      * @param int[]  $ids   The User and Event IDs.
      *
      * @return void
      */
+    #[Depends('testAddCreateUserEvent')]
+    #[DataProvider('providerLoadCreateUserEventUsingClass')]
     public function testLoadCreateUserEventUsingClass(string $class, string $sql, array $ids) : void
     {
         [$userId, $eventId] = $ids;
@@ -499,10 +446,7 @@ class InheritanceTest extends AbstractTestCase
         $this->assertDebugStatement(0, $sql, $eventId);
     }
 
-    /**
-     * @return array
-     */
-    public function providerLoadCreateUserEventUsingClass() : array
+    public static function providerLoadCreateUserEventUsingClass() : array
     {
         return [
             [Event::class, self::LOAD_EVENT_SQL],
@@ -512,14 +456,13 @@ class InheritanceTest extends AbstractTestCase
     }
 
     /**
-     * @depends testAddCreateUserEvent
-     * @dataProvider providerLoadCreateUserEventUsingWrongClass
-     *
      * @param string $class The class name to request.
      * @param int[]  $ids   The User and Event IDs.
      *
      * @return void
      */
+    #[Depends('testAddCreateUserEvent')]
+    #[DataProvider('providerLoadCreateUserEventUsingWrongClass')]
     public function testLoadCreateUserEventUsingWrongClass(string $class, array $ids) : void
     {
         [$userId, $eventId] = $ids;
@@ -530,10 +473,7 @@ class InheritanceTest extends AbstractTestCase
         self::$gateway->load($class, ['id' => $eventId]);
     }
 
-    /**
-     * @return array
-     */
-    public function providerLoadCreateUserEventUsingWrongClass() : array
+    public static function providerLoadCreateUserEventUsingWrongClass() : array
     {
         return [
             [Event\CountryEvent::class],
@@ -547,12 +487,11 @@ class InheritanceTest extends AbstractTestCase
     }
 
     /**
-     * @depends testAddCreateUserEvent
-     *
      * @param int[] $ids The User and (unused here) Event IDs.
      *
      * @return int[]
      */
+    #[Depends('testAddCreateUserEvent')]
     public function testAddEditUserNameEvent(array $ids) : array
     {
         [$userId] = $ids;
@@ -573,12 +512,11 @@ class InheritanceTest extends AbstractTestCase
     }
 
     /**
-     * @depends testAddEditUserNameEvent
-     *
      * @param int[] $ids The User and Event IDs.
      *
      * @return void
      */
+    #[Depends('testAddEditUserNameEvent')]
     public function testLoadEditUserNameEvent(array $ids) : void
     {
         [$userId, $eventId] = $ids;
@@ -598,15 +536,14 @@ class InheritanceTest extends AbstractTestCase
     }
 
     /**
-     * @depends testAddEditUserNameEvent
-     * @dataProvider providerLoadEditUserNameEventUsingClass
-     *
      * @param string $class The class name to request.
      * @param string $sql   The expected SQL query.
      * @param int[]  $ids   The User and Event IDs.
      *
      * @return void
      */
+    #[Depends('testAddEditUserNameEvent')]
+    #[DataProvider('providerLoadEditUserNameEventUsingClass')]
     public function testLoadEditUserNameEventUsingClass(string $class, string $sql, array $ids) : void
     {
         [$userId, $eventId] = $ids;
@@ -625,10 +562,7 @@ class InheritanceTest extends AbstractTestCase
         $this->assertDebugStatement(0, $sql, $eventId);
     }
 
-    /**
-     * @return array
-     */
-    public function providerLoadEditUserNameEventUsingClass() : array
+    public static function providerLoadEditUserNameEventUsingClass() : array
     {
         return [
             [Event::class, self::LOAD_EVENT_SQL],
@@ -638,14 +572,13 @@ class InheritanceTest extends AbstractTestCase
     }
 
     /**
-     * @depends testAddEditUserNameEvent
-     * @dataProvider providerLoadEditUserNameEventUsingWrongClass
-     *
      * @param string $class The class name to request.
      * @param int[]  $ids   The User and Event IDs.
      *
      * @return void
      */
+    #[Depends('testAddEditUserNameEvent')]
+    #[DataProvider('providerLoadEditUserNameEventUsingWrongClass')]
     public function testLoadEditUserNameEventUsingWrongClass(string $class, array $ids) : void
     {
         [$userId, $eventId] = $ids;
@@ -656,10 +589,7 @@ class InheritanceTest extends AbstractTestCase
         self::$gateway->load($class, ['id' => $eventId]);
     }
 
-    /**
-     * @return array
-     */
-    public function providerLoadEditUserNameEventUsingWrongClass() : array
+    public static function providerLoadEditUserNameEventUsingWrongClass() : array
     {
         return [
             [Event\CountryEvent::class],
