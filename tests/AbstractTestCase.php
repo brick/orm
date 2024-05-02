@@ -15,35 +15,17 @@ use PHPUnit\Framework\TestCase;
 
 abstract class AbstractTestCase extends TestCase
 {
-    /**
-     * @var Connection
-     */
-    protected static $connection;
+    protected static Connection $connection;
 
-    /**
-     * @var Gateway
-     */
-    protected static $gateway;
+    protected static Gateway $gateway;
 
-    /**
-     * @var DebugLogger
-     */
-    protected static $logger;
+    protected static DebugLogger $logger;
 
-    /**
-     * @var CountryRepository
-     */
-    protected static $countryRepository;
+    protected static CountryRepository $countryRepository;
 
-    /**
-     * @var UserRepository
-     */
-    protected static $userRepository;
+    protected static UserRepository $userRepository;
 
-    /**
-     * @var EventRepository
-     */
-    protected static $eventRepository;
+    protected static EventRepository $eventRepository;
 
     /**
      * @return bool

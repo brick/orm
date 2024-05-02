@@ -13,15 +13,9 @@ use Brick\ORM\Tests\Resources\Objects\Geometry;
  */
 class GeometryMapping implements PropertyMapping
 {
-    /**
-     * @var string
-     */
-    protected $fieldName;
+    protected string $fieldName;
 
-    /**
-     * @var bool
-     */
-    protected $isNullable;
+    protected bool $isNullable;
 
     /**
      * @param string $fieldName  The field name.
