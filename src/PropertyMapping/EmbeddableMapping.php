@@ -139,7 +139,6 @@ class EmbeddableMapping implements PropertyMapping
             } else {
                 /** @psalm-var ReflectionObject $r */
                 $p = $r->getProperty($prop);
-                $p->setAccessible(true);
                 $idPropValue = $p->getValue($entity);
             }
 
