@@ -772,8 +772,6 @@ class Gateway
                 $fieldNames[$key] = $mainTableAlias . '.' . $fieldName;
             }
 
-            // https://github.com/vimeo/psalm/issues/4741
-            /** @var list<string> $fieldNames */
             $fieldToInputValuesSQL = $propertyMapping->getFieldToInputValuesSQL($fieldNames);
 
             foreach ($fieldToInputValuesSQL as $selectField) {
@@ -795,8 +793,6 @@ class Gateway
                         $fieldNames[$key] = $mainTableAlias . '.' . $fieldName;
                     }
 
-                    // https://github.com/vimeo/psalm/issues/4741
-                    /** @var list<string> $fieldNames */
                     $fieldToInputValuesSQL = $propertyMapping->getFieldToInputValuesSQL($fieldNames);
 
                     foreach ($fieldToInputValuesSQL as $selectField) {
