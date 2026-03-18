@@ -18,17 +18,17 @@ use const DIRECTORY_SEPARATOR;
 
 class Configuration
 {
-    private null|string $proxyNamespace = null;
+    private ?string $proxyNamespace = null;
 
-    private null|string $proxyDir = null;
+    private ?string $proxyDir = null;
 
-    private null|string $repositoryNamespace = null;
+    private ?string $repositoryNamespace = null;
 
-    private null|string $repositoryDir = null;
+    private ?string $repositoryDir = null;
 
-    private null|string $classMetadataFile = null;
+    private ?string $classMetadataFile = null;
 
-    private null|string $baseEntityNamespace = null;
+    private ?string $baseEntityNamespace = null;
 
     /**
      * @var array<class-string, ClassConfiguration>
@@ -83,7 +83,7 @@ class Configuration
     /**
      * @throws LogicException
      */
-    public function getProxyNamespace(null|string $entityClass = null): string
+    public function getProxyNamespace(?string $entityClass = null): string
     {
         if ($this->proxyNamespace === null) {
             throw new LogicException('Proxy namespace is not set.');
@@ -183,7 +183,7 @@ class Configuration
     /**
      * @throws LogicException
      */
-    public function getRepositoryNamespace(null|string $entityClass = null): string
+    public function getRepositoryNamespace(?string $entityClass = null): string
     {
         if ($this->repositoryNamespace === null) {
             throw new LogicException('Repository namespace is not set.');
@@ -289,7 +289,7 @@ class Configuration
         return $this;
     }
 
-    public function getBaseEntityNamespace(): null|string
+    public function getBaseEntityNamespace(): ?string
     {
         return $this->baseEntityNamespace;
     }

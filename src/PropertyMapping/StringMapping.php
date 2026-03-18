@@ -11,7 +11,7 @@ use Brick\ORM\Gateway;
  */
 class StringMapping extends BuiltinTypeMapping
 {
-    public function getType(): null|string
+    public function getType(): ?string
     {
         return 'string';
     }

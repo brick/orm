@@ -20,17 +20,17 @@ use function var_export;
 
 class ProxyBuilder
 {
-    private null|string $proxyNamespace = null;
+    private ?string $proxyNamespace = null;
 
     /**
      * @var class-string|null
      */
-    private null|string $entityClassName = null;
+    private ?string $entityClassName = null;
 
     /**
      * @var list<string>|null
      */
-    private null|array $nonIdProps = null;
+    private ?array $nonIdProps = null;
 
     /**
      * @param string $namespace The namespace of the proxy class.

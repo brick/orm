@@ -55,7 +55,7 @@ class Gateway
     /**
      * The identity map, to keep references to managed entities, if any.
      */
-    private null|IdentityMap $identityMap;
+    private ?IdentityMap $identityMap;
 
     /**
      * Whether to use lazy-loading proxies to reference entities whose identity is known, but data is not yet known.
@@ -71,7 +71,7 @@ class Gateway
      *
      * @param array<class-string, EntityMetadata> $classMetadata
      */
-    public function __construct(Connection $connection, array $classMetadata, null|IdentityMap $identityMap = null, bool $useProxies = false)
+    public function __construct(Connection $connection, array $classMetadata, ?IdentityMap $identityMap = null, bool $useProxies = false)
     {
         $this->connection = $connection;
         $this->classMetadata = $classMetadata;
@@ -130,7 +130,7 @@ class Gateway
      *
      * @throws RuntimeException If a property name does not exist.
      */
-    public function load(string $class, array $id, int $options = 0, string ...$props): null|object
+    public function load(string $class, array $id, int $options = 0, string ...$props): ?object
     {
         $query = new Query($class);
 
@@ -159,7 +159,7 @@ class Gateway
      * @throws Exception\UnknownEntityClassException If the class name is not a known entity class.
      * @throws Exception\UnknownPropertyException    If an unknown property is given.
      */
-    public function loadProps(string $class, array $id, array $props, int $options = 0): null|array
+    public function loadProps(string $class, array $id, array $props, int $options = 0): ?array
     {
         $query = new Query($class);
         $query->setProperties(...$props);
@@ -280,7 +280,7 @@ class Gateway
      * @throws Exception\UnknownPropertyException    If the query targets an unknown property.
      * @throws Exception\NonUniqueResultException    If the query returns more than one result.
      */
-    public function findOne(Query $query, int $options = 0): null|object
+    public function findOne(Query $query, int $options = 0): ?object
     {
         $entities = $this->find($query, $options);
         $count = count($entities);

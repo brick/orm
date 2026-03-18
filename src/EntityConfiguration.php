@@ -18,9 +18,9 @@ use function sprintf;
 
 class EntityConfiguration extends ClassConfiguration
 {
-    private null|string $belongsTo = null;
+    private ?string $belongsTo = null;
 
-    private null|string $tableName = null;
+    private ?string $tableName = null;
 
     private bool $isAutoIncrement = false;
 
@@ -29,12 +29,12 @@ class EntityConfiguration extends ClassConfiguration
      *
      * @var list<string>|null
      */
-    private null|array $identityProperties = null;
+    private ?array $identityProperties = null;
 
     /**
      * The discriminator column name, or null if not set.
      */
-    private null|string $discriminatorColumn = null;
+    private ?string $discriminatorColumn = null;
 
     /**
      * A map of discriminator values to entity class names, or an empty array if not set.
@@ -55,7 +55,7 @@ class EntityConfiguration extends ClassConfiguration
         return $this;
     }
 
-    public function getBelongsTo(): null|string
+    public function getBelongsTo(): ?string
     {
         return $this->belongsTo;
     }
@@ -234,7 +234,7 @@ class EntityConfiguration extends ClassConfiguration
     /**
      * Returns the discriminator column name, or null if inheritance is not in use.
      */
-    public function getDiscriminatorColumn(): null|string
+    public function getDiscriminatorColumn(): ?string
     {
         return $this->discriminatorColumn;
     }

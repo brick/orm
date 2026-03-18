@@ -20,7 +20,7 @@ class Query
      *
      * @var list<string>|null
      */
-    private null|array $properties = null;
+    private ?array $properties = null;
 
     /**
      * @var list<QueryPredicate>
@@ -32,9 +32,9 @@ class Query
      */
     private array $orderBy = [];
 
-    private null|int $limit = null;
+    private ?int $limit = null;
 
-    private null|int $offset = null;
+    private ?int $offset = null;
 
     /**
      * @param class-string $className
@@ -93,7 +93,7 @@ class Query
     /**
      * @return list<string>|null
      */
-    public function getProperties(): null|array
+    public function getProperties(): ?array
     {
         return $this->properties;
     }
@@ -114,12 +114,12 @@ class Query
         return $this->orderBy;
     }
 
-    public function getLimit(): null|int
+    public function getLimit(): ?int
     {
         return $this->limit;
     }
 
-    public function getOffset(): null|int
+    public function getOffset(): ?int
     {
         return $this->offset;
     }

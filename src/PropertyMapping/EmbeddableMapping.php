@@ -38,7 +38,7 @@ class EmbeddableMapping implements PropertyMapping
         $this->isNullable = $isNullable;
     }
 
-    public function getType(): null|string
+    public function getType(): ?string
     {
         return $this->classMetadata->className;
     }

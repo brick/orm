@@ -23,17 +23,17 @@ use function var_export;
 
 class RepositoryBuilder
 {
-    private null|string $repositoryNamespace = null;
+    private ?string $repositoryNamespace = null;
 
     /**
      * @var class-string|null
      */
-    private null|string $entityClassName = null;
+    private ?string $entityClassName = null;
 
     /**
      * @var array<string, string>|null
      */
-    private null|array $identityProps = null;
+    private ?array $identityProps = null;
 
     /**
      * @param string $namespace The namespace of the repository.

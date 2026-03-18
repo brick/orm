@@ -12,7 +12,7 @@ interface PropertyMapping
     /**
      * Returns the PHP type of the property, or null if the mapping can handle mixed types (such as JSON columns).
      */
-    public function getType(): null|string;
+    public function getType(): ?string;
 
     /**
      * Returns whether the property is nullable.
