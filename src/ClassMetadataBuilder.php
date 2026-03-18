@@ -10,24 +10,18 @@ use Brick\ORM\PropertyMapping\StringMapping;
 
 /**
  * Builds ClassMetadata instances for all entities.
- *
- * @psalm-suppress PropertyNotSetInConstructor
  */
 class ClassMetadataBuilder
 {
     private Configuration $configuration;
 
     /**
-     * @psalm-var array<class-string, EntityMetadata>
-     *
-     * @var EntityMetadata[]
+     * @var array<class-string, EntityMetadata>
      */
     private array $entityMetadata;
 
     /**
-     * @psalm-var array<class-string, EmbeddableMetadata>
-     *
-     * @var EmbeddableMetadata[]
+     * @var array<class-string, EmbeddableMetadata>
      */
     private array $embeddableMetadata;
 
@@ -37,9 +31,7 @@ class ClassMetadataBuilder
     }
 
     /**
-     * @psalm-return array<class-string, EntityMetadata>
-     *
-     * @return EntityMetadata[] A map of FQCN to EntityMetadata instances for all entities.
+     * @return array<class-string, EntityMetadata> A map of FQCN to EntityMetadata instances for all entities.
      */
     public function build() : array
     {
@@ -75,7 +67,7 @@ class ClassMetadataBuilder
     }
 
     /**
-     * @psalm-param class-string $className
+     * @param class-string $className
      *
      * @throws \LogicException
      */
@@ -177,7 +169,7 @@ class ClassMetadataBuilder
     }
 
     /**
-     * @psalm-param class-string $className
+     * @param class-string $className
      */
     private function fillEmbeddableMetadata(EmbeddableMetadata $classMetadata, string $className, EmbeddableConfiguration $embeddableConfiguration) : void
     {

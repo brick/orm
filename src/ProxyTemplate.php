@@ -29,12 +29,9 @@ class CLASS_NAMEProxy extends CLASS_NAME implements Proxy
     /**
      * Class constructor.
      *
-     * @psalm-param array<string, mixed> $identity
-     * @psalm-param list<int|string> $scalarIdentity
-     *
-     * @param Gateway $gateway        The gateway.
-     * @param array   $identity       The identity, as a map of property name to value.
-     * @param array   $scalarIdentity The identity, as a list of scalar values.
+     * @param Gateway $gateway The gateway.
+     * @param array<string, mixed> $identity The identity, as a map of property name to value.
+     * @param list<int|string> $scalarIdentity The identity, as a list of scalar values.
      */
     public function __construct(Gateway $gateway, array $identity, array $scalarIdentity)
     {

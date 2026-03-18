@@ -9,12 +9,12 @@ class RepositoryBuilder
     private string|null $repositoryNamespace = null;
 
     /**
-     * @psalm-var class-string|null
+     * @var class-string|null
      */
     private string|null $entityClassName = null;
 
     /**
-     * @psalm-var array<string, string>|null
+     * @var array<string, string>|null
      */
     private array|null $identityProps = null;
 
@@ -27,9 +27,7 @@ class RepositoryBuilder
     }
 
     /**
-     * @psalm-param class-string $className
-     *
-     * @param string $className The FQCN of the entity.
+     * @param class-string $className The FQCN of the entity.
      */
     public function setEntityClassName(string $className) : void
     {
@@ -37,9 +35,7 @@ class RepositoryBuilder
     }
 
     /**
-     * @psalm-param array<string, string> $props
-     *
-     * @param array $props An associative array of property name to type.
+     * @param array<string, string> $props An associative array of property name to type.
      */
     public function setIdentityProps(array $props) : void
     {
@@ -100,7 +96,7 @@ class RepositoryBuilder
             if (in_array($typeLower, $builtInTypes, true)) {
                 $type = $typeLower;
             } else {
-                /** @psalm-var class-string $type */
+                /** @var class-string $type */
                 $imports[] = $type;
                 $type = (new \ReflectionClass($type))->getShortName();
             }

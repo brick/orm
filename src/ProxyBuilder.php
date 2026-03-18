@@ -9,14 +9,12 @@ class ProxyBuilder
     private string|null $proxyNamespace = null;
 
     /**
-     * @psalm-var class-string|null
+     * @var class-string|null
      */
     private string|null $entityClassName = null;
 
     /**
-     * @psalm-var list<string>|null
-     *
-     * @var string[]|null
+     * @var list<string>|null
      */
     private array|null $nonIdProps = null;
 
@@ -29,9 +27,7 @@ class ProxyBuilder
     }
 
     /**
-     * @psalm-param class-string $className
-     *
-     * @param string $className The FQCN of the entity.
+     * @param class-string $className The FQCN of the entity.
      */
     public function setEntityClassName(string $className) : void
     {
@@ -39,9 +35,7 @@ class ProxyBuilder
     }
 
     /**
-     * @psalm-param list<string> $props
-     *
-     * @param string[] $props The list of non-identity properties.
+     * @param list<string> $props The list of non-identity properties.
      */
     public function setNonIdProps(array $props) : void
     {

@@ -23,9 +23,9 @@ class EntityMapping implements PropertyMapping
     public bool $isNullable;
 
     /**
-     * @param EntityMetadata $classMetadata   The target entity class metadata.
-     * @param string         $fieldNamePrefix The prefix for field names.
-     * @param bool           $isNullable      Whether the property is nullable.
+     * @param EntityMetadata $classMetadata The target entity class metadata.
+     * @param string $fieldNamePrefix The prefix for field names.
+     * @param bool $isNullable Whether the property is nullable.
      */
     public function __construct(EntityMetadata $classMetadata, string $fieldNamePrefix, bool $isNullable)
     {
@@ -173,7 +173,6 @@ class EntityMapping implements PropertyMapping
         $identity = [];
 
         if ($entity !== null) {
-            /** @psalm-suppress PossiblyNullFunctionCall bindTo() should never return null here */
             (function() use ($idProperties, & $identity) {
                 foreach ($idProperties as $prop) {
                     $identity[$prop] = $this->{$prop};

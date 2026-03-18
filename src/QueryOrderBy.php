@@ -9,14 +9,14 @@ class QueryOrderBy
     private string $property;
 
     /**
-     * @psalm-var 'ASC'|'DESC'
+     * @var 'ASC'|'DESC'
      */
     private string $direction;
 
     /**
      * QueryOrderBy constructor.
      *
-     * @param string $property  The property name.
+     * @param string $property The property name.
      * @param string $direction The order direction, 'ASC' or 'DESC'.
      *
      * @throws \InvalidArgumentException If the order direction is invalid.
@@ -37,7 +37,7 @@ class QueryOrderBy
     }
 
     /**
-     * @psalm-return 'ASC'|'DESC'
+     * @return 'ASC'|'DESC'
      */
     public function getDirection() : string
     {

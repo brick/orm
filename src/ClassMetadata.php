@@ -9,16 +9,14 @@ abstract class ClassMetadata
     /**
      * The entity or embeddable class name.
      *
-     * @psalm-var class-string
+     * @var class-string
      */
     public string $className;
 
     /**
      * The list of persistent properties.
      *
-     * @psalm-var list<string>
-     *
-     * @var string[]
+     * @var list<string>
      */
     public array $properties;
 

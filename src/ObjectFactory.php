@@ -21,9 +21,7 @@ class ObjectFactory
     /**
      * A map of fully qualified class name to ReflectionClass instance.
      *
-     * @psalm-var array<class-string, ReflectionClass>
-     *
-     * @var ReflectionClass[]
+     * @var array<class-string, ReflectionClass>
      */
     private array $classes = [];
 
@@ -32,9 +30,7 @@ class ObjectFactory
      *
      * Each closure converts a property value to the correct type.
      *
-     * @psalm-var array<class-string, array<string, Closure>>
-     *
-     * @var Closure[][]
+     * @var array<class-string, array<string, Closure>>
      */
     private array $propertyConverters = [];
 
@@ -45,10 +41,8 @@ class ObjectFactory
      * Transient properties are still initialized to their default value, if any.
      * Properties may be initialized by passing a map of property name to value.
      *
-     * @psalm-param array<string, mixed> $values
-     *
      * @param ClassMetadata $classMetadata The class metadata of the entity or embeddable.
-     * @param array         $values        An optional map of property name to value to write.
+     * @param array<string, mixed> $values An optional map of property name to value to write.
      *
      * @throws \ReflectionException If the class does not exist.
      */
@@ -64,7 +58,6 @@ class ObjectFactory
 
         $object = $reflectionClass->newInstanceWithoutConstructor();
 
-        /** @psalm-suppress PossiblyNullFunctionCall bindTo() should never return null here */
         (function() use ($classMetadata, $values, $reflectionClass) {
             // Unset persistent properties
             // @todo PHP 7.4: for even better performance, only unset typed properties that have a default value, as
@@ -98,14 +91,12 @@ class ObjectFactory
      *
      * The class must have public properties only, and no constructor.
      *
-     * @psalm-suppress MixedMethodCall We know that DTOs have no constructor.
-     *
      * @template T
      *
-     * @psalm-param class-string<T> $className
-     * @psalm-param array<string, mixed> $values
+     * @param class-string<T> $className
+     * @param array<string, mixed> $values
      *
-     * @psalm-return T
+     * @return T
      *
      * @throws \ReflectionException      If the class does not exist.
      * @throws \InvalidArgumentException If the class is not a valid DTO or an unexpected value is found.
@@ -131,11 +122,9 @@ class ObjectFactory
     /**
      * Returns the property converters for the given class, indexed by property name.
      *
-     * @psalm-param class-string $className
+     * @param class-string $className
      *
-     * @psalm-return array<string, Closure>
-     *
-     * @return Closure[]
+     * @return array<string, Closure>
      *
      * @throws \ReflectionException      If the class does not exist.
      * @throws \InvalidArgumentException If the class is not a valid DTO or an unexpected value is found.
@@ -188,10 +177,7 @@ class ObjectFactory
     }
 
     /**
-     * @psalm-return Closure(mixed): mixed
-     *
-     * @psalm-suppress MissingClosureParamType
-     * @psalm-suppress MissingClosureReturnType
+     * @return Closure(mixed): mixed
      *
      * @throws \InvalidArgumentException If an unexpected value is found.
      */
@@ -220,7 +206,7 @@ class ObjectFactory
                     throw new \InvalidArgumentException(sprintf('Expected array for property $%s of class %s, got %s.', $propertyName, $className, gettype($value)));
                 }
 
-                /** @psalm-var array<string, mixed> $value */
+                /** @var array<string, mixed> $value */
                 return $this->instantiateDTO($type->getName(), $value);
             };
         }
@@ -234,18 +220,12 @@ class ObjectFactory
      * Properties that are not initialized, or have been unset(), are not included in the array.
      * This method assumes that there are no private properties in parent classes.
      *
-     * @psalm-suppress MixedInferredReturnType
-     * @psalm-suppress MixedReturnStatement
-     *
-     * @psalm-return array<string, mixed>
-     *
      * @param object $object The object to read.
      *
-     * @return array A map of property names to values.
+     * @return array<string, mixed> A map of property names to values.
      */
     public function read(object $object) : array
     {
-        /** @psalm-suppress PossiblyNullFunctionCall bindTo() should never return null here */
         return (function() {
             return get_object_vars($this);
         })->bindTo($object, $object)();
@@ -256,14 +236,11 @@ class ObjectFactory
      *
      * This method does not support writing private properties in parent classes.
      *
-     * @psalm-param array<string, mixed> $values
-     *
      * @param object $object The object to write.
-     * @param array  $values A map of property names to values.
+     * @param array<string, mixed> $values A map of property names to values.
      */
     public function write(object $object, array $values) : void
     {
-        /** @psalm-suppress PossiblyNullFunctionCall bindTo() should never return null here */
         (function() use ($values) {
             foreach ($values as $key => $value) {
                 $this->{$key} = $value;

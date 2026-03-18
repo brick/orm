@@ -30,7 +30,7 @@ class EntityMetadata extends ClassMetadata
      *
      * This property is set, and is the same, for all classes in the inheritance hiearchy.
      *
-     * @psalm-var array<int|string, class-string>
+     * @var array<int|string, class-string>
      */
     public array $discriminatorMap;
 
@@ -42,7 +42,7 @@ class EntityMetadata extends ClassMetadata
      *
      * This property is set, and is the same, for all classes in the inheritance hiearchy.
      *
-     * @psalm-var array<class-string, int|string>
+     * @var array<class-string, int|string>
      */
     public array $inverseDiscriminatorMap;
 
@@ -52,7 +52,7 @@ class EntityMetadata extends ClassMetadata
      * If the entity is not part of an inheritance hierarchy, or is itself the root of the hierarchy, this will be the
      * same as the entity class name.
      *
-     * @psalm-var class-string
+     * @var class-string
      */
     public string $rootClassName;
 
@@ -62,7 +62,7 @@ class EntityMetadata extends ClassMetadata
      * This property is only set if the class is a concrete entity.
      * For abstract entities, this property will be null.
      *
-     * @psalm-var class-string<Proxy>|null
+     * @var class-string<Proxy>|null
      */
     public string|null $proxyClassName;
 
@@ -77,9 +77,7 @@ class EntityMetadata extends ClassMetadata
      * This list must not intersect with $nonIdProperties.
      * The union of $idProperties and $nonIdProperties must be equal to $properties.
      *
-     * @psalm-var list<string>
-     *
-     * @var string[]
+     * @var list<string>
      */
     public array $idProperties;
 
@@ -89,9 +87,7 @@ class EntityMetadata extends ClassMetadata
      * This list must not intersect with $idProperties.
      * The union of $idProperties and $nonIdProperties must be equal to $properties.
      *
-     * @psalm-var list<string>
-     *
-     * @var string[]
+     * @var list<string>
      */
     public array $nonIdProperties;
 
@@ -100,18 +96,14 @@ class EntityMetadata extends ClassMetadata
      *
      * Properties declared in parent classes are not included here.
      *
-     * @psalm-var list<string>
-     *
-     * @var string[]
+     * @var list<string>
      */
     public array $selfNonIdProperties;
 
     /**
      * The list of child entity class names, if any.
      *
-     * @psalm-var list<class-string>
-     *
-     * @var string[]
+     * @var list<class-string>
      */
     public array $childClasses;
 

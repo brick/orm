@@ -17,9 +17,7 @@ class EntityConfiguration extends ClassConfiguration
     /**
      * The list of identity properties, or null if not set.
      *
-     * @psalm-var list<string>|null
-     *
-     * @var string[]|null
+     * @var list<string>|null
      */
     private array|null $identityProperties = null;
 
@@ -31,16 +29,14 @@ class EntityConfiguration extends ClassConfiguration
     /**
      * A map of discriminator values to entity class names, or an empty array if not set.
      *
-     * @psalm-var array<int|string, class-string>
-     *
-     * @var string[]
+     * @var array<int|string, class-string>
      */
     private array $discriminatorMap = [];
 
     /**
      * Sets the root entity of the aggregate this entity belongs to.
      *
-     * @psalm-param class-string $className
+     * @param class-string $className
      */
     public function belongsTo(string $className) : EntityConfiguration
     {
@@ -155,9 +151,7 @@ class EntityConfiguration extends ClassConfiguration
     /**
      * Returns the list of properties that are part of the entity's identity.
      *
-     * @psalm-return list<string>
-     *
-     * @return string[]
+     * @return list<string>
      *
      * @throws \LogicException
      */
@@ -184,10 +178,8 @@ class EntityConfiguration extends ClassConfiguration
      *
      * Note: only single table inheritance is supported for now.
      *
-     * @psalm-param array<int|string, class-string> $discriminatorMap
-     *
      * @param string $discriminatorColumn The discriminator column name.
-     * @param array  $discriminatorMap    A map of discriminator value to concrete entity class name.
+     * @param array<int|string, class-string> $discriminatorMap A map of discriminator value to concrete entity class name.
      *
      * @throws \InvalidArgumentException If the discriminator map is empty, a class name does not exist, or is not a subclass of the root entity class.
      */
@@ -242,7 +234,7 @@ class EntityConfiguration extends ClassConfiguration
      *
      * If no inheritance is mapped, an empty array is returned.
      *
-     * @psalm-return array<int|string, class-string>
+     * @return array<int|string, class-string>
      */
     public function getDiscriminatorMap() : array
     {
@@ -258,9 +250,7 @@ class EntityConfiguration extends ClassConfiguration
      * If this entity is not part of an inheritance hierarchy, an array with a single ReflectionClass instance, for this
      * entity, is returned.
      *
-     * @psalm-return class-string[]
-     *
-     * @return string[] The list of all class names in the hierarchy.
+     * @return class-string[] The list of all class names in the hierarchy.
      */
     public function getClassHierarchy() : array
     {
@@ -281,9 +271,7 @@ class EntityConfiguration extends ClassConfiguration
     }
 
     /**
-     * @psalm-param list<string> $properties
-     *
-     * @param string[] $properties The list of property names to check.
+     * @param list<string> $properties The list of property names to check.
      *
      * @throws \InvalidArgumentException If a property does not exist.
      */

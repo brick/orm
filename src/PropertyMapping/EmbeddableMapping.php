@@ -25,9 +25,9 @@ class EmbeddableMapping implements PropertyMapping
     public bool $isNullable;
 
     /**
-     * @param EmbeddableMetadata $classMetadata   The target entity class metadata.
-     * @param string             $fieldNamePrefix The prefix for field names.
-     * @param bool               $isNullable      Whether the property is nullable.
+     * @param EmbeddableMetadata $classMetadata The target entity class metadata.
+     * @param string $fieldNamePrefix The prefix for field names.
+     * @param bool $isNullable Whether the property is nullable.
      */
     public function __construct(EmbeddableMetadata $classMetadata, string $fieldNamePrefix, bool $isNullable)
     {

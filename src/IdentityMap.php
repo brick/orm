@@ -28,15 +28,8 @@ class IdentityMap
     /**
      * Retrieves an entity from the identity map.
      *
-     * @psalm-suppress MixedArrayAccess
-     * @psalm-suppress MixedInferredReturnType
-     * @psalm-suppress MixedReturnStatement
-     *
-     * @psalm-param class-string     $class
-     * @psalm-param list<int|string> $identity
-     *
-     * @param string $class    The root entity class name.
-     * @param array  $identity The list of scalar values that form the entity's identity.
+     * @param class-string $class The root entity class name.
+     * @param list<int|string> $identity The list of scalar values that form the entity's identity.
      *
      * @return object|null The entity, or null if not found.
      */
@@ -57,14 +50,9 @@ class IdentityMap
      * If the entity already exists in the identity map, this method does nothing.
      * If another entity already exists under this identity, an exception is thrown.
      *
-     * @psalm-suppress MixedArrayAccess
-     *
-     * @psalm-param class-string     $class
-     * @psalm-param list<int|string> $identity
-     *
-     * @param string $class    The root entity class name.
-     * @param array  $identity The list of scalar values that form the entity's identity.
-     * @param object $entity   The entity to add.
+     * @param class-string $class The root entity class name.
+     * @param list<int|string> $identity The list of scalar values that form the entity's identity.
+     * @param object $entity The entity to add.
      *
      * @throws IdentityConflictException If another instance with the same identity already exists.
      */

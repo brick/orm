@@ -17,7 +17,7 @@ class ORMException extends \Exception
     protected static function exportString(string $string) : string
     {
         $export = preg_replace_callback('/[^\x20-\x7E]/', function(array $matches) {
-            /** @psalm-var array{string} $matches */
+            /** @var array{string} $matches */
             return '\x' . strtoupper(bin2hex($matches[0]));
         }, $string);
 
@@ -34,10 +34,8 @@ class ORMException extends \Exception
      * - 123
      * - [123, "ABC"]
      *
-     * @psalm-param list<int|string> $scalarIdentity
-     *
-     * @param array $scalarIdentity The identity, as a list of scalar values. Must contain at least one entry.
-     *                              Each entry must be an int or a string.
+     * @param list<int|string> $scalarIdentity The identity, as a list of scalar values. Must contain at least one entry.
+     *                                         Each entry must be an int or a string.
      */
     protected static function exportScalarIdentity(array $scalarIdentity) : string
     {

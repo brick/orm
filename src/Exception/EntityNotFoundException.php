@@ -13,11 +13,8 @@ namespace Brick\ORM\Exception;
 class EntityNotFoundException extends ORMException
 {
     /**
-     * @psalm-param class-string $className
-     * @psalm-param list<int|string> $scalarIdentity
-     *
-     * @param string $className      The entity class name.
-     * @param array  $scalarIdentity The identity, as a list of int or string values.
+     * @param class-string $className The entity class name.
+     * @param list<int|string> $scalarIdentity The identity, as a list of int or string values.
      */
     public static function entityNotFound(string $className, array $scalarIdentity) : self
     {

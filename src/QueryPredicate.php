@@ -15,7 +15,7 @@ class QueryPredicate
     /**
      * @param string $property The property name, optionally including dots for sub-properties.
      * @param string $operator The operator, such as "=", "!=" or ">".
-     * @param mixed  $value    The value to compare against.
+     * @param mixed $value The value to compare against.
      *
      * @throws \InvalidArgumentException If the operator is invalid.
      */

@@ -29,9 +29,7 @@ class Gateway
     /**
      * The entity metadata, indexed by class name.
      *
-     * @psalm-var array<class-string, EntityMetadata>
-     *
-     * @var EntityMetadata[]
+     * @var array<class-string, EntityMetadata>
      */
     private array $classMetadata;
 
@@ -52,9 +50,7 @@ class Gateway
     /**
      * Gateway constructor.
      *
-     * @psalm-param array<class-string, EntityMetadata> $classMetadata
-     *
-     * @param EntityMetadata[] $classMetadata
+     * @param array<class-string, EntityMetadata> $classMetadata
      */
     public function __construct(Connection $connection, array $classMetadata, IdentityMap|null $identityMap = null, bool $useProxies = false)
     {
@@ -77,15 +73,11 @@ class Gateway
      *
      * @template T
      *
-     * @psalm-param class-string<T> $className
+     * @param class-string<T> $className The name of the class to instantiate.
+     * @param string $query The SQL query.
+     * @param array $parameters The bound parameters.
      *
-     * @psalm-return T[]
-     *
-     * @param string $className  The name of the class to instantiate.
-     * @param string $query      The SQL query.
-     * @param array  $parameters The bound parameters.
-     *
-     * @return object[] The instances of the class.
+     * @return T[] The instances of the class.
      *
      * @throws \Brick\Db\DbException
      */
@@ -109,13 +101,9 @@ class Gateway
      *
      * Example: ['foo' => 'FOO', 'bar__baz' => 'BAZ'] would turn into ['foo' => 'FOO', 'bar' => ['baz' => 'BAZ']].
      *
-     * @psalm-suppress EmptyArrayAccess
-     * @psalm-suppress PossiblyNullArrayAccess
-     * @psalm-suppress TypeDoesNotContainType
+     * @param array<string, mixed> $values
      *
-     * @psalm-param array<string, mixed> $values
-     *
-     * @psalm-return array<string, mixed>
+     * @return array<string, mixed>
      */
     private function nestValues(array $values) : array
     {
@@ -145,12 +133,9 @@ class Gateway
      *
      * The arrays of fields and values must have the same number of elements.
      *
-     * @psalm-param list<string> $fields
-     * @psalm-param list<string> $expressions
-     *
-     * @param string   $table       The table name.
-     * @param string[] $fields      The list of field names.
-     * @param string[] $expressions The list of SQL expressions.
+     * @param string $table The table name.
+     * @param list<string> $fields The list of field names.
+     * @param list<string> $expressions The list of SQL expressions.
      */
     private function getInsertSQL(string $table, array $fields, array $expressions) : string
     {
@@ -161,12 +146,9 @@ class Gateway
     }
 
     /**
-     * @psalm-param list<string> $updates
-     * @psalm-param list<string> $whereConditions
-     *
-     * @param string   $table           The table name.
-     * @param string[] $updates         The list of 'key = value' pairs to update.
-     * @param string[] $whereConditions The list of 'key = value' WHERE conditions.
+     * @param string $table The table name.
+     * @param list<string> $updates The list of 'key = value' pairs to update.
+     * @param list<string> $whereConditions The list of 'key = value' WHERE conditions.
      */
     private function getUpdateSQL(string $table, array $updates, array $whereConditions) : string
     {
@@ -177,10 +159,8 @@ class Gateway
     }
 
     /**
-     * @psalm-param list<string> $whereConditions
-     *
-     * @param string   $table           The table name.
-     * @param string[] $whereConditions The list of 'key = value' WHERE conditions.
+     * @param string $table The table name.
+     * @param list<string> $whereConditions The list of 'key = value' WHERE conditions.
      */
     private function getDeleteSQL(string $table, array $whereConditions) : string
     {
@@ -195,12 +175,9 @@ class Gateway
      * An optional array of property names can be provided, to load a partial object.
      * By default, all properties will be loaded and set.
      *
-     * @psalm-param class-string $class
-     * @psalm-param array<string, mixed> $id
-     *
-     * @param string $class    The entity class name.
-     * @param array  $id       The identity, as a map of property name to value.
-     * @param int    $options  A bitmask of options to use.
+     * @param class-string $class The entity class name.
+     * @param array<string, mixed> $id The identity, as a map of property name to value.
+     * @param int $options A bitmask of options to use.
      * @param string ...$props An optional array of property names to load.
      *
      * @return object|null The entity, or null if it doesn't exist.
@@ -225,18 +202,12 @@ class Gateway
     /**
      * Loads an entity's properties.
      *
-     * @psalm-param class-string $class
-     * @psalm-param array<string, mixed> $id
-     * @psalm-param list<string> $props
+     * @param class-string $class The entity class name.
+     * @param array<string, mixed> $id The identity, as a map of property name to value.
+     * @param list<string> $props The list of property names to load.
+     * @param int $options A bitmask of options to use.
      *
-     * @psalm-return array<string, mixed>
-     *
-     * @param string   $class    The entity class name.
-     * @param array    $id       The identity, as a map of property name to value.
-     * @param string[] $props    The list of property names to load.
-     * @param int      $options  A bitmask of options to use.
-     *
-     * @return array|null The properties, or null if the entity doesn't exist.
+     * @return array<string, mixed>|null The properties, or null if the entity doesn't exist.
      *
      * @throws \RuntimeException                     If a property name does not exist.
      * @throws Exception\UnknownEntityClassException If the class name is not a known entity class.
@@ -266,8 +237,8 @@ class Gateway
      * The entity must have an identity.
      * By default, all properties are loaded. If a list of properties if given, only these properties will be loaded.
      *
-     * @param object $entity   The entity to hydrate.
-     * @param int    $options  A bitmask of options to use.
+     * @param object $entity The entity to hydrate.
+     * @param int $options A bitmask of options to use.
      * @param string ...$props An optional list of properties to hydrate.
      *
      * @throws Exception\UnknownEntityClassException If the object is not a known entity.
@@ -295,12 +266,10 @@ class Gateway
     /**
      * Finds entities using a query object.
      *
-     * @psalm-return list<object>
+     * @param Query $query The query object.
+     * @param int $options A bitmask of options to use.
      *
-     * @param Query $query   The query object.
-     * @param int   $options A bitmask of options to use.
-     *
-     * @return object[]
+     * @return list<object>
      *
      * @throws Exception\UnknownEntityClassException If the query's class name is not a known entity class.
      * @throws Exception\UnknownPropertyException    If the query targets an unknown property.
@@ -361,10 +330,10 @@ class Gateway
      * - the class name of the entity as a string;
      * - a map of property name to value as an array.
      *
-     * @psalm-return list<array{class-string, array<string, mixed>}>
+     * @param Query $query The query object.
+     * @param int $options A bitmask of options to use.
      *
-     * @param Query $query   The query object.
-     * @param int   $options A bitmask of options to use.
+     * @return list<array{class-string, array<string, mixed>}>
      *
      * @throws Exception\UnknownEntityClassException If the query's class name is not a known entity class.
      * @throws Exception\UnknownPropertyException    If the query targets an unknown property.
@@ -587,9 +556,9 @@ class Gateway
      *
      * @todo Quick & dirty. Refactor.
      *
-     * @psalm-param array<string, string> $tableAliases
+     * @param array<string, string> $tableAliases
      *
-     * @psalm-return array{string, PropertyMapping}
+     * @return array{string, PropertyMapping}
      *
      * @throws Exception\UnknownPropertyException
      */
@@ -673,15 +642,14 @@ class Gateway
             }
         }
 
-        /** @psalm-suppress PossiblyUndefinedVariable */
         return [$tableAlias, $propertyMapping];
     }
 
     /**
      * Finds a single entity using a query object.
      *
-     * @param Query $query   The query object.
-     * @param int   $options A bitmask of options to use.
+     * @param Query $query The query object.
+     * @param int $options A bitmask of options to use.
      *
      * @return object|null The entity, or NULL if not found.
      *
@@ -715,11 +683,8 @@ class Gateway
      * No check is performed to see if the entity actually exists in the database.
      * Only properties part of the identity will be set.
      *
-     * @psalm-param class-string $class
-     * @psalm-param array<string, mixed> $id
-     *
-     * @param string $class The entity class name.
-     * @param array  $id    The identity, as a map of property name to value.
+     * @param class-string $class The entity class name.
+     * @param array<string, mixed> $id The identity, as a map of property name to value.
      *
      * @throws Exception\NoIdentityException If an entity with no identity is part of the given identity.
      */
@@ -748,12 +713,9 @@ class Gateway
     }
 
     /**
-     * @psalm-param array<string, mixed> $id
-     * @psalm-param list<int|string> $scalarId
-     *
      * @param EntityMetadata $classMetadata The entity metadata.
-     * @param array          $id            The identity, as a map of property name to value.
-     * @param array          $scalarId      The identity, as a list of scalar values.
+     * @param array<string, mixed> $id The identity, as a map of property name to value.
+     * @param list<int|string> $scalarId The identity, as a list of scalar values.
      */
     private function instantiate(EntityMetadata $classMetadata, array $id, array $scalarId) : object
     {
@@ -791,11 +753,8 @@ class Gateway
      *
      * @todo faster implementation
      *
-     * @psalm-param class-string $class
-     * @psalm-param array<string, mixed> $id
-     *
-     * @param string $class The entity class name.
-     * @param array  $id    The identity, as a map of property name to value.
+     * @param class-string $class The entity class name.
+     * @param array<string, mixed> $id The identity, as a map of property name to value.
      */
     public function existsIdentity(string $class, array $id) : bool
     {
@@ -924,7 +883,7 @@ class Gateway
      * By default, all persistent properties are considered, unless a list of properties is given, in which case only
      * these properties will be considered. Non-initialized properties are skipped.
      *
-     * @param object $entity   The entity to update.
+     * @param object $entity The entity to update.
      * @param string ...$props An optional list of properties to update.
      *
      * @throws Exception\UnknownEntityClassException If the object is not a known entity.
@@ -969,13 +928,9 @@ class Gateway
      *
      * This results in an immediate UPDATE statement being executed against the database.
      *
-     * @psalm-param class-string $class
-     * @psalm-param array<string, mixed> $values
-     * @psalm-param array<string, mixed> $id
-     *
-     * @param string $class
-     * @param array  $values A map of updatable property name to value.
-     * @param array  $id     A map of identity property name to value.
+     * @param class-string $class
+     * @param array<string, mixed> $values A map of updatable property name to value.
+     * @param array<string, mixed> $id A map of identity property name to value.
      *
      * @throws Exception\UnknownPropertyException If an unknown property is given.
      */
@@ -1050,11 +1005,8 @@ class Gateway
      *
      * This results in an immediate DELETE statement being executed against the database.
      *
-     * @psalm-param class-string $class
-     * @psalm-param array<string, mixed> $id
-     *
-     * @param string $class The entity class name.
-     * @param array  $id    The identity, as a map of property name to value.
+     * @param class-string $class The entity class name.
+     * @param array<string, mixed> $id The identity, as a map of property name to value.
      */
     public function removeIdentity(string $class, array $id) : void
     {
@@ -1085,14 +1037,10 @@ class Gateway
     }
 
     /**
-     * @psalm-param class-string $class
-     *
-     * @psalm-return array<string, mixed>
-     *
-     * @param string $class  The entity class name. Must be validated.
+     * @param class-string $class The entity class name. Must be validated.
      * @param object $entity The entity.
      *
-     * @return array The identity, as a map of property name to value.
+     * @return array<string, mixed> The identity, as a map of property name to value.
      *
      * @throws Exception\NoIdentityException If the entity has no identity.
      */
@@ -1117,15 +1065,11 @@ class Gateway
     /**
      * Returns the identity of the given identity, as a list of scalar values.
      *
-     * @psalm-param array<string, mixed> $identity
-     *
-     * @psalm-return list<int|string>
-     *
      * @param EntityMetadata $classMetadata The entity class metadata.
-     * @param array          $identity      The object's identity, as a map of property name to value.
+     * @param array<string, mixed> $identity The object's identity, as a map of property name to value.
      *                                      Must contain a valid entry for each identity property.
      *
-     * @return array The identity, as a list of int or string values.
+     * @return list<int|string> The identity, as a list of int or string values.
      *
      * @throws Exception\NoIdentityException If an entity with no identity is part of the given identity.
      */
@@ -1159,7 +1103,7 @@ class Gateway
     /**
      * Returns the FQCN of the given object.
      *
-     * @psalm-return class-string
+     * @return class-string
      *
      * @throws Exception\UnknownEntityClassException If the object is not a known entity.
      */

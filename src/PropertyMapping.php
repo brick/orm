@@ -22,9 +22,7 @@ interface PropertyMapping
     /**
      * Returns the list of database field names the property maps to.
      *
-     * @psalm-return list<string>
-     *
-     * @return string[]
+     * @return list<string>
      */
     public function getFieldNames() : array;
 
@@ -50,13 +48,9 @@ interface PropertyMapping
      *
      * If no transformation is required, this method should return the input parameter unchanged.
      *
-     * @psalm-param list<string> $fieldNames
+     * @param list<string> $fieldNames The field names.
      *
-     * @psalm-return list<string>
-     *
-     * @param string[] $fieldNames The field names.
-     *
-     * @return string[] The list of fields to read, optionally wrapped with SQL code.
+     * @return list<string> The list of fields to read, optionally wrapped with SQL code.
      */
     public function getFieldToInputValuesSQL(array $fieldNames) : array;
 
@@ -65,9 +59,7 @@ interface PropertyMapping
      *
      * The input array will contain one value for each getFieldToInputValuesSQL() entry, in the same order.
      *
-     * @psalm-param list<mixed> $values
-     *
-     * @param mixed[] $values The list of database values.
+     * @param list<mixed> $values The list of database values.
      *
      * @return mixed The property value.
      */
@@ -98,9 +90,9 @@ interface PropertyMapping
      *     ['ST_GeomFromText(?, ?)', $wkt, $srid]
      * ]
      *
-     * @psalm-return list<list<mixed>>
-     *
      * @param mixed $propValue The property value.
+     *
+     * @return list<list<mixed>>
      */
     public function convertPropToFields(mixed $propValue) : array;
 }

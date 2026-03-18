@@ -13,7 +13,7 @@ abstract class ClassConfiguration
     protected \ReflectionClass $reflectionClass;
 
     /**
-     * @psalm-param class-string $className
+     * @param class-string $className
      *
      * @throws \InvalidArgumentException
      */
@@ -29,7 +29,7 @@ abstract class ClassConfiguration
     }
 
     /**
-     * @psalm-return class-string
+     * @return class-string
      */
     public function getClassName() : string
     {
@@ -37,13 +37,9 @@ abstract class ClassConfiguration
     }
 
     /**
-     * @psalm-param class-string|null $className
+     * @param class-string|null $className The entity class name, or null to use the root entity (this entity)'s class name.
      *
-     * @psalm-return list<string>
-     *
-     * @param string|null $className The entity class name, or null to use the root entity (this entity)'s class name.
-     *
-     * @return string[]
+     * @return list<string>
      *
      * @throws \LogicException
      */
@@ -89,11 +85,9 @@ abstract class ClassConfiguration
     }
 
     /**
-     * @psalm-param class-string $className
-     *
-     * @param string               $className          The entity class name.
-     * @param string               $propertyName       The property name.
-     * @param EntityMetadata[]     $entityMetadata     A map of FQCN to EntityMetadata instances.
+     * @param class-string $className The entity class name.
+     * @param string $propertyName The property name.
+     * @param EntityMetadata[] $entityMetadata A map of FQCN to EntityMetadata instances.
      * @param EmbeddableMetadata[] $embeddableMetadata A map of FQCN to EmbeddableMetadata instances.
      *
      * @throws \LogicException

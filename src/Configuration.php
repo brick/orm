@@ -19,18 +19,14 @@ class Configuration
     private string|null $baseEntityNamespace = null;
 
     /**
-     * @psalm-var array<class-string, ClassConfiguration>
-     *
-     * @var ClassConfiguration[]
+     * @var array<class-string, ClassConfiguration>
      */
     private array $classes = [];
 
     /**
      * A map of entity/embeddable class names to lists of transient property names.
      *
-     * @psalm-var array<class-string, list<string>>
-     *
-     * @var string[][]
+     * @var array<class-string, list<string>>
      */
     private array $transientProperties = [];
 
@@ -40,27 +36,21 @@ class Configuration
      * The mappings are usually inferred from the PHP type, but can be overridden here.
      * This is typically used to map a mixed/array type property to a JSON column.
      *
-     * @psalm-var array<class-string, array<string, PropertyMapping>>
-     *
-     * @var PropertyMapping[][]
+     * @var array<class-string, array<string, PropertyMapping>>
      */
     private array $customPropertyMappings = [];
 
     /**
      * A map of entity/embeddable class names to property names to field names.
      *
-     * @psalm-var array<class-string, array<string, string>>
-     *
-     * @var string[][]
+     * @var array<class-string, array<string, string>>
      */
     private array $fieldNames = [];
 
     /**
      * A map of entity/embeddable class names to property names to field name prefixes.
      *
-     * @psalm-var array<class-string, array<string, string>>
-     *
-     * @var string[][]
+     * @var array<class-string, array<string, string>>
      */
     private array $fieldNamePrefixes = [];
 
@@ -114,16 +104,9 @@ class Configuration
     /**
      * Returns the proxy class name for the given entity class name.
      *
-     * @psalm-param class-string $entityClass
+     * @param class-string $entityClass the FQCN of the entity.
      *
-     * @psalm-return class-string<Proxy>
-     *
-     * @psalm-suppress LessSpecificReturnStatement
-     * @psalm-suppress MoreSpecificReturnType
-     *
-     * @param string $entityClass the FQCN of the entity.
-     *
-     * @return string The FQCN of the proxy.
+     * @return class-string<Proxy> The FQCN of the proxy.
      *
      * @throws \LogicException
      */
@@ -300,7 +283,7 @@ class Configuration
     }
 
     /**
-     * @psalm-param class-string $className
+     * @param class-string $className
      */
     public function addEntity(string $className) : EntityConfiguration
     {
@@ -311,7 +294,7 @@ class Configuration
     }
 
     /**
-     * @psalm-param class-string $className
+     * @param class-string $className
      */
     public function addEmbeddable(string $className) : EmbeddableConfiguration
     {
@@ -324,11 +307,9 @@ class Configuration
     /**
      * Adds a custom mapping that applies by default to all properties of the given type.
      *
-     * @psalm-param class-string $className
-     * @psalm-param class-string<PropertyMapping> $propertyMapping
+     * @param class-string $className The mapped class name.
+     * @param class-string<PropertyMapping> $propertyMapping The PropertyMapping implementation class name.
      *
-     * @param string $className       The mapped class name.
-     * @param string $propertyMapping The PropertyMapping implementation class name.
      */
     public function addCustomMapping(string $className, string $propertyMapping) : Configuration
     {
@@ -338,7 +319,7 @@ class Configuration
     }
 
     /**
-     * @psalm-return array<string, class-string<PropertyMapping>>
+     * @return array<string, class-string<PropertyMapping>>
      */
     public function getCustomMappings() : array
     {
@@ -350,7 +331,7 @@ class Configuration
      *
      * @todo Naming of addCustomMapping() / setCustomPropertyMapping() is a bit confusing
      *
-     * @psalm-param class-string $class
+     * @param class-string $class
      */
     public function setCustomPropertyMapping(string $class, string $property, PropertyMapping $mapping) : Configuration
     {
@@ -360,9 +341,7 @@ class Configuration
     }
 
     /**
-     * @psalm-return array<class-string, array<string, PropertyMapping>>
-     *
-     * @return PropertyMapping[][]
+     * @return array<class-string, array<string, PropertyMapping>>
      */
     public function getCustomPropertyMappings() : array
     {
@@ -370,7 +349,7 @@ class Configuration
     }
 
     /**
-     * @psalm-param class-string $class
+     * @param class-string $class
      */
     public function setTransientProperties(string $class, string ...$properties) : Configuration
     {
@@ -382,11 +361,9 @@ class Configuration
     /**
      * Returns the list of transient properties for the given class name.
      *
-     * @psalm-param class-string $class
+     * @param class-string $class
      *
-     * @psalm-return list<string>
-     *
-     * @return string[]
+     * @return list<string>
      */
     public function getTransientProperties(string $class) : array
     {
@@ -394,7 +371,7 @@ class Configuration
     }
 
     /**
-     * @psalm-param class-string $class
+     * @param class-string $class
      */
     public function setFieldName(string $class, string $property, string $fieldName) : Configuration
     {
@@ -408,9 +385,7 @@ class Configuration
      *
      * If not set, the field name defaults to the property name.
      *
-     * @psalm-return array<class-string, array<string, string>>
-     *
-     * @return string[][]
+     * @return array<class-string, array<string, string>>
      */
     public function getFieldNames() : array
     {
@@ -422,7 +397,7 @@ class Configuration
      *
      * If not set, the field name prefix defaults to the property name followed by an underscore character.
      *
-     * @psalm-param class-string $class
+     * @param class-string $class
      */
     public function setFieldNamePrefix(string $class, string $property, string $fieldNamePrefix) : Configuration
     {
@@ -432,9 +407,7 @@ class Configuration
     }
 
     /**
-     * @psalm-return array<class-string, array<string, string>>
-     *
-     * @return string[][]
+     * @return array<class-string, array<string, string>>
      */
     public function getFieldNamePrefixes() : array
     {
@@ -444,9 +417,7 @@ class Configuration
     /**
      * Returns the class configurations, indexed by FQCN.
      *
-     * @psalm-return array<class-string, ClassConfiguration>
-     *
-     * @return ClassConfiguration[]
+     * @return array<class-string, ClassConfiguration>
      */
     public function getClasses() : array
     {
@@ -456,9 +427,7 @@ class Configuration
     /**
      * Returns the entity configurations, indexed by FQCN.
      *
-     * @psalm-return array<class-string, EntityConfiguration>
-     *
-     * @return EntityConfiguration[]
+     * @return array<class-string, EntityConfiguration>
      */
     public function getEntities() : array
     {

@@ -10,7 +10,7 @@ namespace Brick\ORM\Exception;
 class UnknownPropertyException extends ORMException
 {
     /**
-     * @psalm-param class-string $class
+     * @param class-string $class
      */
     public static function unknownProperty(string $class, string $property) : self
     {
@@ -18,7 +18,7 @@ class UnknownPropertyException extends ORMException
     }
 
     /**
-     * @psalm-param class-string $class
+     * @param class-string $class
      */
     public static function invalidDottedProperty(string $class, string $dottedProperty) : self
     {

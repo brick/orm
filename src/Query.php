@@ -7,30 +7,24 @@ namespace Brick\ORM;
 class Query
 {
     /**
-     * @psalm-var class-string
+     * @var class-string
      */
     private string $className;
 
     /**
      * The properties to load, or null to load the full entity.
      *
-     * @psalm-var list<string>|null
-     *
-     * @var string[]|null
+     * @var list<string>|null
      */
     private array|null $properties = null;
 
     /**
-     * @psalm-var list<QueryPredicate>
-     *
-     * @var QueryPredicate[]
+     * @var list<QueryPredicate>
      */
     private array $predicates = [];
 
     /**
-     * @psalm-var list<QueryOrderBy>
-     *
-     * @var QueryOrderBy[]
+     * @var list<QueryOrderBy>
      */
     private array $orderBy = [];
 
@@ -39,7 +33,7 @@ class Query
     private int|null $offset = null;
 
     /**
-     * @psalm-param class-string $className
+     * @param class-string $className
      */
     public function __construct(string $className)
     {
@@ -64,7 +58,7 @@ class Query
     }
 
     /**
-     * @param string $property  The property to order by.
+     * @param string $property The property to order by.
      * @param string $direction The order direction, 'ASC' or 'DESC'.
      *
      * @throws \InvalidArgumentException If the order direction is invalid.
@@ -85,7 +79,7 @@ class Query
     }
 
     /**
-     * @psalm-return class-string
+     * @return class-string
      */
     public function getClassName() : string
     {
@@ -93,9 +87,7 @@ class Query
     }
 
     /**
-     * @psalm-return list<string>|null
-     *
-     * @return string[]|null
+     * @return list<string>|null
      */
     public function getProperties() : array|null
     {
@@ -103,9 +95,7 @@ class Query
     }
 
     /**
-     * @psalm-return list<QueryPredicate>
-     *
-     * @return QueryPredicate[]
+     * @return list<QueryPredicate>
      */
     public function getPredicates() : array
     {
@@ -113,9 +103,7 @@ class Query
     }
 
     /**
-     * @psalm-return list<QueryOrderBy>
-     *
-     * @return QueryOrderBy[]
+     * @return list<QueryOrderBy>
      */
     public function getOrderBy() : array
     {

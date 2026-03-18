@@ -10,11 +10,9 @@ namespace Brick\ORM\Exception;
 class IdentityConflictException extends ORMException
 {
     /**
-     * @psalm-param class-string $className
-     * @psalm-param list<int|string> $scalarIdentity
+     * @param class-string $className The entity class name.
+     * @param list<int|string> $scalarIdentity The identity, as a list of scalar values.
      *
-     * @param string $className      The entity class name.
-     * @param array  $scalarIdentity The identity, as a list of scalar values.
      */
     public static function identityMapConflict(string $className, array $scalarIdentity) : self
     {
