@@ -1,0 +1,259 @@
+parameters:
+	ignoreErrors:
+		-
+			message: '#^Property Brick\\ORM\\ClassConfiguration\:\:\$reflectionClass with generic class ReflectionClass does not specify its types\: T$#'
+			identifier: missingType.generics
+			count: 1
+			path: src/ClassConfiguration.php
+
+		-
+			message: '#^Class Brick\\ORM\\ClassMetadata has an uninitialized property \$className\. Give it default value or assign it in the constructor\.$#'
+			identifier: property.uninitialized
+			count: 1
+			path: src/ClassMetadata.php
+
+		-
+			message: '#^Class Brick\\ORM\\ClassMetadata has an uninitialized property \$properties\. Give it default value or assign it in the constructor\.$#'
+			identifier: property.uninitialized
+			count: 1
+			path: src/ClassMetadata.php
+
+		-
+			message: '#^Class Brick\\ORM\\ClassMetadata has an uninitialized property \$propertyMappings\. Give it default value or assign it in the constructor\.$#'
+			identifier: property.uninitialized
+			count: 1
+			path: src/ClassMetadata.php
+
+		-
+			message: '#^Class Brick\\ORM\\ClassMetadataBuilder has an uninitialized property \$embeddableMetadata\. Give it default value or assign it in the constructor\.$#'
+			identifier: property.uninitialized
+			count: 1
+			path: src/ClassMetadataBuilder.php
+
+		-
+			message: '#^Class Brick\\ORM\\ClassMetadataBuilder has an uninitialized property \$entityMetadata\. Give it default value or assign it in the constructor\.$#'
+			identifier: property.uninitialized
+			count: 1
+			path: src/ClassMetadataBuilder.php
+
+		-
+			message: '#^Method Brick\\ORM\\Configuration\:\:getProxyClassName\(\) should return class\-string\<Brick\\ORM\\Proxy\> but returns string\.$#'
+			identifier: return.type
+			count: 1
+			path: src/Configuration.php
+
+		-
+			message: '#^Cannot call method getName\(\) on ReflectionClass\|false\.$#'
+			identifier: method.nonObject
+			count: 2
+			path: src/EntityConfiguration.php
+
+		-
+			message: '#^Cannot call method getParentClass\(\) on ReflectionClass\|false\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: src/EntityConfiguration.php
+
+		-
+			message: '#^Dead catch \- ReflectionException is never thrown in the try block\.$#'
+			identifier: catch.neverThrown
+			count: 1
+			path: src/EntityConfiguration.php
+
+		-
+			message: '#^Parameter \#2 \.\.\.\$values of function sprintf expects bool\|float\|int\|string\|null, mixed given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/EntityConfiguration.php
+
+		-
+			message: '#^Class Brick\\ORM\\EntityMetadata has an uninitialized property \$childClasses\. Give it default value or assign it in the constructor\.$#'
+			identifier: property.uninitialized
+			count: 1
+			path: src/EntityMetadata.php
+
+		-
+			message: '#^Class Brick\\ORM\\EntityMetadata has an uninitialized property \$discriminatorColumn\. Give it default value or assign it in the constructor\.$#'
+			identifier: property.uninitialized
+			count: 1
+			path: src/EntityMetadata.php
+
+		-
+			message: '#^Class Brick\\ORM\\EntityMetadata has an uninitialized property \$discriminatorMap\. Give it default value or assign it in the constructor\.$#'
+			identifier: property.uninitialized
+			count: 1
+			path: src/EntityMetadata.php
+
+		-
+			message: '#^Class Brick\\ORM\\EntityMetadata has an uninitialized property \$discriminatorValue\. Give it default value or assign it in the constructor\.$#'
+			identifier: property.uninitialized
+			count: 1
+			path: src/EntityMetadata.php
+
+		-
+			message: '#^Class Brick\\ORM\\EntityMetadata has an uninitialized property \$idProperties\. Give it default value or assign it in the constructor\.$#'
+			identifier: property.uninitialized
+			count: 1
+			path: src/EntityMetadata.php
+
+		-
+			message: '#^Class Brick\\ORM\\EntityMetadata has an uninitialized property \$inverseDiscriminatorMap\. Give it default value or assign it in the constructor\.$#'
+			identifier: property.uninitialized
+			count: 1
+			path: src/EntityMetadata.php
+
+		-
+			message: '#^Class Brick\\ORM\\EntityMetadata has an uninitialized property \$isAutoIncrement\. Give it default value or assign it in the constructor\.$#'
+			identifier: property.uninitialized
+			count: 1
+			path: src/EntityMetadata.php
+
+		-
+			message: '#^Class Brick\\ORM\\EntityMetadata has an uninitialized property \$nonIdProperties\. Give it default value or assign it in the constructor\.$#'
+			identifier: property.uninitialized
+			count: 1
+			path: src/EntityMetadata.php
+
+		-
+			message: '#^Class Brick\\ORM\\EntityMetadata has an uninitialized property \$proxyClassName\. Give it default value or assign it in the constructor\.$#'
+			identifier: property.uninitialized
+			count: 1
+			path: src/EntityMetadata.php
+
+		-
+			message: '#^Class Brick\\ORM\\EntityMetadata has an uninitialized property \$rootClassName\. Give it default value or assign it in the constructor\.$#'
+			identifier: property.uninitialized
+			count: 1
+			path: src/EntityMetadata.php
+
+		-
+			message: '#^Class Brick\\ORM\\EntityMetadata has an uninitialized property \$selfNonIdProperties\. Give it default value or assign it in the constructor\.$#'
+			identifier: property.uninitialized
+			count: 1
+			path: src/EntityMetadata.php
+
+		-
+			message: '#^Class Brick\\ORM\\EntityMetadata has an uninitialized property \$tableName\. Give it default value or assign it in the constructor\.$#'
+			identifier: property.uninitialized
+			count: 1
+			path: src/EntityMetadata.php
+
+		-
+			message: '#^PHPDoc tag @var with type array\{string\} is not subtype of native type array\{non\-empty\-string\}\.$#'
+			identifier: varTag.nativeType
+			count: 1
+			path: src/Exception/ORMException.php
+
+		-
+			message: '#^Method Brick\\ORM\\Gateway\:\:getEntityClass\(\) should return class\-string but returns class\-string\|false\.$#'
+			identifier: return.type
+			count: 1
+			path: src/Gateway.php
+
+		-
+			message: '#^Method Brick\\ORM\\Gateway\:\:nativeQuery\(\) has parameter \$parameters with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Gateway.php
+
+		-
+			message: '#^Method Brick\\ORM\\Gateway\:\:nativeQuery\(\) should return array\<T\> but returns list\<object\>\.$#'
+			identifier: return.type
+			count: 1
+			path: src/Gateway.php
+
+		-
+			message: '#^Parameter \#1 \$class of static method Brick\\ORM\\Exception\\UnknownEntityClassException\:\:unknownEntityClass\(\) expects class\-string, class\-string\|false given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Gateway.php
+
+		-
+			message: '#^Cannot access offset int\|string on mixed\.$#'
+			identifier: offsetAccess.nonOffsetAccessible
+			count: 2
+			path: src/IdentityMap.php
+
+		-
+			message: '#^Method Brick\\ORM\\IdentityMap\:\:get\(\) should return object\|null but returns mixed\.$#'
+			identifier: return.type
+			count: 1
+			path: src/IdentityMap.php
+
+		-
+			message: '#^Property Brick\\ORM\\IdentityMap\:\:\$entities type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/IdentityMap.php
+
+		-
+			message: '#^Cannot cast mixed to float\.$#'
+			identifier: cast.double
+			count: 1
+			path: src/ObjectFactory.php
+
+		-
+			message: '#^Cannot cast mixed to int\.$#'
+			identifier: cast.int
+			count: 1
+			path: src/ObjectFactory.php
+
+		-
+			message: '#^Method Brick\\ORM\\ObjectFactory\:\:instantiateDTO\(\) should return object but returns T\.$#'
+			identifier: return.type
+			count: 1
+			path: src/ObjectFactory.php
+
+		-
+			message: '#^Method Brick\\ORM\\ObjectFactory\:\:read\(\) should return array\<string, mixed\> but returns array\<mixed\>\.$#'
+			identifier: return.type
+			count: 1
+			path: src/ObjectFactory.php
+
+		-
+			message: '#^PHPDoc tag @return with type T is not subtype of native type object\.$#'
+			identifier: return.phpDocType
+			count: 1
+			path: src/ObjectFactory.php
+
+		-
+			message: '#^Parameter \#1 \$className of method Brick\\ORM\\ObjectFactory\:\:instantiateDTO\(\) expects class\-string\<mixed\>, string given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/ObjectFactory.php
+
+		-
+			message: '#^Property Brick\\ORM\\ObjectFactory\:\:\$classes with generic class ReflectionClass does not specify its types\: T$#'
+			identifier: missingType.generics
+			count: 1
+			path: src/ObjectFactory.php
+
+		-
+			message: '#^Cannot cast mixed to int\.$#'
+			identifier: cast.int
+			count: 2
+			path: src/PropertyMapping/IntMapping.php
+
+		-
+			message: '#^Cannot cast mixed to string\.$#'
+			identifier: cast.string
+			count: 2
+			path: src/PropertyMapping/StringMapping.php
+
+		-
+			message: '#^Parameter \#3 \$subject of function str_replace expects array\<string\>\|string, string\|false given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/ProxyBuilder.php
+
+		-
+			message: '#^Parameter \#3 \$subject of function str_replace expects array\<string\>\|string, string\|false given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/RepositoryBuilder.php
+
+		-
+			message: '#^Parameter \#1 \$codepoint of function chr expects int\<0, 255\>, int\<min, 121\> given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/TableAliasGenerator.php

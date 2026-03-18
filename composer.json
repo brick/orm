@@ -15,7 +15,7 @@
     "ext-pdo": "*",
     "phpunit/phpunit": "^10.1",
     "php-coveralls/php-coveralls": "^2.0",
-    "vimeo/psalm": "5.24.0"
+    "phpstan/phpstan": "2.1.42"
   },
   "autoload": {
     "psr-4": {
