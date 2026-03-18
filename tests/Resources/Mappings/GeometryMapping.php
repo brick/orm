@@ -27,41 +27,26 @@ class GeometryMapping implements PropertyMapping
         $this->isNullable = $isNullable;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getType() : ?string
     {
         return Geometry::class;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function isNullable() : bool
     {
         return $this->isNullable;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getFieldNames(): array
     {
         return [$this->fieldName];
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getInputValuesCount() : int
     {
         return 2;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getFieldToInputValuesSQL(array $fieldNames) : array
     {
         return [
@@ -70,9 +55,6 @@ class GeometryMapping implements PropertyMapping
         ];
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function convertInputValuesToProp(Gateway $gateway, array $values) : mixed
     {
         [$wkt, $srid] = $values;
@@ -84,9 +66,6 @@ class GeometryMapping implements PropertyMapping
         return new Geometry($wkt, (int) $srid);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function convertPropToFields(mixed $propValue) : array
     {
         if ($propValue === null) {

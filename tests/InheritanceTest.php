@@ -14,9 +14,6 @@ use PHPUnit\Framework\Attributes\Depends;
 
 class InheritanceTest extends AbstractTestCase
 {
-    /**
-     * {@inheritdoc}
-     */
     protected static function useProxies() : bool
     {
         return false;

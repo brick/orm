@@ -15,9 +15,6 @@ use PHPUnit\Framework\Attributes\Depends;
 
 class GatewayTest extends AbstractTestCase
 {
-    /**
-     * {@inheritdoc}
-     */
     protected static function useProxies() : bool
     {
         return false;

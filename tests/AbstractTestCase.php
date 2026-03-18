@@ -34,8 +34,6 @@ abstract class AbstractTestCase extends TestCase
 
     /**
      * @todo schema is MySQL only for now
-     *
-     * {@inheritdoc}
      */
     public static function setUpBeforeClass() : void
     {
@@ -126,9 +124,6 @@ abstract class AbstractTestCase extends TestCase
         ');
     }
 
-    /**
-     * {@inheritdoc}
-     */
     protected function setUp() : void
     {
         self::$logger->reset();
