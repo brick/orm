@@ -9,7 +9,7 @@ use Brick\Db\DbException;
 use Brick\ORM\PropertyMapping\BuiltinTypeMapping;
 use Brick\ORM\PropertyMapping\EmbeddableMapping;
 use Brick\ORM\PropertyMapping\EntityMapping;
-use Exception;
+use Exception as BaseException;
 use InvalidArgumentException;
 use RuntimeException;
 
@@ -235,7 +235,7 @@ class Gateway
                 foreach ($classMetadata->idProperties as $idProperty) {
                     if (! isset($propValues[$idProperty])) {
                         // @todo custom exception
-                        throw new Exception(
+                        throw new BaseException(
                             'Object\'s identity must be retrieved when running with an identity map. ' .
                             'Please add "' . $idProperty . '" to loaded properties of "' . $className . '".',
                         );
@@ -326,7 +326,7 @@ class Gateway
             } elseif (! $entity instanceof $class) {
                 // Consistency check: if we request a subclass of rootClassName, and the object in the identity map
                 // is not an instance of the subclass.
-                throw new Exception('Expected instance of "' . $class . '", got instance of "' . get_class($entity) . '".');
+                throw new BaseException('Expected instance of "' . $class . '", got instance of "' . get_class($entity) . '".');
             }
 
             return $entity;
@@ -824,7 +824,7 @@ class Gateway
 
             if ($operator !== '=' && $operator !== '!=' && ! $propertyMapping instanceof BuiltinTypeMapping) {
                 // @todo custom exception
-                throw new Exception(sprintf('Operator %s can only be used on builtin types.', $operator));
+                throw new BaseException(sprintf('Operator %s can only be used on builtin types.', $operator));
             }
 
             $whereConditions = [];
@@ -841,7 +841,7 @@ class Gateway
                 foreach ($fieldNames as $fieldName) { // @todo quote field name
                     if ($operator !== '=' && $operator !== '!=') {
                         // @todo custom exception
-                        throw new Exception(sprintf('Operator %s cannot be used on null values.', $operator));
+                        throw new BaseException(sprintf('Operator %s cannot be used on null values.', $operator));
                     }
 
                     $whereConditions[] = $tableAlias . '.' . $fieldName . ' ' . ($operator === '=' ? 'IS NULL' : 'IS NOT NULL');
@@ -900,7 +900,7 @@ class Gateway
 
                 if ($actualClass !== $className && ! is_subclass_of($actualClass, $className)) {
                     // @todo custom exception
-                    throw new Exception(sprintf('Expected instance of %s, got %s.', $className, $actualClass));
+                    throw new BaseException(sprintf('Expected instance of %s, got %s.', $className, $actualClass));
                 }
 
                 $className = $actualClass;
