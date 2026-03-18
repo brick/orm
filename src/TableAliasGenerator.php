@@ -4,11 +4,13 @@ declare(strict_types=1);
 
 namespace Brick\ORM;
 
+use function chr;
+
 class TableAliasGenerator
 {
     private int $number = 0;
 
-    public function generate() : string
+    public function generate(): string
     {
         $this->number++;
 

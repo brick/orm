@@ -5,9 +5,28 @@ declare(strict_types=1);
 namespace Brick\ORM;
 
 use Brick\Db\Connection;
+use Brick\Db\DbException;
 use Brick\ORM\PropertyMapping\BuiltinTypeMapping;
 use Brick\ORM\PropertyMapping\EmbeddableMapping;
 use Brick\ORM\PropertyMapping\EntityMapping;
+use Exception;
+use InvalidArgumentException;
+use RuntimeException;
+
+use function array_key_exists;
+use function array_slice;
+use function array_unique;
+use function array_values;
+use function assert;
+use function count;
+use function explode;
+use function get_class;
+use function get_parent_class;
+use function implode;
+use function in_array;
+use function is_array;
+use function is_subclass_of;
+use function sprintf;
 
 /**
  * The underlying table data gateway for repositories.
@@ -36,7 +55,7 @@ class Gateway
     /**
      * The identity map, to keep references to managed entities, if any.
      */
-    private IdentityMap|null $identityMap;
+    private null|IdentityMap $identityMap;
 
     /**
      * Whether to use lazy-loading proxies to reference entities whose identity is known, but data is not yet known.
@@ -52,12 +71,12 @@ class Gateway
      *
      * @param array<class-string, EntityMetadata> $classMetadata
      */
-    public function __construct(Connection $connection, array $classMetadata, IdentityMap|null $identityMap = null, bool $useProxies = false)
+    public function __construct(Connection $connection, array $classMetadata, null|IdentityMap $identityMap = null, bool $useProxies = false)
     {
-        $this->connection    = $connection;
+        $this->connection = $connection;
         $this->classMetadata = $classMetadata;
-        $this->identityMap   = $identityMap;
-        $this->useProxies    = $useProxies;
+        $this->identityMap = $identityMap;
+        $this->useProxies = $useProxies;
         $this->objectFactory = new ObjectFactory();
     }
 
@@ -73,15 +92,15 @@ class Gateway
      *
      * @template T
      *
-     * @param class-string<T> $className The name of the class to instantiate.
-     * @param string $query The SQL query.
-     * @param array $parameters The bound parameters.
+     * @param class-string<T> $className  The name of the class to instantiate.
+     * @param string          $query      The SQL query.
+     * @param array           $parameters The bound parameters.
      *
      * @return T[] The instances of the class.
      *
-     * @throws \Brick\Db\DbException
+     * @throws DbException
      */
-    public function nativeQuery(string $className, string $query, array $parameters = []) : array
+    public function nativeQuery(string $className, string $query, array $parameters = []): array
     {
         $statement = $this->connection->query($query, $parameters);
         $rows = $statement->fetchAllAssociative();
@@ -97,94 +116,21 @@ class Gateway
     }
 
     /**
-     * Transforms a flat associative array into a nested array.
-     *
-     * Example: ['foo' => 'FOO', 'bar__baz' => 'BAZ'] would turn into ['foo' => 'FOO', 'bar' => ['baz' => 'BAZ']].
-     *
-     * @param array<string, mixed> $values
-     *
-     * @return array<string, mixed>
-     */
-    private function nestValues(array $values) : array
-    {
-        $result = [];
-
-        foreach ($values as $name => $value) {
-            $names = explode('__', $name);
-
-            $ref = & $result;
-
-            foreach ($names as $name) {
-                if ($ref !== null && ! is_array($ref)) {
-                    throw new \InvalidArgumentException('Invalid mix of scalar and non-scalar values.');
-                }
-
-                $ref = & $ref[$name];
-            }
-
-            $ref = $value;
-        }
-
-        return $result;
-    }
-
-    /**
-     * Builds an INSERT query.
-     *
-     * The arrays of fields and values must have the same number of elements.
-     *
-     * @param string $table The table name.
-     * @param list<string> $fields The list of field names.
-     * @param list<string> $expressions The list of SQL expressions.
-     */
-    private function getInsertSQL(string $table, array $fields, array $expressions) : string
-    {
-        $fields = implode(', ', $fields);
-        $expressions = implode(', ', $expressions);
-
-        return sprintf('INSERT INTO %s (%s) VALUES (%s)', $table, $fields, $expressions);
-    }
-
-    /**
-     * @param string $table The table name.
-     * @param list<string> $updates The list of 'key = value' pairs to update.
-     * @param list<string> $whereConditions The list of 'key = value' WHERE conditions.
-     */
-    private function getUpdateSQL(string $table, array $updates, array $whereConditions) : string
-    {
-        $updates = implode(', ', $updates);
-        $whereConditions = implode(' AND ', $whereConditions);
-
-        return sprintf('UPDATE %s SET %s WHERE %s', $table, $updates, $whereConditions);
-    }
-
-    /**
-     * @param string $table The table name.
-     * @param list<string> $whereConditions The list of 'key = value' WHERE conditions.
-     */
-    private function getDeleteSQL(string $table, array $whereConditions) : string
-    {
-        $whereConditions = implode(' AND ', $whereConditions);
-
-        return sprintf('DELETE FROM %s WHERE %s', $table, $whereConditions);
-    }
-
-    /**
      * Loads the entity with the given identity from the database.
      *
      * An optional array of property names can be provided, to load a partial object.
      * By default, all properties will be loaded and set.
      *
-     * @param class-string $class The entity class name.
-     * @param array<string, mixed> $id The identity, as a map of property name to value.
-     * @param int $options A bitmask of options to use.
-     * @param string ...$props An optional array of property names to load.
+     * @param class-string         $class    The entity class name.
+     * @param array<string, mixed> $id       The identity, as a map of property name to value.
+     * @param int                  $options  A bitmask of options to use.
+     * @param string               ...$props An optional array of property names to load.
      *
      * @return object|null The entity, or null if it doesn't exist.
      *
-     * @throws \RuntimeException If a property name does not exist.
+     * @throws RuntimeException If a property name does not exist.
      */
-    public function load(string $class, array $id, int $options = 0, string ...$props) : object|null
+    public function load(string $class, array $id, int $options = 0, string ...$props): null|object
     {
         $query = new Query($class);
 
@@ -202,18 +148,18 @@ class Gateway
     /**
      * Loads an entity's properties.
      *
-     * @param class-string $class The entity class name.
-     * @param array<string, mixed> $id The identity, as a map of property name to value.
-     * @param list<string> $props The list of property names to load.
-     * @param int $options A bitmask of options to use.
+     * @param class-string         $class   The entity class name.
+     * @param array<string, mixed> $id      The identity, as a map of property name to value.
+     * @param list<string>         $props   The list of property names to load.
+     * @param int                  $options A bitmask of options to use.
      *
      * @return array<string, mixed>|null The properties, or null if the entity doesn't exist.
      *
-     * @throws \RuntimeException                     If a property name does not exist.
+     * @throws RuntimeException                      If a property name does not exist.
      * @throws Exception\UnknownEntityClassException If the class name is not a known entity class.
      * @throws Exception\UnknownPropertyException    If an unknown property is given.
      */
-    public function loadProps(string $class, array $id, array $props, int $options = 0) : array|null
+    public function loadProps(string $class, array $id, array $props, int $options = 0): null|array
     {
         $query = new Query($class);
         $query->setProperties(...$props);
@@ -237,8 +183,8 @@ class Gateway
      * The entity must have an identity.
      * By default, all properties are loaded. If a list of properties if given, only these properties will be loaded.
      *
-     * @param object $entity The entity to hydrate.
-     * @param int $options A bitmask of options to use.
+     * @param object $entity   The entity to hydrate.
+     * @param int    $options  A bitmask of options to use.
      * @param string ...$props An optional list of properties to hydrate.
      *
      * @throws Exception\UnknownEntityClassException If the object is not a known entity.
@@ -246,7 +192,7 @@ class Gateway
      * @throws Exception\NoIdentityException         If the entity has no identity.
      * @throws Exception\EntityNotFoundException     If the entity is not found in the database.
      */
-    public function hydrate(object $entity, int $options = 0, string ...$props) : void
+    public function hydrate(object $entity, int $options = 0, string ...$props): void
     {
         $class = $this->getEntityClass($entity);
         $identity = $this->getIdentity($class, $entity);
@@ -266,15 +212,15 @@ class Gateway
     /**
      * Finds entities using a query object.
      *
-     * @param Query $query The query object.
-     * @param int $options A bitmask of options to use.
+     * @param Query $query   The query object.
+     * @param int   $options A bitmask of options to use.
      *
      * @return list<object>
      *
      * @throws Exception\UnknownEntityClassException If the query's class name is not a known entity class.
      * @throws Exception\UnknownPropertyException    If the query targets an unknown property.
      */
-    public function find(Query $query, int $options = 0) : array
+    public function find(Query $query, int $options = 0): array
     {
         $entities = [];
 
@@ -289,9 +235,9 @@ class Gateway
                 foreach ($classMetadata->idProperties as $idProperty) {
                     if (! isset($propValues[$idProperty])) {
                         // @todo custom exception
-                        throw new \Exception(
+                        throw new Exception(
                             'Object\'s identity must be retrieved when running with an identity map. ' .
-                            'Please add "' . $idProperty . '" to loaded properties of "' . $className . '".'
+                            'Please add "' . $idProperty . '" to loaded properties of "' . $className . '".',
                         );
                     }
 
@@ -323,333 +269,10 @@ class Gateway
     }
 
     /**
-     * Finds entities using a query object, and returns them as class names and properties.
-     *
-     * The result is a list, whose each element is itself a list containing exactly 2 elements:
-     *
-     * - the class name of the entity as a string;
-     * - a map of property name to value as an array.
-     *
-     * @param Query $query The query object.
-     * @param int $options A bitmask of options to use.
-     *
-     * @return list<array{class-string, array<string, mixed>}>
-     *
-     * @throws Exception\UnknownEntityClassException If the query's class name is not a known entity class.
-     * @throws Exception\UnknownPropertyException    If the query targets an unknown property.
-     */
-    private function doFind(Query $query, int $options = 0) : array
-    {
-        $className = $query->getClassName();
-
-        if (! isset($this->classMetadata[$className])) {
-            throw Exception\UnknownEntityClassException::unknownEntityClass($className);
-        }
-
-        $classMetadata = $this->classMetadata[$className];
-
-        $props = $query->getProperties();
-
-        $isFullObject = ($props === null);
-
-        if ($props === null) {
-            $props = $classMetadata->properties;
-        } else {
-            $props = array_values(array_unique($props));
-
-            foreach ($props as $prop) {
-                if (! isset($classMetadata->propertyMappings[$prop])) {
-                    throw Exception\UnknownPropertyException::unknownProperty($className, $prop);
-                }
-            }
-        }
-
-        $tableAliasGenerator = new TableAliasGenerator();
-        $mainTableAlias = $tableAliasGenerator->generate();
-
-        $selectFields = [];
-
-        if ($classMetadata->discriminatorColumn !== null) {
-            $selectFields[] = $mainTableAlias . '.' . $classMetadata->discriminatorColumn; // @todo quote field name
-        }
-
-        foreach ($props as $prop) {
-            $propertyMapping = $classMetadata->propertyMappings[$prop];
-
-            // @todo quote field names
-            $fieldNames = $propertyMapping->getFieldNames();
-
-            foreach ($fieldNames as $key => $fieldName) {
-                $fieldNames[$key] = $mainTableAlias . '.' . $fieldName;
-            }
-
-            // https://github.com/vimeo/psalm/issues/4741
-            /** @var list<string> $fieldNames */
-            $fieldToInputValuesSQL = $propertyMapping->getFieldToInputValuesSQL($fieldNames);
-
-            foreach ($fieldToInputValuesSQL as $selectField) {
-                $selectFields[] = $selectField;
-            }
-        }
-
-        if ($isFullObject) {
-            foreach ($classMetadata->childClasses as $childClass) {
-                $childClassMetadata = $this->classMetadata[$childClass];
-
-                foreach ($childClassMetadata->selfNonIdProperties as $prop) {
-                    $propertyMapping = $childClassMetadata->propertyMappings[$prop];
-
-                    // @todo quote field names
-                    $fieldNames = $propertyMapping->getFieldNames();
-
-                    foreach ($fieldNames as $key => $fieldName) {
-                        $fieldNames[$key] = $mainTableAlias . '.' . $fieldName;
-                    }
-
-                    // https://github.com/vimeo/psalm/issues/4741
-                    /** @var list<string> $fieldNames */
-                    $fieldToInputValuesSQL = $propertyMapping->getFieldToInputValuesSQL($fieldNames);
-
-                    foreach ($fieldToInputValuesSQL as $selectField) {
-                        $selectFields[] = $selectField;
-                    }
-                }
-            }
-        }
-
-        if (! $selectFields) {
-            // No fields are selected, just perform a SELECT 1
-            $selectFields[] = '1';
-        }
-
-        $outputValues = [];
-        $tableAliases = []; // Table aliases, indexed by (dotted) property name.
-
-        $selectBuilder = new SelectQueryBuilder($selectFields, $classMetadata->tableName, $mainTableAlias);
-        $selectBuilder->setOptions($options);
-
-        foreach ($query->getPredicates() as $predicate) {
-            [$tableAlias, $propertyMapping] = $this->addJoins($classMetadata, $selectBuilder, $tableAliasGenerator, $mainTableAlias, $tableAliases, $predicate->getProperty());
-
-            $operator = $predicate->getOperator();
-
-            if ($operator !== '=' && $operator !== '!=' && ! $propertyMapping instanceof BuiltinTypeMapping) {
-                // @todo custom exception
-                throw new \Exception(sprintf('Operator %s can only be used on builtin types.', $operator));
-            }
-
-            $whereConditions = [];
-
-            // @todo check that $value is of the correct type
-            $value = $predicate->getValue();
-
-            $fieldNames = $propertyMapping->getFieldNames();
-
-            if ($value === null) {
-                // property = null implies IS NULL on every single underlying database field
-                // property != null currently implies IS NOT NULL on every single underlying database field
-                // @todo property != null should imply IS NOT NULL on ANY OF the non-nullable fields
-                foreach ($fieldNames as $fieldName) { // @todo quote field name
-                    if ($operator !== '=' && $operator != '!=') {
-                        // @todo custom exception
-                        throw new \Exception(sprintf('Operator %s cannot be used on null values.', $operator));
-                    }
-
-                    $whereConditions[] = $tableAlias . '.' . $fieldName . ' ' . ($operator === '=' ? 'IS NULL' : 'IS NOT NULL');
-                }
-            } else {
-                $expressionsAndOutputValues = $propertyMapping->convertPropToFields($value);
-
-                foreach ($fieldNames as $fieldNameIndex => $_) {
-                    foreach ($expressionsAndOutputValues[$fieldNameIndex] as $index => $expressionOrValue) {
-                        if ($index === 0) {
-                            /** @var string $expressionOrValue */
-                            $whereConditions[] = $tableAlias . '.' . $fieldNames[$fieldNameIndex] . ' ' . $operator . ' ' . $expressionOrValue;
-                        } else {
-                            $outputValues[] = $expressionOrValue;
-                        }
-                    }
-                }
-            }
-
-            // a = x AND b = y, but (A != x OR b != y); other operators not allowed on multiple fields
-            $selectBuilder->addWhereConditions($whereConditions, $operator === '!=' ? 'OR' : 'AND');
-        }
-
-        foreach ($query->getOrderBy() as $orderBy) {
-            // @todo There is currently an unnecessary JOIN when ordering by an identity field of a related entity;
-            // example: ->addOrderBy('relatedEntity.id'); this could be avoided by reading the value from the base entity instead.
-
-            [$tableAlias, $propertyMapping] = $this->addJoins($classMetadata, $selectBuilder, $tableAliasGenerator, $mainTableAlias, $tableAliases, $orderBy->getProperty());
-
-            foreach ($propertyMapping->getFieldNames() as $fieldName) {
-                $selectBuilder->addOrderBy($tableAlias . '.' . $fieldName, $orderBy->getDirection());
-            }
-        }
-
-        if (null !== $limit = $query->getLimit()) {
-            $offset = $query->getOffset();
-            assert($offset !== null);
-
-            $selectBuilder->setLimit($limit, $offset);
-        }
-
-        $sql = $selectBuilder->build();
-        $statement = $this->connection->prepare($sql);
-        $statement->execute($outputValues);
-
-        $result = [];
-
-        foreach ($statement->iterateNumeric() as $inputValues) {
-            $index = 0;
-            $propValues = [];
-
-            if ($classMetadata->discriminatorColumn !== null) {
-                /** @var int|string $discriminatorValue */
-                $discriminatorValue = $inputValues[$index++];
-                $actualClass = $classMetadata->discriminatorMap[$discriminatorValue];
-
-                if ($actualClass !== $className && ! is_subclass_of($actualClass, $className)) {
-                    // @todo custom exception
-                    throw new \Exception(sprintf('Expected instance of %s, got %s.', $className, $actualClass));
-                }
-
-                $className = $actualClass;
-            }
-
-            foreach ($props as $prop) {
-                $propertyMapping = $classMetadata->propertyMappings[$prop];
-                $valuesCount = $propertyMapping->getInputValuesCount();
-
-                $propInputValues = array_slice($inputValues, $index, $valuesCount);
-                $index += $valuesCount;
-
-                $propValues[$prop] = $propertyMapping->convertInputValuesToProp($this, $propInputValues);
-            }
-
-            if ($isFullObject) {
-                foreach ($classMetadata->childClasses as $childClass) {
-                    $childClassMetadata = $this->classMetadata[$childClass];
-
-                    foreach ($childClassMetadata->selfNonIdProperties as $prop) {
-                        $propertyMapping = $childClassMetadata->propertyMappings[$prop];
-                        $valuesCount = $propertyMapping->getInputValuesCount();
-
-                        if ($childClass === $className || is_subclass_of($className, $childClass)) {
-                            $propInputValues = array_slice($inputValues, $index, $valuesCount);
-                            $propValues[$prop] = $propertyMapping->convertInputValuesToProp($this, $propInputValues);
-                        }
-
-                        $index += $valuesCount;
-                    }
-                }
-            }
-
-            $result[] = [$className, $propValues];
-        }
-
-        return $result;
-    }
-
-    /**
-     * Adds joins for the given property, returns the alias of the table to read from, and the property mapping.
-     *
-     * @todo Quick & dirty. Refactor.
-     *
-     * @param array<string, string> $tableAliases
-     *
-     * @return array{string, PropertyMapping}
-     *
-     * @throws Exception\UnknownPropertyException
-     */
-    private function addJoins(EntityMetadata $classMetadata, SelectQueryBuilder $selectBuilder, TableAliasGenerator $tableAliasGenerator, string $mainTableAlias, array & $tableAliases, string $dottedProperty) : array
-    {
-        $properties = explode('.', $dottedProperty);
-        $count = count($properties);
-
-        $currentClassMetadata = $classMetadata;
-        $isEntityOrEmbeddable = true;
-
-        foreach ($properties as $index => $property) {
-            if (! $isEntityOrEmbeddable) {
-                // Requesting a child property of a non-entity or embeddable property
-                throw Exception\UnknownPropertyException::invalidDottedProperty($classMetadata->className, $dottedProperty);
-            }
-
-            if (! isset($currentClassMetadata->propertyMappings[$property])) {
-                throw Exception\UnknownPropertyException::unknownProperty($currentClassMetadata->className, $property);
-            }
-
-            $propertyMapping = $currentClassMetadata->propertyMappings[$property];
-
-            if ($propertyMapping instanceof EmbeddableMapping) {
-                continue;
-            }
-
-            if (! $propertyMapping instanceof EntityMapping) {
-                $isEntityOrEmbeddable = false;
-                continue;
-            }
-
-            // @todo target entity should be part of ClassMetadata itself?
-            $currentClassMetadata = $propertyMapping->classMetadata;
-
-            $joinProp = implode('.', array_slice($properties, 0, $index + 1));
-
-            // Note: no need to JOIN if performing comparisons against the entity's identity only.
-            // Only JOIN if the entity is not the last element of the dotted property.
-            if (($index !== $count - 1) && ! isset($tableAliases[$joinProp])) {
-                $tableAlias = $tableAliasGenerator->generate();
-                $tableAliases[$joinProp] = $tableAlias;
-
-                if ($index === 0) {
-                    $sourceTableAlias = $mainTableAlias;
-                } else {
-                    $previousJoinProp = implode('.', array_slice($properties, 0, $index));
-                    $sourceTableAlias = $tableAliases[$previousJoinProp];
-                }
-
-                $joinConditions = [];
-
-                foreach ($currentClassMetadata->idProperties as $prop) {
-                    foreach ($currentClassMetadata->propertyMappings[$prop]->getFieldNames() as $name) {
-                        // @todo quote field names
-                        $joinConditions[] = $sourceTableAlias . '.' . $propertyMapping->fieldNamePrefix . $name . ' = ' . $tableAlias . '.' . $name;
-                    }
-                }
-
-                $selectBuilder->addJoin(
-                    $propertyMapping->isNullable() ? 'LEFT' : 'INNER',
-                    $currentClassMetadata->tableName,
-                    $tableAlias,
-                    $joinConditions
-                );
-            }
-        }
-
-        // Loop from the next-to-last dotted property, up to the root property, until we find a table alias:
-        // we might have embeddabled in between, that must use the parent table.
-        for ($i = 1; ; $i++) {
-            $previousJoinProp = implode('.', array_slice($properties, 0, count($properties) - $i));
-            if ($previousJoinProp === '') {
-                $tableAlias = $mainTableAlias;
-                break;
-            }
-
-            if (isset($tableAliases[$previousJoinProp])) {
-                $tableAlias = $tableAliases[$previousJoinProp];
-                break;
-            }
-        }
-
-        return [$tableAlias, $propertyMapping];
-    }
-
-    /**
      * Finds a single entity using a query object.
      *
-     * @param Query $query The query object.
-     * @param int $options A bitmask of options to use.
+     * @param Query $query   The query object.
+     * @param int   $options A bitmask of options to use.
      *
      * @return object|null The entity, or NULL if not found.
      *
@@ -657,7 +280,7 @@ class Gateway
      * @throws Exception\UnknownPropertyException    If the query targets an unknown property.
      * @throws Exception\NonUniqueResultException    If the query returns more than one result.
      */
-    public function findOne(Query $query, int $options = 0) : object|null
+    public function findOne(Query $query, int $options = 0): null|object
     {
         $entities = $this->find($query, $options);
         $count = count($entities);
@@ -683,12 +306,12 @@ class Gateway
      * No check is performed to see if the entity actually exists in the database.
      * Only properties part of the identity will be set.
      *
-     * @param class-string $class The entity class name.
-     * @param array<string, mixed> $id The identity, as a map of property name to value.
+     * @param class-string         $class The entity class name.
+     * @param array<string, mixed> $id    The identity, as a map of property name to value.
      *
      * @throws Exception\NoIdentityException If an entity with no identity is part of the given identity.
      */
-    public function getReference(string $class, array $id) : object
+    public function getReference(string $class, array $id): object
     {
         $classMetadata = $this->classMetadata[$class];
 
@@ -703,34 +326,13 @@ class Gateway
             } elseif (! $entity instanceof $class) {
                 // Consistency check: if we request a subclass of rootClassName, and the object in the identity map
                 // is not an instance of the subclass.
-                throw new \Exception('Expected instance of "' . $class . '", got instance of "' . get_class($entity) . '".');
+                throw new Exception('Expected instance of "' . $class . '", got instance of "' . get_class($entity) . '".');
             }
 
             return $entity;
         }
 
         return $this->instantiate($classMetadata, $id, $scalarId);
-    }
-
-    /**
-     * @param EntityMetadata $classMetadata The entity metadata.
-     * @param array<string, mixed> $id The identity, as a map of property name to value.
-     * @param list<int|string> $scalarId The identity, as a list of scalar values.
-     */
-    private function instantiate(EntityMetadata $classMetadata, array $id, array $scalarId) : object
-    {
-        if ($this->useProxies) {
-            // Return a lazy-loading proxy, with the identity set and other properties lazy-loaded on first access.
-            $proxyClass = $classMetadata->proxyClassName;
-
-            assert($proxyClass !== null);
-
-            return new $proxyClass($this, $id, $scalarId);
-        }
-
-        // Return a partial object, with only the identity set.
-
-        return $this->objectFactory->instantiate($classMetadata, $id);
     }
 
     /**
@@ -741,7 +343,7 @@ class Gateway
      * @throws Exception\UnknownEntityClassException If the object is not a known entity.
      * @throws Exception\NoIdentityException         If the entity has no identity.
      */
-    public function exists(object $entity) : bool
+    public function exists(object $entity): bool
     {
         $class = $this->getEntityClass($entity);
 
@@ -753,10 +355,10 @@ class Gateway
      *
      * @todo faster implementation
      *
-     * @param class-string $class The entity class name.
-     * @param array<string, mixed> $id The identity, as a map of property name to value.
+     * @param class-string         $class The entity class name.
+     * @param array<string, mixed> $id    The identity, as a map of property name to value.
      */
-    public function existsIdentity(string $class, array $id) : bool
+    public function existsIdentity(string $class, array $id): bool
     {
         return $this->loadProps($class, $id, []) !== null;
     }
@@ -769,12 +371,12 @@ class Gateway
      *
      * @param object $entity The entity to save.
      *
-     * @throws \RuntimeException
+     * @throws RuntimeException
      * @throws Exception\UnknownEntityClassException If the object is not a known entity.
      * @throws Exception\NoIdentityException         If saving an entity with a non-autoincrement identity which is not set.
-     * @throws \Brick\Db\DbException                 If a database error occurs.
+     * @throws DbException                           If a database error occurs.
      */
-    public function add(object $entity) : void
+    public function add(object $entity): void
     {
         $class = $this->getEntityClass($entity);
 
@@ -786,7 +388,7 @@ class Gateway
             foreach ($classMetadata->idProperties as $idProperty) {
                 if (isset($propValues[$idProperty])) {
                     // @todo custom exception
-                    throw new \RuntimeException('Cannot add() an entity with an autoincrement identity already set. Use update() instead.');
+                    throw new RuntimeException('Cannot add() an entity with an autoincrement identity already set. Use update() instead.');
                 }
             }
         } else {
@@ -820,7 +422,7 @@ class Gateway
                     $message .= ' Did you forget to initialize it to null?';
                 }
 
-                throw new \RuntimeException($message);
+                throw new RuntimeException($message);
             }
 
             $value = $propValues[$prop];
@@ -883,14 +485,14 @@ class Gateway
      * By default, all persistent properties are considered, unless a list of properties is given, in which case only
      * these properties will be considered. Non-initialized properties are skipped.
      *
-     * @param object $entity The entity to update.
+     * @param object $entity   The entity to update.
      * @param string ...$props An optional list of properties to update.
      *
      * @throws Exception\UnknownEntityClassException If the object is not a known entity.
      * @throws Exception\UnknownPropertyException    If an unknown property is given.
      * @throws Exception\NoIdentityException         If the entity has no identity.
      */
-    public function update(object $entity, string ...$props) : void
+    public function update(object $entity, string ...$props): void
     {
         $class = $this->getEntityClass($entity);
 
@@ -928,13 +530,13 @@ class Gateway
      *
      * This results in an immediate UPDATE statement being executed against the database.
      *
-     * @param class-string $class
+     * @param class-string         $class
      * @param array<string, mixed> $values A map of updatable property name to value.
-     * @param array<string, mixed> $id A map of identity property name to value.
+     * @param array<string, mixed> $id     A map of identity property name to value.
      *
      * @throws Exception\UnknownPropertyException If an unknown property is given.
      */
-    public function doUpdate(string $class, array $values, array $id) : void
+    public function doUpdate(string $class, array $values, array $id): void
     {
         $classMetadata = $this->classMetadata[$class];
 
@@ -963,7 +565,7 @@ class Gateway
         }
 
         foreach ($id as $prop => $value) {
-            // @todo check identity if this method is going to stay as part of the public API
+            /** @todo check identity if this method is going to stay as part of the public API */
             $propertyMapping = $classMetadata->propertyMappings[$prop];
             $expressionsAndOutputValues = $propertyMapping->convertPropToFields($value);
 
@@ -993,7 +595,7 @@ class Gateway
      *
      * @throws Exception\UnknownEntityClassException If the object is not a known entity.
      */
-    public function remove(object $entity) : void
+    public function remove(object $entity): void
     {
         $class = $this->getEntityClass($entity);
 
@@ -1005,10 +607,10 @@ class Gateway
      *
      * This results in an immediate DELETE statement being executed against the database.
      *
-     * @param class-string $class The entity class name.
-     * @param array<string, mixed> $id The identity, as a map of property name to value.
+     * @param class-string         $class The entity class name.
+     * @param array<string, mixed> $id    The identity, as a map of property name to value.
      */
-    public function removeIdentity(string $class, array $id) : void
+    public function removeIdentity(string $class, array $id): void
     {
         $classMetadata = $this->classMetadata[$class];
 
@@ -1037,14 +639,434 @@ class Gateway
     }
 
     /**
-     * @param class-string $class The entity class name. Must be validated.
-     * @param object $entity The entity.
+     * Transforms a flat associative array into a nested array.
+     *
+     * Example: ['foo' => 'FOO', 'bar__baz' => 'BAZ'] would turn into ['foo' => 'FOO', 'bar' => ['baz' => 'BAZ']].
+     *
+     * @param array<string, mixed> $values
+     *
+     * @return array<string, mixed>
+     */
+    private function nestValues(array $values): array
+    {
+        $result = [];
+
+        foreach ($values as $name => $value) {
+            $names = explode('__', $name);
+
+            $ref = &$result;
+
+            foreach ($names as $name) {
+                if ($ref !== null && ! is_array($ref)) {
+                    throw new InvalidArgumentException('Invalid mix of scalar and non-scalar values.');
+                }
+
+                $ref = &$ref[$name];
+            }
+
+            $ref = $value;
+        }
+
+        return $result;
+    }
+
+    /**
+     * Builds an INSERT query.
+     *
+     * The arrays of fields and values must have the same number of elements.
+     *
+     * @param string       $table       The table name.
+     * @param list<string> $fields      The list of field names.
+     * @param list<string> $expressions The list of SQL expressions.
+     */
+    private function getInsertSQL(string $table, array $fields, array $expressions): string
+    {
+        $fields = implode(', ', $fields);
+        $expressions = implode(', ', $expressions);
+
+        return sprintf('INSERT INTO %s (%s) VALUES (%s)', $table, $fields, $expressions);
+    }
+
+    /**
+     * @param string       $table           The table name.
+     * @param list<string> $updates         The list of 'key = value' pairs to update.
+     * @param list<string> $whereConditions The list of 'key = value' WHERE conditions.
+     */
+    private function getUpdateSQL(string $table, array $updates, array $whereConditions): string
+    {
+        $updates = implode(', ', $updates);
+        $whereConditions = implode(' AND ', $whereConditions);
+
+        return sprintf('UPDATE %s SET %s WHERE %s', $table, $updates, $whereConditions);
+    }
+
+    /**
+     * @param string       $table           The table name.
+     * @param list<string> $whereConditions The list of 'key = value' WHERE conditions.
+     */
+    private function getDeleteSQL(string $table, array $whereConditions): string
+    {
+        $whereConditions = implode(' AND ', $whereConditions);
+
+        return sprintf('DELETE FROM %s WHERE %s', $table, $whereConditions);
+    }
+
+    /**
+     * Finds entities using a query object, and returns them as class names and properties.
+     *
+     * The result is a list, whose each element is itself a list containing exactly 2 elements:
+     *
+     * - the class name of the entity as a string;
+     * - a map of property name to value as an array.
+     *
+     * @param Query $query   The query object.
+     * @param int   $options A bitmask of options to use.
+     *
+     * @return list<array{class-string, array<string, mixed>}>
+     *
+     * @throws Exception\UnknownEntityClassException If the query's class name is not a known entity class.
+     * @throws Exception\UnknownPropertyException    If the query targets an unknown property.
+     */
+    private function doFind(Query $query, int $options = 0): array
+    {
+        $className = $query->getClassName();
+
+        if (! isset($this->classMetadata[$className])) {
+            throw Exception\UnknownEntityClassException::unknownEntityClass($className);
+        }
+
+        $classMetadata = $this->classMetadata[$className];
+
+        $props = $query->getProperties();
+
+        $isFullObject = ($props === null);
+
+        if ($props === null) {
+            $props = $classMetadata->properties;
+        } else {
+            $props = array_values(array_unique($props));
+
+            foreach ($props as $prop) {
+                if (! isset($classMetadata->propertyMappings[$prop])) {
+                    throw Exception\UnknownPropertyException::unknownProperty($className, $prop);
+                }
+            }
+        }
+
+        $tableAliasGenerator = new TableAliasGenerator();
+        $mainTableAlias = $tableAliasGenerator->generate();
+
+        $selectFields = [];
+
+        if ($classMetadata->discriminatorColumn !== null) {
+            $selectFields[] = $mainTableAlias . '.' . $classMetadata->discriminatorColumn; // @todo quote field name
+        }
+
+        foreach ($props as $prop) {
+            $propertyMapping = $classMetadata->propertyMappings[$prop];
+
+            /** @todo quote field names */
+            $fieldNames = $propertyMapping->getFieldNames();
+
+            foreach ($fieldNames as $key => $fieldName) {
+                $fieldNames[$key] = $mainTableAlias . '.' . $fieldName;
+            }
+
+            // https://github.com/vimeo/psalm/issues/4741
+            /** @var list<string> $fieldNames */
+            $fieldToInputValuesSQL = $propertyMapping->getFieldToInputValuesSQL($fieldNames);
+
+            foreach ($fieldToInputValuesSQL as $selectField) {
+                $selectFields[] = $selectField;
+            }
+        }
+
+        if ($isFullObject) {
+            foreach ($classMetadata->childClasses as $childClass) {
+                $childClassMetadata = $this->classMetadata[$childClass];
+
+                foreach ($childClassMetadata->selfNonIdProperties as $prop) {
+                    $propertyMapping = $childClassMetadata->propertyMappings[$prop];
+
+                    /** @todo quote field names */
+                    $fieldNames = $propertyMapping->getFieldNames();
+
+                    foreach ($fieldNames as $key => $fieldName) {
+                        $fieldNames[$key] = $mainTableAlias . '.' . $fieldName;
+                    }
+
+                    // https://github.com/vimeo/psalm/issues/4741
+                    /** @var list<string> $fieldNames */
+                    $fieldToInputValuesSQL = $propertyMapping->getFieldToInputValuesSQL($fieldNames);
+
+                    foreach ($fieldToInputValuesSQL as $selectField) {
+                        $selectFields[] = $selectField;
+                    }
+                }
+            }
+        }
+
+        if (! $selectFields) {
+            // No fields are selected, just perform a SELECT 1
+            $selectFields[] = '1';
+        }
+
+        $outputValues = [];
+        $tableAliases = []; // Table aliases, indexed by (dotted) property name.
+
+        $selectBuilder = new SelectQueryBuilder($selectFields, $classMetadata->tableName, $mainTableAlias);
+        $selectBuilder->setOptions($options);
+
+        foreach ($query->getPredicates() as $predicate) {
+            [$tableAlias, $propertyMapping] = $this->addJoins($classMetadata, $selectBuilder, $tableAliasGenerator, $mainTableAlias, $tableAliases, $predicate->getProperty());
+
+            $operator = $predicate->getOperator();
+
+            if ($operator !== '=' && $operator !== '!=' && ! $propertyMapping instanceof BuiltinTypeMapping) {
+                // @todo custom exception
+                throw new Exception(sprintf('Operator %s can only be used on builtin types.', $operator));
+            }
+
+            $whereConditions = [];
+
+            /** @todo check that $value is of the correct type */
+            $value = $predicate->getValue();
+
+            $fieldNames = $propertyMapping->getFieldNames();
+
+            if ($value === null) {
+                // property = null implies IS NULL on every single underlying database field
+                // property != null currently implies IS NOT NULL on every single underlying database field
+                // @todo property != null should imply IS NOT NULL on ANY OF the non-nullable fields
+                foreach ($fieldNames as $fieldName) { // @todo quote field name
+                    if ($operator !== '=' && $operator !== '!=') {
+                        // @todo custom exception
+                        throw new Exception(sprintf('Operator %s cannot be used on null values.', $operator));
+                    }
+
+                    $whereConditions[] = $tableAlias . '.' . $fieldName . ' ' . ($operator === '=' ? 'IS NULL' : 'IS NOT NULL');
+                }
+            } else {
+                $expressionsAndOutputValues = $propertyMapping->convertPropToFields($value);
+
+                foreach ($fieldNames as $fieldNameIndex => $_) {
+                    foreach ($expressionsAndOutputValues[$fieldNameIndex] as $index => $expressionOrValue) {
+                        if ($index === 0) {
+                            /** @var string $expressionOrValue */
+                            $whereConditions[] = $tableAlias . '.' . $fieldNames[$fieldNameIndex] . ' ' . $operator . ' ' . $expressionOrValue;
+                        } else {
+                            $outputValues[] = $expressionOrValue;
+                        }
+                    }
+                }
+            }
+
+            // a = x AND b = y, but (A != x OR b != y); other operators not allowed on multiple fields
+            $selectBuilder->addWhereConditions($whereConditions, $operator === '!=' ? 'OR' : 'AND');
+        }
+
+        foreach ($query->getOrderBy() as $orderBy) {
+            // @todo There is currently an unnecessary JOIN when ordering by an identity field of a related entity;
+            // example: ->addOrderBy('relatedEntity.id'); this could be avoided by reading the value from the base entity instead.
+
+            [$tableAlias, $propertyMapping] = $this->addJoins($classMetadata, $selectBuilder, $tableAliasGenerator, $mainTableAlias, $tableAliases, $orderBy->getProperty());
+
+            foreach ($propertyMapping->getFieldNames() as $fieldName) {
+                $selectBuilder->addOrderBy($tableAlias . '.' . $fieldName, $orderBy->getDirection());
+            }
+        }
+
+        if (null !== $limit = $query->getLimit()) {
+            $offset = $query->getOffset();
+            assert($offset !== null);
+
+            $selectBuilder->setLimit($limit, $offset);
+        }
+
+        $sql = $selectBuilder->build();
+        $statement = $this->connection->prepare($sql);
+        $statement->execute($outputValues);
+
+        $result = [];
+
+        foreach ($statement->iterateNumeric() as $inputValues) {
+            $index = 0;
+            $propValues = [];
+
+            if ($classMetadata->discriminatorColumn !== null) {
+                /** @var int|string $discriminatorValue */
+                $discriminatorValue = $inputValues[$index++];
+                $actualClass = $classMetadata->discriminatorMap[$discriminatorValue];
+
+                if ($actualClass !== $className && ! is_subclass_of($actualClass, $className)) {
+                    // @todo custom exception
+                    throw new Exception(sprintf('Expected instance of %s, got %s.', $className, $actualClass));
+                }
+
+                $className = $actualClass;
+            }
+
+            foreach ($props as $prop) {
+                $propertyMapping = $classMetadata->propertyMappings[$prop];
+                $valuesCount = $propertyMapping->getInputValuesCount();
+
+                $propInputValues = array_slice($inputValues, $index, $valuesCount);
+                $index += $valuesCount;
+
+                $propValues[$prop] = $propertyMapping->convertInputValuesToProp($this, $propInputValues);
+            }
+
+            if ($isFullObject) {
+                foreach ($classMetadata->childClasses as $childClass) {
+                    $childClassMetadata = $this->classMetadata[$childClass];
+
+                    foreach ($childClassMetadata->selfNonIdProperties as $prop) {
+                        $propertyMapping = $childClassMetadata->propertyMappings[$prop];
+                        $valuesCount = $propertyMapping->getInputValuesCount();
+
+                        if ($childClass === $className || is_subclass_of($className, $childClass)) {
+                            $propInputValues = array_slice($inputValues, $index, $valuesCount);
+                            $propValues[$prop] = $propertyMapping->convertInputValuesToProp($this, $propInputValues);
+                        }
+
+                        $index += $valuesCount;
+                    }
+                }
+            }
+
+            $result[] = [$className, $propValues];
+        }
+
+        return $result;
+    }
+
+    /**
+     * Adds joins for the given property, returns the alias of the table to read from, and the property mapping.
+     *
+     * @todo Quick & dirty. Refactor.
+     *
+     * @param array<string, string> $tableAliases
+     *
+     * @return array{string, PropertyMapping}
+     *
+     * @throws Exception\UnknownPropertyException
+     */
+    private function addJoins(EntityMetadata $classMetadata, SelectQueryBuilder $selectBuilder, TableAliasGenerator $tableAliasGenerator, string $mainTableAlias, array &$tableAliases, string $dottedProperty): array
+    {
+        $properties = explode('.', $dottedProperty);
+        $count = count($properties);
+
+        $currentClassMetadata = $classMetadata;
+        $isEntityOrEmbeddable = true;
+
+        foreach ($properties as $index => $property) {
+            if (! $isEntityOrEmbeddable) {
+                // Requesting a child property of a non-entity or embeddable property
+                throw Exception\UnknownPropertyException::invalidDottedProperty($classMetadata->className, $dottedProperty);
+            }
+
+            if (! isset($currentClassMetadata->propertyMappings[$property])) {
+                throw Exception\UnknownPropertyException::unknownProperty($currentClassMetadata->className, $property);
+            }
+
+            $propertyMapping = $currentClassMetadata->propertyMappings[$property];
+
+            if ($propertyMapping instanceof EmbeddableMapping) {
+                continue;
+            }
+
+            if (! $propertyMapping instanceof EntityMapping) {
+                $isEntityOrEmbeddable = false;
+
+                continue;
+            }
+
+            /** @todo target entity should be part of ClassMetadata itself? */
+            $currentClassMetadata = $propertyMapping->classMetadata;
+
+            $joinProp = implode('.', array_slice($properties, 0, $index + 1));
+
+            // Note: no need to JOIN if performing comparisons against the entity's identity only.
+            // Only JOIN if the entity is not the last element of the dotted property.
+            if (($index !== $count - 1) && ! isset($tableAliases[$joinProp])) {
+                $tableAlias = $tableAliasGenerator->generate();
+                $tableAliases[$joinProp] = $tableAlias;
+
+                if ($index === 0) {
+                    $sourceTableAlias = $mainTableAlias;
+                } else {
+                    $previousJoinProp = implode('.', array_slice($properties, 0, $index));
+                    $sourceTableAlias = $tableAliases[$previousJoinProp];
+                }
+
+                $joinConditions = [];
+
+                foreach ($currentClassMetadata->idProperties as $prop) {
+                    foreach ($currentClassMetadata->propertyMappings[$prop]->getFieldNames() as $name) {
+                        // @todo quote field names
+                        $joinConditions[] = $sourceTableAlias . '.' . $propertyMapping->fieldNamePrefix . $name . ' = ' . $tableAlias . '.' . $name;
+                    }
+                }
+
+                $selectBuilder->addJoin(
+                    $propertyMapping->isNullable() ? 'LEFT' : 'INNER',
+                    $currentClassMetadata->tableName,
+                    $tableAlias,
+                    $joinConditions,
+                );
+            }
+        }
+
+        // Loop from the next-to-last dotted property, up to the root property, until we find a table alias:
+        // we might have embeddabled in between, that must use the parent table.
+        for ($i = 1; ; $i++) {
+            $previousJoinProp = implode('.', array_slice($properties, 0, count($properties) - $i));
+            if ($previousJoinProp === '') {
+                $tableAlias = $mainTableAlias;
+
+                break;
+            }
+
+            if (isset($tableAliases[$previousJoinProp])) {
+                $tableAlias = $tableAliases[$previousJoinProp];
+
+                break;
+            }
+        }
+
+        return [$tableAlias, $propertyMapping];
+    }
+
+    /**
+     * @param EntityMetadata       $classMetadata The entity metadata.
+     * @param array<string, mixed> $id            The identity, as a map of property name to value.
+     * @param list<int|string>     $scalarId      The identity, as a list of scalar values.
+     */
+    private function instantiate(EntityMetadata $classMetadata, array $id, array $scalarId): object
+    {
+        if ($this->useProxies) {
+            // Return a lazy-loading proxy, with the identity set and other properties lazy-loaded on first access.
+            $proxyClass = $classMetadata->proxyClassName;
+
+            assert($proxyClass !== null);
+
+            return new $proxyClass($this, $id, $scalarId);
+        }
+
+        // Return a partial object, with only the identity set.
+
+        return $this->objectFactory->instantiate($classMetadata, $id);
+    }
+
+    /**
+     * @param class-string $class  The entity class name. Must be validated.
+     * @param object       $entity The entity.
      *
      * @return array<string, mixed> The identity, as a map of property name to value.
      *
      * @throws Exception\NoIdentityException If the entity has no identity.
      */
-    private function getIdentity(string $class, object $entity) : array
+    private function getIdentity(string $class, object $entity): array
     {
         $classMetadata = $this->classMetadata[$class];
         $values = $this->objectFactory->read($entity);
@@ -1065,15 +1087,15 @@ class Gateway
     /**
      * Returns the identity of the given identity, as a list of scalar values.
      *
-     * @param EntityMetadata $classMetadata The entity class metadata.
-     * @param array<string, mixed> $identity The object's identity, as a map of property name to value.
-     *                                      Must contain a valid entry for each identity property.
+     * @param EntityMetadata       $classMetadata The entity class metadata.
+     * @param array<string, mixed> $identity      The object's identity, as a map of property name to value.
+     *                                            Must contain a valid entry for each identity property.
      *
      * @return list<int|string> The identity, as a list of int or string values.
      *
      * @throws Exception\NoIdentityException If an entity with no identity is part of the given identity.
      */
-    private function getScalarIdentity(EntityMetadata $classMetadata, array $identity) : array
+    private function getScalarIdentity(EntityMetadata $classMetadata, array $identity): array
     {
         $result = [];
 
@@ -1107,7 +1129,7 @@ class Gateway
      *
      * @throws Exception\UnknownEntityClassException If the object is not a known entity.
      */
-    private function getEntityClass(object $entity) : string
+    private function getEntityClass(object $entity): string
     {
         if ($entity instanceof Proxy) {
             $class = get_parent_class($entity);

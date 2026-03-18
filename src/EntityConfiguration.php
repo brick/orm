@@ -4,13 +4,23 @@ declare(strict_types=1);
 
 namespace Brick\ORM;
 
+use InvalidArgumentException;
+use LogicException;
+use ReflectionClass;
+use ReflectionException;
 use ReflectionNamedType;
+
+use function array_unique;
+use function array_values;
+use function count;
+use function in_array;
+use function sprintf;
 
 class EntityConfiguration extends ClassConfiguration
 {
-    private string|null $belongsTo = null;
+    private null|string $belongsTo = null;
 
-    private string|null $tableName = null;
+    private null|string $tableName = null;
 
     private bool $isAutoIncrement = false;
 
@@ -19,12 +29,12 @@ class EntityConfiguration extends ClassConfiguration
      *
      * @var list<string>|null
      */
-    private array|null $identityProperties = null;
+    private null|array $identityProperties = null;
 
     /**
      * The discriminator column name, or null if not set.
      */
-    private string|null $discriminatorColumn = null;
+    private null|string $discriminatorColumn = null;
 
     /**
      * A map of discriminator values to entity class names, or an empty array if not set.
@@ -38,14 +48,14 @@ class EntityConfiguration extends ClassConfiguration
      *
      * @param class-string $className
      */
-    public function belongsTo(string $className) : EntityConfiguration
+    public function belongsTo(string $className): EntityConfiguration
     {
         $this->belongsTo = $className;
 
         return $this;
     }
 
-    public function getBelongsTo() : string|null
+    public function getBelongsTo(): null|string
     {
         return $this->belongsTo;
     }
@@ -55,7 +65,7 @@ class EntityConfiguration extends ClassConfiguration
      *
      * If not set, it will default to the entity short name (i.e. the name without the namespace).
      */
-    public function setTableName(string $tableName) : EntityConfiguration
+    public function setTableName(string $tableName): EntityConfiguration
     {
         $this->tableName = $tableName;
 
@@ -67,7 +77,7 @@ class EntityConfiguration extends ClassConfiguration
      *
      * If not set, it will default to the entity short name (i.e. the name without the namespace).
      */
-    public function getTableName() : string
+    public function getTableName(): string
     {
         if ($this->tableName !== null) {
             return $this->tableName;
@@ -79,7 +89,7 @@ class EntityConfiguration extends ClassConfiguration
     /**
      * Sets whether the database table uses an auto-increment identity field.
      */
-    public function setAutoIncrement() : EntityConfiguration
+    public function setAutoIncrement(): EntityConfiguration
     {
         $this->isAutoIncrement = true;
 
@@ -89,17 +99,17 @@ class EntityConfiguration extends ClassConfiguration
     /**
      * Returns whether the database table uses an auto-increment identity field.
      *
-     * @throws \LogicException
+     * @throws LogicException
      */
-    public function isAutoIncrement() : bool
+    public function isAutoIncrement(): bool
     {
         if ($this->isAutoIncrement) {
             $identityProperties = $this->getIdentityProperties();
 
             if (count($identityProperties) !== 1) {
-                throw new \LogicException(sprintf(
+                throw new LogicException(sprintf(
                     'The entity "%s" has multiple identity properties and cannot be mapped to an auto-increment table.',
-                    $this->getClassName()
+                    $this->getClassName(),
                 ));
             }
 
@@ -111,18 +121,18 @@ class EntityConfiguration extends ClassConfiguration
                 $type = $propertyType->getName();
 
                 if ($type !== 'int' && $type !== 'string') {
-                    throw new \LogicException(sprintf(
+                    throw new LogicException(sprintf(
                         'The entity "%s" has an auto-increment identity that maps to an unsupported type "%s", ' .
                         'only int and string are allowed.',
                         $this->getClassName(),
-                        $type
+                        $type,
                     ));
                 }
             } else {
-                throw new \LogicException(sprintf(
+                throw new LogicException(sprintf(
                     'The entity "%s" has an auto-increment identity that maps to an untyped or union type property, ' .
                     'only int and string are allowed.',
-                    $this->getClassName()
+                    $this->getClassName(),
                 ));
             }
         }
@@ -131,12 +141,12 @@ class EntityConfiguration extends ClassConfiguration
     }
 
     /**
-     * @throws \InvalidArgumentException
+     * @throws InvalidArgumentException
      */
-    public function setIdentityProperties(string ...$identityProperties) : EntityConfiguration
+    public function setIdentityProperties(string ...$identityProperties): EntityConfiguration
     {
         if (count($identityProperties) === 0) {
-            throw new \InvalidArgumentException('The list of identity properties cannot be empty.');
+            throw new InvalidArgumentException('The list of identity properties cannot be empty.');
         }
 
         $identityProperties = array_values($identityProperties);
@@ -153,17 +163,17 @@ class EntityConfiguration extends ClassConfiguration
      *
      * @return list<string>
      *
-     * @throws \LogicException
+     * @throws LogicException
      */
-    public function getIdentityProperties() : array
+    public function getIdentityProperties(): array
     {
         if ($this->identityProperties === null) {
-            throw new \LogicException(sprintf('No identity properties have been set for class %s.', $this->getClassName()));
+            throw new LogicException(sprintf('No identity properties have been set for class %s.', $this->getClassName()));
         }
 
         foreach ($this->identityProperties as $identityProperty) {
             if (! in_array($identityProperty, $this->getPersistentProperties())) {
-                throw new \LogicException(sprintf('Identity property $%s in class %s is not persistent.', $identityProperty, $this->getClassName()));
+                throw new LogicException(sprintf('Identity property $%s in class %s is not persistent.', $identityProperty, $this->getClassName()));
             }
         }
 
@@ -178,32 +188,32 @@ class EntityConfiguration extends ClassConfiguration
      *
      * Note: only single table inheritance is supported for now.
      *
-     * @param string $discriminatorColumn The discriminator column name.
-     * @param array<int|string, class-string> $discriminatorMap A map of discriminator value to concrete entity class name.
+     * @param string                          $discriminatorColumn The discriminator column name.
+     * @param array<int|string, class-string> $discriminatorMap    A map of discriminator value to concrete entity class name.
      *
-     * @throws \InvalidArgumentException If the discriminator map is empty, a class name does not exist, or is not a subclass of the root entity class.
+     * @throws InvalidArgumentException If the discriminator map is empty, a class name does not exist, or is not a subclass of the root entity class.
      */
-    public function setInheritanceMapping(string $discriminatorColumn, array $discriminatorMap) : EntityConfiguration
+    public function setInheritanceMapping(string $discriminatorColumn, array $discriminatorMap): EntityConfiguration
     {
         if (! $discriminatorMap) {
-            throw new \InvalidArgumentException('The discriminator map cannot be empty.');
+            throw new InvalidArgumentException('The discriminator map cannot be empty.');
         }
 
         $rootEntityClassName = $this->reflectionClass->getName();
 
         foreach ($discriminatorMap as $discriminatorValue => $className) {
             try {
-                $reflectionClass = new \ReflectionClass($className);
-            } catch (\ReflectionException $e) {
-                throw new \InvalidArgumentException(sprintf('%s does not exist.', $className), 0, $e);
+                $reflectionClass = new ReflectionClass($className);
+            } catch (ReflectionException $e) {
+                throw new InvalidArgumentException(sprintf('%s does not exist.', $className), 0, $e);
             }
 
             if ($reflectionClass->isAbstract()) {
-                throw new \InvalidArgumentException(sprintf('Abstract class %s cannot be part of the discriminator map.', $reflectionClass->getName()));
+                throw new InvalidArgumentException(sprintf('Abstract class %s cannot be part of the discriminator map.', $reflectionClass->getName()));
             }
 
             if ($reflectionClass->getName() !== $rootEntityClassName && ! $reflectionClass->isSubclassOf($rootEntityClassName)) {
-                throw new \InvalidArgumentException(sprintf('%s is not a subclass of %s and cannot be part of its discriminator map.', $reflectionClass->getName(), $rootEntityClassName));
+                throw new InvalidArgumentException(sprintf('%s is not a subclass of %s and cannot be part of its discriminator map.', $reflectionClass->getName(), $rootEntityClassName));
             }
 
             // Override to fix potential wrong case
@@ -212,11 +222,11 @@ class EntityConfiguration extends ClassConfiguration
 
         // Check that values are unique
         if (count(array_unique($discriminatorMap)) !== count($discriminatorMap)) {
-            throw new \InvalidArgumentException('Duplicate class names in discriminator map.');
+            throw new InvalidArgumentException('Duplicate class names in discriminator map.');
         }
 
         $this->discriminatorColumn = $discriminatorColumn;
-        $this->discriminatorMap    = $discriminatorMap;
+        $this->discriminatorMap = $discriminatorMap;
 
         return $this;
     }
@@ -224,7 +234,7 @@ class EntityConfiguration extends ClassConfiguration
     /**
      * Returns the discriminator column name, or null if inheritance is not in use.
      */
-    public function getDiscriminatorColumn() : string|null
+    public function getDiscriminatorColumn(): null|string
     {
         return $this->discriminatorColumn;
     }
@@ -236,7 +246,7 @@ class EntityConfiguration extends ClassConfiguration
      *
      * @return array<int|string, class-string>
      */
-    public function getDiscriminatorMap() : array
+    public function getDiscriminatorMap(): array
     {
         return $this->discriminatorMap;
     }
@@ -252,14 +262,14 @@ class EntityConfiguration extends ClassConfiguration
      *
      * @return class-string[] The list of all class names in the hierarchy.
      */
-    public function getClassHierarchy() : array
+    public function getClassHierarchy(): array
     {
         $classes = [
-            $this->getClassName() // root entity
+            $this->getClassName(), // root entity
         ];
 
         foreach ($this->discriminatorMap as $className) {
-            $reflectionClass = new \ReflectionClass($className);
+            $reflectionClass = new ReflectionClass($className);
 
             while ($reflectionClass->getName() !== $this->getClassName()) {
                 $classes[] = $reflectionClass->getName();
@@ -273,23 +283,23 @@ class EntityConfiguration extends ClassConfiguration
     /**
      * @param list<string> $properties The list of property names to check.
      *
-     * @throws \InvalidArgumentException If a property does not exist.
+     * @throws InvalidArgumentException If a property does not exist.
      */
-    private function checkProperties(array $properties) : void
+    private function checkProperties(array $properties): void
     {
         foreach ($properties as $property) {
             try {
                 $reflectionProperty = $this->reflectionClass->getProperty($property);
-            } catch (\ReflectionException $e) {
-                throw new \InvalidArgumentException(sprintf('Class %s has no property named $%s.', $this->getClassName(), $property), 0, $e);
+            } catch (ReflectionException $e) {
+                throw new InvalidArgumentException(sprintf('Class %s has no property named $%s.', $this->getClassName(), $property), 0, $e);
             }
 
             if ($reflectionProperty->isStatic()) {
-                throw new \InvalidArgumentException(sprintf('%s::$%s is static; static properties cannot be persisted.', $this->getClassName(), $property));
+                throw new InvalidArgumentException(sprintf('%s::$%s is static; static properties cannot be persisted.', $this->getClassName(), $property));
             }
 
             if ($reflectionProperty->isPrivate()) {
-                throw new \InvalidArgumentException(sprintf('%s::$%s is private; private properties are not supported.', $this->getClassName(), $property));
+                throw new InvalidArgumentException(sprintf('%s::$%s is private; private properties are not supported.', $this->getClassName(), $property));
             }
         }
     }

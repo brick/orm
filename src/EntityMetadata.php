@@ -12,7 +12,7 @@ class EntityMetadata extends ClassMetadata
      * This property will only be set if the entity is part of an inheritance hierarchy.
      * For other entities, this property will be null.
      */
-    public string|null $discriminatorColumn;
+    public null|string $discriminatorColumn;
 
     /**
      * The discriminator value.
@@ -20,7 +20,7 @@ class EntityMetadata extends ClassMetadata
      * This property will only be set if the entity is a concrete class in an inheritance hierarchy.
      * For other entities and abstract entities, this property will be null.
      */
-    public int|string|null $discriminatorValue;
+    public null|int|string $discriminatorValue;
 
     /**
      * The discriminator map for inheritance.
@@ -64,7 +64,7 @@ class EntityMetadata extends ClassMetadata
      *
      * @var class-string<Proxy>|null
      */
-    public string|null $proxyClassName;
+    public null|string $proxyClassName;
 
     /**
      * The database table name.

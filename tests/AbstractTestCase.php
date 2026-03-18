@@ -11,7 +11,11 @@ use Brick\ORM\Gateway;
 use Brick\ORM\Tests\Generated\Repository\CountryRepository;
 use Brick\ORM\Tests\Generated\Repository\EventRepository;
 use Brick\ORM\Tests\Generated\Repository\UserRepository;
+use PDO;
 use PHPUnit\Framework\TestCase;
+
+use function getenv;
+use function sprintf;
 
 abstract class AbstractTestCase extends TestCase
 {
@@ -28,14 +32,9 @@ abstract class AbstractTestCase extends TestCase
     protected static EventRepository $eventRepository;
 
     /**
-     * @return bool
-     */
-    abstract protected static function useProxies() : bool;
-
-    /**
      * @todo schema is MySQL only for now
      */
-    public static function setUpBeforeClass() : void
+    public static function setUpBeforeClass(): void
     {
         self::$logger = new DebugLogger();
 
@@ -50,7 +49,7 @@ abstract class AbstractTestCase extends TestCase
         self::assertNotFalse($dbPassword, 'Environment variable DB_PASSWORD is not set');
 
         $dsn = sprintf('mysql:host=%s;port=%s', $dbHost, $dbPort);
-        $pdo = new \PDO($dsn, $dbUsername, $dbPassword);
+        $pdo = new PDO($dsn, $dbUsername, $dbPassword);
         $driverConnection = new PDOConnection($pdo);
         $connection = new Connection($driverConnection, self::$logger);
 
@@ -124,29 +123,19 @@ abstract class AbstractTestCase extends TestCase
         ');
     }
 
-    protected function setUp() : void
+    protected function setUp(): void
     {
         self::$logger->reset();
     }
 
-    /**
-     * @param int $count
-     *
-     * @return void
-     */
-    protected function assertDebugStatementCount(int $count) : void
+    abstract protected static function useProxies(): bool;
+
+    protected function assertDebugStatementCount(int $count): void
     {
         self::assertSame($count, self::$logger->count());
     }
 
-    /**
-     * @param int    $index
-     * @param string $statement
-     * @param mixed  ...$parameters
-     *
-     * @return void
-     */
-    protected function assertDebugStatement(int $index, string $statement, ...$parameters) : void
+    protected function assertDebugStatement(int $index, string $statement, mixed ...$parameters): void
     {
         $debugStatement = self::$logger->getDebugStatement($index);
 

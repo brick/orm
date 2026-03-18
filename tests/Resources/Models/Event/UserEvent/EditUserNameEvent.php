@@ -18,7 +18,7 @@ class EditUserNameEvent extends UserEvent
         $this->newName = $newName;
     }
 
-    public function getNewName() : string
+    public function getNewName(): string
     {
         return $this->newName;
     }

@@ -4,19 +4,28 @@ declare(strict_types=1);
 
 namespace Brick\ORM\Exception;
 
+use Exception;
+
+use function bin2hex;
+use function count;
+use function implode;
+use function is_string;
+use function preg_replace_callback;
+use function strtoupper;
+
 /**
  * Base class for all ORM exceptions.
  */
-class ORMException extends \Exception
+class ORMException extends Exception
 {
     /**
      * Returns a parsable string representation of the given string, hex-encoding every non-printable ASCII char.
      *
      * Example: "ABC\xFE\xFF"
      */
-    protected static function exportString(string $string) : string
+    protected static function exportString(string $string): string
     {
-        $export = preg_replace_callback('/[^\x20-\x7E]/', function(array $matches) {
+        $export = preg_replace_callback('/[^\x20-\x7E]/', function (array $matches) {
             /** @var array{string} $matches */
             return '\x' . strtoupper(bin2hex($matches[0]));
         }, $string);
@@ -37,7 +46,7 @@ class ORMException extends \Exception
      * @param list<int|string> $scalarIdentity The identity, as a list of scalar values. Must contain at least one entry.
      *                                         Each entry must be an int or a string.
      */
-    protected static function exportScalarIdentity(array $scalarIdentity) : string
+    protected static function exportScalarIdentity(array $scalarIdentity): string
     {
         $result = [];
 

@@ -5,8 +5,16 @@ declare(strict_types=1);
 namespace Brick\ORM;
 
 use Closure;
+use InvalidArgumentException;
 use ReflectionClass;
+use ReflectionException;
 use ReflectionNamedType;
+use ReflectionProperty;
+
+use function get_object_vars;
+use function gettype;
+use function is_array;
+use function sprintf;
 
 /**
  * Creates, reads and writes persistent objects.
@@ -41,24 +49,24 @@ class ObjectFactory
      * Transient properties are still initialized to their default value, if any.
      * Properties may be initialized by passing a map of property name to value.
      *
-     * @param ClassMetadata $classMetadata The class metadata of the entity or embeddable.
-     * @param array<string, mixed> $values An optional map of property name to value to write.
+     * @param ClassMetadata        $classMetadata The class metadata of the entity or embeddable.
+     * @param array<string, mixed> $values        An optional map of property name to value to write.
      *
-     * @throws \ReflectionException If the class does not exist.
+     * @throws ReflectionException If the class does not exist.
      */
-    public function instantiate(ClassMetadata $classMetadata, array $values = []) : object
+    public function instantiate(ClassMetadata $classMetadata, array $values = []): object
     {
         $className = $classMetadata->className;
 
         if (isset($this->classes[$className])) {
             $reflectionClass = $this->classes[$className];
         } else {
-            $reflectionClass = $this->classes[$className] = new \ReflectionClass($className);
+            $reflectionClass = $this->classes[$className] = new ReflectionClass($className);
         }
 
         $object = $reflectionClass->newInstanceWithoutConstructor();
 
-        (function() use ($classMetadata, $values, $reflectionClass) {
+        (function () use ($classMetadata, $values, $reflectionClass): void {
             // Unset persistent properties
             // @todo PHP 7.4: for even better performance, only unset typed properties that have a default value, as
             //       unset() will have no effect on those that have no default value (will require a new metadata prop).
@@ -69,8 +77,10 @@ class ObjectFactory
             // Set values
             foreach ($values as $key => $value) {
                 if ($value === null) {
-                    // @todo temporary fix: do not set null values when typed property is not nullable;
-                    //       needs investigation to see why these null values are being passed in the first place
+                    /**
+                     * @todo temporary fix: do not set null values when typed property is not nullable;
+                     *       needs investigation to see why these null values are being passed in the first place
+                     */
 
                     $reflectionType = $reflectionClass->getProperty($key)->getType();
 
@@ -93,23 +103,23 @@ class ObjectFactory
      *
      * @template T
      *
-     * @param class-string<T> $className
+     * @param class-string<T>      $className
      * @param array<string, mixed> $values
      *
      * @return T
      *
-     * @throws \ReflectionException      If the class does not exist.
-     * @throws \InvalidArgumentException If the class is not a valid DTO or an unexpected value is found.
+     * @throws ReflectionException      If the class does not exist.
+     * @throws InvalidArgumentException If the class is not a valid DTO or an unexpected value is found.
      */
-    public function instantiateDTO(string $className, array $values) : object
+    public function instantiateDTO(string $className, array $values): object
     {
         $propertyConverters = $this->getPropertyConverters($className);
 
-        $object = new $className;
+        $object = new $className();
 
         foreach ($values as $name => $value) {
             if (! isset($propertyConverters[$name])) {
-                throw new \InvalidArgumentException(sprintf('There is no property named $%s in class %s.', $name, $className));
+                throw new InvalidArgumentException(sprintf('There is no property named $%s in class %s.', $name, $className));
             }
 
             $propertyConverter = $propertyConverters[$name];
@@ -120,37 +130,71 @@ class ObjectFactory
     }
 
     /**
+     * Reads *initialized* object properties.
+     *
+     * Properties that are not initialized, or have been unset(), are not included in the array.
+     * This method assumes that there are no private properties in parent classes.
+     *
+     * @param object $object The object to read.
+     *
+     * @return array<string, mixed> A map of property names to values.
+     */
+    public function read(object $object): array
+    {
+        return (function () {
+            return get_object_vars($this);
+        })->bindTo($object, $object)();
+    }
+
+    /**
+     * Writes an object's properties.
+     *
+     * This method does not support writing private properties in parent classes.
+     *
+     * @param object               $object The object to write.
+     * @param array<string, mixed> $values A map of property names to values.
+     */
+    public function write(object $object, array $values): void
+    {
+        (function () use ($values): void {
+            foreach ($values as $key => $value) {
+                $this->{$key} = $value;
+            }
+        })->bindTo($object, $object)();
+    }
+
+    /**
      * Returns the property converters for the given class, indexed by property name.
      *
      * @param class-string $className
      *
      * @return array<string, Closure>
      *
-     * @throws \ReflectionException      If the class does not exist.
-     * @throws \InvalidArgumentException If the class is not a valid DTO or an unexpected value is found.
+     * @throws ReflectionException      If the class does not exist.
+     * @throws InvalidArgumentException If the class is not a valid DTO or an unexpected value is found.
      */
-    private function getPropertyConverters(string $className) : array
+    private function getPropertyConverters(string $className): array
     {
         if (isset($this->propertyConverters[$className])) {
             return $this->propertyConverters[$className];
         }
 
-        $reflectionClass = new \ReflectionClass($className);
+        $reflectionClass = new ReflectionClass($className);
 
         if ($reflectionClass->isAbstract()) {
-            throw new \InvalidArgumentException(sprintf('Cannot instantiate abstract class %s.', $className));
+            throw new InvalidArgumentException(sprintf('Cannot instantiate abstract class %s.', $className));
         }
 
         if ($reflectionClass->isInterface()) {
-            throw new \InvalidArgumentException(sprintf('Cannot instantiate interface %s.', $className));
+            throw new InvalidArgumentException(sprintf('Cannot instantiate interface %s.', $className));
         }
 
         if ($reflectionClass->isInternal()) {
-            throw new \InvalidArgumentException(sprintf('Cannot instantiate internal class %s.', $className));
+            throw new InvalidArgumentException(sprintf('Cannot instantiate internal class %s.', $className));
         }
 
         if ($reflectionClass->getConstructor() !== null) {
-            throw new \InvalidArgumentException(sprintf('Class %s must not have a constructor.', $className));
+            throw new InvalidArgumentException(sprintf('Class %s must not have a constructor.', $className));
         }
 
         $properties = $reflectionClass->getProperties();
@@ -161,11 +205,11 @@ class ObjectFactory
             $name = $property->getName();
 
             if ($property->isStatic()) {
-                throw new \InvalidArgumentException(sprintf('Property $%s of class %s must not be static.', $name, $className));
+                throw new InvalidArgumentException(sprintf('Property $%s of class %s must not be static.', $name, $className));
             }
 
             if (! $property->isPublic()) {
-                throw new \InvalidArgumentException(sprintf('Property $%s of class %s must be public.', $name, $className));
+                throw new InvalidArgumentException(sprintf('Property $%s of class %s must be public.', $name, $className));
             }
 
             $result[$name] = $this->getPropertyValueConverter($property);
@@ -179,9 +223,9 @@ class ObjectFactory
     /**
      * @return Closure(mixed): mixed
      *
-     * @throws \InvalidArgumentException If an unexpected value is found.
+     * @throws InvalidArgumentException If an unexpected value is found.
      */
-    private function getPropertyValueConverter(\ReflectionProperty $property) : Closure
+    private function getPropertyValueConverter(ReflectionProperty $property): Closure
     {
         $type = $property->getType();
 
@@ -194,16 +238,16 @@ class ObjectFactory
             if ($type->isBuiltin()) {
                 return match ($propertyType) {
                     'string' => fn ($value) => $value,
-                    'int'    => fn ($value) => (int) $value,
-                    'float'  => fn ($value) => (float) $value,
-                    'bool'   => fn ($value) => (bool) $value,
-                    default  => throw new \InvalidArgumentException(sprintf('Unexpected non-scalar type "%s" for property $%s in class %s.', $propertyType, $propertyName, $className))
+                    'int' => fn ($value) => (int) $value,
+                    'float' => fn ($value) => (float) $value,
+                    'bool' => fn ($value) => (bool) $value,
+                    default => throw new InvalidArgumentException(sprintf('Unexpected non-scalar type "%s" for property $%s in class %s.', $propertyType, $propertyName, $className))
                 };
             }
 
-            return function($value) use ($propertyName, $className, $type) {
+            return function ($value) use ($propertyName, $className, $type) {
                 if (! is_array($value)) {
-                    throw new \InvalidArgumentException(sprintf('Expected array for property $%s of class %s, got %s.', $propertyName, $className, gettype($value)));
+                    throw new InvalidArgumentException(sprintf('Expected array for property $%s of class %s, got %s.', $propertyName, $className, gettype($value)));
                 }
 
                 /** @var array<string, mixed> $value */
@@ -212,39 +256,5 @@ class ObjectFactory
         }
 
         return fn ($value) => $value;
-    }
-
-    /**
-     * Reads *initialized* object properties.
-     *
-     * Properties that are not initialized, or have been unset(), are not included in the array.
-     * This method assumes that there are no private properties in parent classes.
-     *
-     * @param object $object The object to read.
-     *
-     * @return array<string, mixed> A map of property names to values.
-     */
-    public function read(object $object) : array
-    {
-        return (function() {
-            return get_object_vars($this);
-        })->bindTo($object, $object)();
-    }
-
-    /**
-     * Writes an object's properties.
-     *
-     * This method does not support writing private properties in parent classes.
-     *
-     * @param object $object The object to write.
-     * @param array<string, mixed> $values A map of property names to values.
-     */
-    public function write(object $object, array $values) : void
-    {
-        (function() use ($values) {
-            foreach ($values as $key => $value) {
-                $this->{$key} = $value;
-            }
-        })->bindTo($object, $object)();
     }
 }

@@ -28,17 +28,17 @@ class IdentityMap
     /**
      * Retrieves an entity from the identity map.
      *
-     * @param class-string $class The root entity class name.
+     * @param class-string     $class    The root entity class name.
      * @param list<int|string> $identity The list of scalar values that form the entity's identity.
      *
      * @return object|null The entity, or null if not found.
      */
-    public function get(string $class, array $identity) : object|null
+    public function get(string $class, array $identity): null|object
     {
-        $ref = & $this->entities[$class];
+        $ref = &$this->entities[$class];
 
         foreach ($identity as $key) {
-            $ref = & $ref[$key];
+            $ref = &$ref[$key];
         }
 
         return $ref;
@@ -50,18 +50,18 @@ class IdentityMap
      * If the entity already exists in the identity map, this method does nothing.
      * If another entity already exists under this identity, an exception is thrown.
      *
-     * @param class-string $class The root entity class name.
+     * @param class-string     $class    The root entity class name.
      * @param list<int|string> $identity The list of scalar values that form the entity's identity.
-     * @param object $entity The entity to add.
+     * @param object           $entity   The entity to add.
      *
      * @throws IdentityConflictException If another instance with the same identity already exists.
      */
-    public function set(string $class, array $identity, object $entity) : void
+    public function set(string $class, array $identity, object $entity): void
     {
-        $ref = & $this->entities[$class];
+        $ref = &$this->entities[$class];
 
         foreach ($identity as $key) {
-            $ref = & $ref[$key];
+            $ref = &$ref[$key];
         }
 
         if ($ref !== null && $ref !== $entity) {

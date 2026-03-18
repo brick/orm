@@ -4,19 +4,31 @@ declare(strict_types=1);
 
 namespace Brick\ORM;
 
+use InvalidArgumentException;
+use LogicException;
+
+use function array_values;
+use function sprintf;
+use function str_replace;
+use function strlen;
+use function strrpos;
+use function substr;
+
+use const DIRECTORY_SEPARATOR;
+
 class Configuration
 {
-    private string|null $proxyNamespace = null;
+    private null|string $proxyNamespace = null;
 
-    private string|null $proxyDir = null;
+    private null|string $proxyDir = null;
 
-    private string|null $repositoryNamespace = null;
+    private null|string $repositoryNamespace = null;
 
-    private string|null $repositoryDir = null;
+    private null|string $repositoryDir = null;
 
-    private string|null $classMetadataFile = null;
+    private null|string $classMetadataFile = null;
 
-    private string|null $baseEntityNamespace = null;
+    private null|string $baseEntityNamespace = null;
 
     /**
      * @var array<class-string, ClassConfiguration>
@@ -61,7 +73,7 @@ class Configuration
      */
     private array $customMappings = [];
 
-    public function setProxyNamespace(string $proxyNamespace) : Configuration
+    public function setProxyNamespace(string $proxyNamespace): Configuration
     {
         $this->proxyNamespace = $proxyNamespace;
 
@@ -69,12 +81,12 @@ class Configuration
     }
 
     /**
-     * @throws \LogicException
+     * @throws LogicException
      */
-    public function getProxyNamespace(string|null $entityClass = null) : string
+    public function getProxyNamespace(null|string $entityClass = null): string
     {
         if ($this->proxyNamespace === null) {
-            throw new \LogicException('Proxy namespace is not set.');
+            throw new LogicException('Proxy namespace is not set.');
         }
 
         if ($entityClass === null) {
@@ -86,7 +98,7 @@ class Configuration
             $length = strlen($baseNamespace);
 
             if (substr($entityClass, 0, $length) !== $baseNamespace) {
-                throw new \LogicException(sprintf('%s is not in namespace %s.', $entityClass, $this->baseEntityNamespace));
+                throw new LogicException(sprintf('%s is not in namespace %s.', $entityClass, $this->baseEntityNamespace));
             }
 
             $entityClass = substr($entityClass, $length);
@@ -104,20 +116,20 @@ class Configuration
     /**
      * Returns the proxy class name for the given entity class name.
      *
-     * @param class-string $entityClass the FQCN of the entity.
+     * @param class-string $entityClass The FQCN of the entity.
      *
      * @return class-string<Proxy> The FQCN of the proxy.
      *
-     * @throws \LogicException
+     * @throws LogicException
      */
-    public function getProxyClassName(string $entityClass) : string
+    public function getProxyClassName(string $entityClass): string
     {
         if ($this->baseEntityNamespace !== null) {
             $baseNamespace = $this->baseEntityNamespace . '\\';
             $length = strlen($baseNamespace);
 
             if (substr($entityClass, 0, $length) !== $baseNamespace) {
-                throw new \LogicException(sprintf('%s is not in namespace %s.', $entityClass, $this->baseEntityNamespace));
+                throw new LogicException(sprintf('%s is not in namespace %s.', $entityClass, $this->baseEntityNamespace));
             }
 
             $entityClass = substr($entityClass, $length);
@@ -126,14 +138,14 @@ class Configuration
         return $this->getProxyNamespace() . '\\' . $entityClass . 'Proxy';
     }
 
-    public function getProxyFileName(string $entityClass) : string
+    public function getProxyFileName(string $entityClass): string
     {
         if ($this->baseEntityNamespace !== null) {
             $baseNamespace = $this->baseEntityNamespace . '\\';
             $length = strlen($baseNamespace);
 
             if (substr($entityClass, 0, $length) !== $baseNamespace) {
-                throw new \LogicException(sprintf('%s is not in namespace %s.', $entityClass, $this->baseEntityNamespace));
+                throw new LogicException(sprintf('%s is not in namespace %s.', $entityClass, $this->baseEntityNamespace));
             }
 
             $entityClass = substr($entityClass, $length);
@@ -142,7 +154,7 @@ class Configuration
         return $this->getProxyDir() . DIRECTORY_SEPARATOR . str_replace('\\', DIRECTORY_SEPARATOR, $entityClass) . 'Proxy.php';
     }
 
-    public function setProxyDir(string $proxyDir) : Configuration
+    public function setProxyDir(string $proxyDir): Configuration
     {
         $this->proxyDir = $proxyDir;
 
@@ -150,18 +162,18 @@ class Configuration
     }
 
     /**
-     * @throws \LogicException
+     * @throws LogicException
      */
-    public function getProxyDir() : string
+    public function getProxyDir(): string
     {
         if ($this->proxyDir === null) {
-            throw new \LogicException('Proxy dir is not set.');
+            throw new LogicException('Proxy dir is not set.');
         }
 
         return $this->proxyDir;
     }
 
-    public function setRepositoryNamespace(string $repositoryNamespace) : Configuration
+    public function setRepositoryNamespace(string $repositoryNamespace): Configuration
     {
         $this->repositoryNamespace = $repositoryNamespace;
 
@@ -169,12 +181,12 @@ class Configuration
     }
 
     /**
-     * @throws \LogicException
+     * @throws LogicException
      */
-    public function getRepositoryNamespace(string|null $entityClass = null) : string
+    public function getRepositoryNamespace(null|string $entityClass = null): string
     {
         if ($this->repositoryNamespace === null) {
-            throw new \LogicException('Repository namespace is not set.');
+            throw new LogicException('Repository namespace is not set.');
         }
 
         if ($entityClass === null) {
@@ -186,7 +198,7 @@ class Configuration
             $length = strlen($baseNamespace);
 
             if (substr($entityClass, 0, $length) !== $baseNamespace) {
-                throw new \LogicException(sprintf('%s is not in namespace %s.', $entityClass, $this->baseEntityNamespace));
+                throw new LogicException(sprintf('%s is not in namespace %s.', $entityClass, $this->baseEntityNamespace));
             }
 
             $entityClass = substr($entityClass, $length);
@@ -201,14 +213,14 @@ class Configuration
         return $this->repositoryNamespace . '\\' . substr($entityClass, 0, $pos);
     }
 
-    public function getRepositoryFileName(string $entityClass) : string
+    public function getRepositoryFileName(string $entityClass): string
     {
         if ($this->baseEntityNamespace !== null) {
             $baseNamespace = $this->baseEntityNamespace . '\\';
             $length = strlen($baseNamespace);
 
             if (substr($entityClass, 0, $length) !== $baseNamespace) {
-                throw new \LogicException(sprintf('%s is not in namespace %s.', $entityClass, $this->baseEntityNamespace));
+                throw new LogicException(sprintf('%s is not in namespace %s.', $entityClass, $this->baseEntityNamespace));
             }
 
             $entityClass = substr($entityClass, $length);
@@ -217,7 +229,7 @@ class Configuration
         return $this->getRepositoryDir() . DIRECTORY_SEPARATOR . str_replace('\\', DIRECTORY_SEPARATOR, $entityClass) . 'Repository.php';
     }
 
-    public function setRepositoryDir(string $repositoryDir) : Configuration
+    public function setRepositoryDir(string $repositoryDir): Configuration
     {
         $this->repositoryDir = $repositoryDir;
 
@@ -225,12 +237,12 @@ class Configuration
     }
 
     /**
-     * @throws \LogicException
+     * @throws LogicException
      */
-    public function getRepositoryDir() : string
+    public function getRepositoryDir(): string
     {
         if ($this->repositoryDir === null) {
-            throw new \LogicException('Repository dir is not set.');
+            throw new LogicException('Repository dir is not set.');
         }
 
         return $this->repositoryDir;
@@ -239,10 +251,10 @@ class Configuration
     /**
      * Sets the path to the PHP file where the ClassMetadata will be stored.
      */
-    public function setClassMetadataFile(string $classMetadataFile) : Configuration
+    public function setClassMetadataFile(string $classMetadataFile): Configuration
     {
         if (substr($classMetadataFile, -4) !== '.php') {
-            throw new \InvalidArgumentException('The ClassMetadata file path must have a .php extension.');
+            throw new InvalidArgumentException('The ClassMetadata file path must have a .php extension.');
         }
 
         $this->classMetadataFile = $classMetadataFile;
@@ -251,12 +263,12 @@ class Configuration
     }
 
     /**
-     * @throws \LogicException
+     * @throws LogicException
      */
-    public function getClassMetadataFile() : string
+    public function getClassMetadataFile(): string
     {
         if ($this->classMetadataFile === null) {
-            throw new \LogicException('ClassMetadata file path is not set.');
+            throw new LogicException('ClassMetadata file path is not set.');
         }
 
         return $this->classMetadataFile;
@@ -270,14 +282,14 @@ class Configuration
      * For example, by default App\Model\User's repository would live in RepositoryNamespace\App\Model\UserRepository,
      * while with a base entity namespace of App\Model it would live in RepositoryNamespace\UserRepository.
      */
-    public function setBaseEntityNamespace(string $namespace) : Configuration
+    public function setBaseEntityNamespace(string $namespace): Configuration
     {
         $this->baseEntityNamespace = $namespace;
 
         return $this;
     }
 
-    public function getBaseEntityNamespace() : string|null
+    public function getBaseEntityNamespace(): null|string
     {
         return $this->baseEntityNamespace;
     }
@@ -285,7 +297,7 @@ class Configuration
     /**
      * @param class-string $className
      */
-    public function addEntity(string $className) : EntityConfiguration
+    public function addEntity(string $className): EntityConfiguration
     {
         $entityConfiguration = new EntityConfiguration($this, $className);
         $this->classes[$className] = $entityConfiguration;
@@ -296,7 +308,7 @@ class Configuration
     /**
      * @param class-string $className
      */
-    public function addEmbeddable(string $className) : EmbeddableConfiguration
+    public function addEmbeddable(string $className): EmbeddableConfiguration
     {
         $embeddableConfiguration = new EmbeddableConfiguration($this, $className);
         $this->classes[$className] = $embeddableConfiguration;
@@ -307,11 +319,10 @@ class Configuration
     /**
      * Adds a custom mapping that applies by default to all properties of the given type.
      *
-     * @param class-string $className The mapped class name.
+     * @param class-string                  $className       The mapped class name.
      * @param class-string<PropertyMapping> $propertyMapping The PropertyMapping implementation class name.
-     *
      */
-    public function addCustomMapping(string $className, string $propertyMapping) : Configuration
+    public function addCustomMapping(string $className, string $propertyMapping): Configuration
     {
         $this->customMappings[$className] = $propertyMapping;
 
@@ -321,7 +332,7 @@ class Configuration
     /**
      * @return array<string, class-string<PropertyMapping>>
      */
-    public function getCustomMappings() : array
+    public function getCustomMappings(): array
     {
         return $this->customMappings;
     }
@@ -333,7 +344,7 @@ class Configuration
      *
      * @param class-string $class
      */
-    public function setCustomPropertyMapping(string $class, string $property, PropertyMapping $mapping) : Configuration
+    public function setCustomPropertyMapping(string $class, string $property, PropertyMapping $mapping): Configuration
     {
         $this->customPropertyMappings[$class][$property] = $mapping;
 
@@ -343,7 +354,7 @@ class Configuration
     /**
      * @return array<class-string, array<string, PropertyMapping>>
      */
-    public function getCustomPropertyMappings() : array
+    public function getCustomPropertyMappings(): array
     {
         return $this->customPropertyMappings;
     }
@@ -351,7 +362,7 @@ class Configuration
     /**
      * @param class-string $class
      */
-    public function setTransientProperties(string $class, string ...$properties) : Configuration
+    public function setTransientProperties(string $class, string ...$properties): Configuration
     {
         $this->transientProperties[$class] = array_values($properties);
 
@@ -365,7 +376,7 @@ class Configuration
      *
      * @return list<string>
      */
-    public function getTransientProperties(string $class) : array
+    public function getTransientProperties(string $class): array
     {
         return $this->transientProperties[$class] ?? [];
     }
@@ -373,7 +384,7 @@ class Configuration
     /**
      * @param class-string $class
      */
-    public function setFieldName(string $class, string $property, string $fieldName) : Configuration
+    public function setFieldName(string $class, string $property, string $fieldName): Configuration
     {
         $this->fieldNames[$class][$property] = $fieldName;
 
@@ -387,7 +398,7 @@ class Configuration
      *
      * @return array<class-string, array<string, string>>
      */
-    public function getFieldNames() : array
+    public function getFieldNames(): array
     {
         return $this->fieldNames;
     }
@@ -399,7 +410,7 @@ class Configuration
      *
      * @param class-string $class
      */
-    public function setFieldNamePrefix(string $class, string $property, string $fieldNamePrefix) : Configuration
+    public function setFieldNamePrefix(string $class, string $property, string $fieldNamePrefix): Configuration
     {
         $this->fieldNamePrefixes[$class][$property] = $fieldNamePrefix;
 
@@ -409,7 +420,7 @@ class Configuration
     /**
      * @return array<class-string, array<string, string>>
      */
-    public function getFieldNamePrefixes() : array
+    public function getFieldNamePrefixes(): array
     {
         return $this->fieldNamePrefixes;
     }
@@ -419,7 +430,7 @@ class Configuration
      *
      * @return array<class-string, ClassConfiguration>
      */
-    public function getClasses() : array
+    public function getClasses(): array
     {
         return $this->classes;
     }
@@ -429,7 +440,7 @@ class Configuration
      *
      * @return array<class-string, EntityConfiguration>
      */
-    public function getEntities() : array
+    public function getEntities(): array
     {
         $entityConfigurations = [];
 

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Brick\ORM\Tests\Resources\Models\Event\CountryEvent;
 
-use Brick\ORM\Tests\Resources\Models\Event\CountryEvent;
 use Brick\ORM\Tests\Resources\Models\Country;
+use Brick\ORM\Tests\Resources\Models\Event\CountryEvent;
 
 class EditCountryNameEvent extends CountryEvent
 {
@@ -18,7 +18,7 @@ class EditCountryNameEvent extends CountryEvent
         $this->newName = $newName;
     }
 
-    public function getNewName() : string
+    public function getNewName(): string
     {
         return $this->newName;
     }

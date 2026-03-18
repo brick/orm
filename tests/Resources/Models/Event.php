@@ -18,12 +18,12 @@ abstract class Event
         $this->time = 1234567890; // hardcoded for tests
     }
 
-    public function getId() : int
+    public function getId(): int
     {
         return $this->id;
     }
 
-    public function getTime() : int
+    public function getTime(): int
     {
         return $this->time;
     }

@@ -4,34 +4,43 @@ declare(strict_types=1);
 
 namespace Brick\ORM;
 
+use InvalidArgumentException;
+use LogicException;
+use ReflectionClass;
+use ReflectionException;
 use ReflectionNamedType;
+use ReflectionProperty;
+
+use function count;
+use function in_array;
+use function sprintf;
 
 abstract class ClassConfiguration
 {
     protected Configuration $configuration;
 
-    protected \ReflectionClass $reflectionClass;
+    protected ReflectionClass $reflectionClass;
 
     /**
      * @param class-string $className
      *
-     * @throws \InvalidArgumentException
+     * @throws InvalidArgumentException
      */
     public function __construct(Configuration $configuration, string $className)
     {
         $this->configuration = $configuration;
 
         try {
-            $this->reflectionClass = new \ReflectionClass($className);
-        } catch (\ReflectionException $e) {
-            throw new \InvalidArgumentException(sprintf('%s does not exist.', $className), 0, $e);
+            $this->reflectionClass = new ReflectionClass($className);
+        } catch (ReflectionException $e) {
+            throw new InvalidArgumentException(sprintf('%s does not exist.', $className), 0, $e);
         }
     }
 
     /**
      * @return class-string
      */
-    public function getClassName() : string
+    public function getClassName(): string
     {
         return $this->reflectionClass->getName();
     }
@@ -41,14 +50,14 @@ abstract class ClassConfiguration
      *
      * @return list<string>
      *
-     * @throws \LogicException
+     * @throws LogicException
      */
-    public function getPersistentProperties(string|null $className = null) : array
+    public function getPersistentProperties(null|string $className = null): array
     {
         if ($className === null) {
             $reflectionClass = $this->reflectionClass;
         } else {
-            $reflectionClass = new \ReflectionClass($className);
+            $reflectionClass = new ReflectionClass($className);
         }
 
         $className = $reflectionClass->getName();
@@ -67,35 +76,35 @@ abstract class ClassConfiguration
             }
 
             if ($reflectionProperty->isPrivate()) {
-                throw new \LogicException(sprintf('%s::$%s is private; private properties are not supported. Make the property protected, or add it to transient properties if it should not be persistent.', $className, $propertyName));
+                throw new LogicException(sprintf('%s::$%s is private; private properties are not supported. Make the property protected, or add it to transient properties if it should not be persistent.', $className, $propertyName));
             }
 
             if (! $reflectionProperty->hasType()) {
-                throw new \LogicException(sprintf('%s::$%s is not typed. Add a type to the property, or add it to transient properties if it should not be persistent.', $className, $propertyName));
+                throw new LogicException(sprintf('%s::$%s is not typed. Add a type to the property, or add it to transient properties if it should not be persistent.', $className, $propertyName));
             }
 
             $persistableProperties[] = $propertyName;
         }
 
         if (count($persistableProperties) === 0) {
-            throw new \LogicException(sprintf('%s has not persistable properties.', $className));
+            throw new LogicException(sprintf('%s has not persistable properties.', $className));
         }
 
         return $persistableProperties;
     }
 
     /**
-     * @param class-string $className The entity class name.
-     * @param string $propertyName The property name.
-     * @param EntityMetadata[] $entityMetadata A map of FQCN to EntityMetadata instances.
+     * @param class-string         $className          The entity class name.
+     * @param string               $propertyName       The property name.
+     * @param EntityMetadata[]     $entityMetadata     A map of FQCN to EntityMetadata instances.
      * @param EmbeddableMetadata[] $embeddableMetadata A map of FQCN to EmbeddableMetadata instances.
      *
-     * @throws \LogicException
+     * @throws LogicException
      */
-    public function getPropertyMapping(string $className, string $propertyName, array $entityMetadata, array $embeddableMetadata) : PropertyMapping
+    public function getPropertyMapping(string $className, string $propertyName, array $entityMetadata, array $embeddableMetadata): PropertyMapping
     {
         if (! in_array($propertyName, $this->getPersistentProperties($className))) {
-            throw new \InvalidArgumentException(sprintf('Cannot return property mapping for unknown or non-persistent property %s::$%s.', $className, $propertyName));
+            throw new InvalidArgumentException(sprintf('Cannot return property mapping for unknown or non-persistent property %s::$%s.', $className, $propertyName));
         }
 
         $customPropertyMappings = $this->configuration->getCustomPropertyMappings();
@@ -104,12 +113,12 @@ abstract class ClassConfiguration
             return $customPropertyMappings[$className][$propertyName];
         }
 
-        $reflectionProperty = new \ReflectionProperty($className, $propertyName);
+        $reflectionProperty = new ReflectionProperty($className, $propertyName);
 
         $propertyType = $reflectionProperty->getType();
 
         if (! $propertyType instanceof ReflectionNamedType) {
-            throw new \LogicException('Property does not have a single type.');
+            throw new LogicException('Property does not have a single type.');
         }
 
         $typeName = $propertyType->getName();
@@ -119,12 +128,12 @@ abstract class ClassConfiguration
         $fieldName = $fieldNames[$className][$propertyName] ?? $propertyName;
 
         if ($propertyType->isBuiltin()) {
-            return match($typeName) {
-                'int'    => new PropertyMapping\IntMapping($fieldName, $allowsNull),
+            return match ($typeName) {
+                'int' => new PropertyMapping\IntMapping($fieldName, $allowsNull),
                 'string' => new PropertyMapping\StringMapping($fieldName, $allowsNull),
-                'bool'   => new PropertyMapping\BoolMapping($fieldName, $allowsNull),
-                'array'  => throw new \LogicException(sprintf('Cannot persist type "array" in %s::$%s; you can store an array as JSON if you wish, by configuring a custom JsonMapping instance.', $className, $propertyName)),
-                default  => throw new \LogicException(sprintf('Cannot persist type "%s" in %s::$%s.', $typeName, $className, $propertyName))
+                'bool' => new PropertyMapping\BoolMapping($fieldName, $allowsNull),
+                'array' => throw new LogicException(sprintf('Cannot persist type "array" in %s::$%s; you can store an array as JSON if you wish, by configuring a custom JsonMapping instance.', $className, $propertyName)),
+                default => throw new LogicException(sprintf('Cannot persist type "%s" in %s::$%s.', $typeName, $className, $propertyName))
             };
         }
 
@@ -146,6 +155,6 @@ abstract class ClassConfiguration
             return new PropertyMapping\EmbeddableMapping($embeddableMetadata[$typeName], $fieldNamePrefix, $allowsNull);
         }
 
-        throw new \LogicException(sprintf('Type %s of %s::$%s is not an entity or embeddable, and has no custom mapping defined.', $typeName, $className, $propertyName));
+        throw new LogicException(sprintf('Type %s of %s::$%s is not an entity or embeddable, and has no custom mapping defined.', $typeName, $className, $propertyName));
     }
 }

@@ -46,47 +46,47 @@ class User
         $this->name = $name;
     }
 
-    public function getId() : int
+    public function getId(): int
     {
         return $this->id;
     }
 
-    public function getName() : string
+    public function getName(): string
     {
         return $this->name;
     }
 
-    public function setName(string $name) : void
+    public function setName(string $name): void
     {
         $this->name = $name;
     }
 
-    public function getBillingAddress() : ?Address
+    public function getBillingAddress(): ?Address
     {
         return $this->billingAddress;
     }
 
-    public function setBillingAddress(?Address $billingAddress) : void
+    public function setBillingAddress(?Address $billingAddress): void
     {
         $this->billingAddress = $billingAddress;
     }
 
-    public function getDeliveryAddress() : ?GeoAddress
+    public function getDeliveryAddress(): ?GeoAddress
     {
         return $this->deliveryAddress;
     }
 
-    public function setDeliveryAddress(?GeoAddress $deliveryAddress) : void
+    public function setDeliveryAddress(?GeoAddress $deliveryAddress): void
     {
         $this->deliveryAddress = $deliveryAddress;
     }
 
-    public function getData() : array
+    public function getData(): array
     {
         return $this->data;
     }
 
-    public function getTransient() : array
+    public function getTransient(): array
     {
         return $this->transient;
     }

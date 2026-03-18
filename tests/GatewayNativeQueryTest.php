@@ -8,12 +8,7 @@ use Brick\ORM\Tests\Resources\DTO\UserDTO;
 
 class GatewayNativeQueryTest extends AbstractTestCase
 {
-    protected static function useProxies() : bool
-    {
-        return false;
-    }
-
-    public function testNativeQuery() : void
+    public function testNativeQuery(): void
     {
         self::$connection->exec(<<<SQL
             INSERT INTO User (name, street, city, zipcode, country_code, data)
@@ -44,16 +39,21 @@ class GatewayNativeQueryTest extends AbstractTestCase
                 GROUP BY u.id
         SQL);
 
-        $this->assertCount(1, $users);
+        self::assertCount(1, $users);
 
         $user = $users[0];
 
-        $this->assertSame($userId, $user->id);
-        $this->assertSame('Bob', $user->name);
-        $this->assertSame('Baker Street', $user->address->street);
-        $this->assertSame('London', $user->address->city);
-        $this->assertNull($user->address->postcode);
-        $this->assertSame('GB', $user->address->countryCode);
-        $this->assertSame(3, $user->eventCount);
+        self::assertSame($userId, $user->id);
+        self::assertSame('Bob', $user->name);
+        self::assertSame('Baker Street', $user->address->street);
+        self::assertSame('London', $user->address->city);
+        self::assertNull($user->address->postcode);
+        self::assertSame('GB', $user->address->countryCode);
+        self::assertSame(3, $user->eventCount);
+    }
+
+    protected static function useProxies(): bool
+    {
+        return false;
     }
 }

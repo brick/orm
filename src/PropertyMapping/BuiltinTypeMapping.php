@@ -21,22 +21,22 @@ abstract class BuiltinTypeMapping implements PropertyMapping
         $this->isNullable = $isNullable;
     }
 
-    public function isNullable() : bool
+    public function isNullable(): bool
     {
         return $this->isNullable;
     }
 
-    public function getFieldNames() : array
+    public function getFieldNames(): array
     {
         return [$this->fieldName];
     }
 
-    public function getInputValuesCount() : int
+    public function getInputValuesCount(): int
     {
         return 1;
     }
 
-    public function getFieldToInputValuesSQL(array $fieldNames) : array
+    public function getFieldToInputValuesSQL(array $fieldNames): array
     {
         return $fieldNames;
     }

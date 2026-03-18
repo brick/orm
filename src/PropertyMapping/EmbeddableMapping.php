@@ -5,10 +5,12 @@ declare(strict_types=1);
 namespace Brick\ORM\PropertyMapping;
 
 use Brick\ORM\EmbeddableMetadata;
-use Brick\ORM\ObjectFactory;
 use Brick\ORM\Gateway;
+use Brick\ORM\ObjectFactory;
 use Brick\ORM\PropertyMapping;
 use ReflectionObject;
+
+use function array_slice;
 
 /**
  * @internal
@@ -25,23 +27,23 @@ class EmbeddableMapping implements PropertyMapping
     public bool $isNullable;
 
     /**
-     * @param EmbeddableMetadata $classMetadata The target entity class metadata.
-     * @param string $fieldNamePrefix The prefix for field names.
-     * @param bool $isNullable Whether the property is nullable.
+     * @param EmbeddableMetadata $classMetadata   The target entity class metadata.
+     * @param string             $fieldNamePrefix The prefix for field names.
+     * @param bool               $isNullable      Whether the property is nullable.
      */
     public function __construct(EmbeddableMetadata $classMetadata, string $fieldNamePrefix, bool $isNullable)
     {
-        $this->classMetadata   = $classMetadata;
+        $this->classMetadata = $classMetadata;
         $this->fieldNamePrefix = $fieldNamePrefix;
-        $this->isNullable      = $isNullable;
+        $this->isNullable = $isNullable;
     }
 
-    public function getType() : string|null
+    public function getType(): null|string
     {
         return $this->classMetadata->className;
     }
 
-    public function isNullable() : bool
+    public function isNullable(): bool
     {
         return $this->isNullable;
     }
@@ -49,7 +51,7 @@ class EmbeddableMapping implements PropertyMapping
     /**
      * @todo precompute for better performance
      */
-    public function getFieldNames() : array
+    public function getFieldNames(): array
     {
         $names = [];
 
@@ -65,7 +67,7 @@ class EmbeddableMapping implements PropertyMapping
     /**
      * @todo precompute for better performance
      */
-    public function getInputValuesCount() : int
+    public function getInputValuesCount(): int
     {
         $count = 0;
 
@@ -80,7 +82,7 @@ class EmbeddableMapping implements PropertyMapping
     /**
      * @todo precompute for better performance
      */
-    public function getFieldToInputValuesSQL(array $fieldNames) : array
+    public function getFieldToInputValuesSQL(array $fieldNames): array
     {
         $wrappedFields = [];
         $currentIndex = 0;
@@ -100,7 +102,7 @@ class EmbeddableMapping implements PropertyMapping
         return $wrappedFields;
     }
 
-    public function convertInputValuesToProp(Gateway $gateway, array $values) : mixed
+    public function convertInputValuesToProp(Gateway $gateway, array $values): mixed
     {
         $currentIndex = 0;
 
@@ -116,13 +118,13 @@ class EmbeddableMapping implements PropertyMapping
             $propValues[$prop] = $propertyMapping->convertInputValuesToProp($gateway, $currentInputValues);
         }
 
-        // @todo keep an ObjectFactory cache.
+        /** @todo keep an ObjectFactory cache. */
         $objectFactory = new ObjectFactory();
 
         return $objectFactory->instantiate($this->classMetadata, $propValues);
     }
 
-    public function convertPropToFields(mixed $propValue) : array
+    public function convertPropToFields(mixed $propValue): array
     {
         $result = [];
 

@@ -7,6 +7,16 @@ namespace Brick\ORM;
 use Brick\ORM\PropertyMapping\EntityMapping;
 use Brick\ORM\PropertyMapping\IntMapping;
 use Brick\ORM\PropertyMapping\StringMapping;
+use LogicException;
+use ReflectionClass;
+use ReflectionProperty;
+
+use function array_diff;
+use function array_flip;
+use function array_values;
+use function get_class;
+use function is_subclass_of;
+use function sprintf;
 
 /**
  * Builds ClassMetadata instances for all entities.
@@ -33,7 +43,7 @@ class ClassMetadataBuilder
     /**
      * @return array<class-string, EntityMetadata> A map of FQCN to EntityMetadata instances for all entities.
      */
-    public function build() : array
+    public function build(): array
     {
         $this->entityMetadata = [];
         $this->embeddableMetadata = [];
@@ -69,11 +79,11 @@ class ClassMetadataBuilder
     /**
      * @param class-string $className
      *
-     * @throws \LogicException
+     * @throws LogicException
      */
-    private function fillEntityMetadata(EntityMetadata $classMetadata, string $className, EntityConfiguration $entityConfiguration) : void
+    private function fillEntityMetadata(EntityMetadata $classMetadata, string $className, EntityConfiguration $entityConfiguration): void
     {
-        $reflectionClass = new \ReflectionClass($className);
+        $reflectionClass = new ReflectionClass($className);
 
         $classMetadata->className = $className;
 
@@ -83,6 +93,7 @@ class ClassMetadataBuilder
         foreach ($entityConfiguration->getDiscriminatorMap() as $discriminatorValue => $targetClassName) {
             if ($targetClassName === $className) {
                 $classMetadata->discriminatorValue = $discriminatorValue;
+
                 break;
             }
         }
@@ -110,7 +121,7 @@ class ClassMetadataBuilder
         $classMetadata->isAutoIncrement = $entityConfiguration->isAutoIncrement();
 
         $persistentProperties = $entityConfiguration->getPersistentProperties($className);
-        $identityProperties   = $entityConfiguration->getIdentityProperties();
+        $identityProperties = $entityConfiguration->getIdentityProperties();
 
         $classMetadata->properties = $persistentProperties;
         $classMetadata->idProperties = $identityProperties;
@@ -119,7 +130,7 @@ class ClassMetadataBuilder
         $classMetadata->selfNonIdProperties = [];
 
         foreach ($classMetadata->nonIdProperties as $nonIdProperty) {
-            $r = new \ReflectionProperty($className, $nonIdProperty);
+            $r = new ReflectionProperty($className, $nonIdProperty);
             if ($r->getDeclaringClass()->getName() === $className) {
                 $classMetadata->selfNonIdProperties[] = $nonIdProperty;
             }
@@ -139,10 +150,10 @@ class ClassMetadataBuilder
             $propertyMapping = $classMetadata->propertyMappings[$idProperty];
 
             if ($propertyMapping->isNullable()) {
-                throw new \LogicException(sprintf(
+                throw new LogicException(sprintf(
                     'Identity property %s::$%s must not be nullable.',
                     $classMetadata->className,
-                    $idProperty
+                    $idProperty,
                 ));
             }
 
@@ -158,12 +169,12 @@ class ClassMetadataBuilder
                 continue;
             }
 
-            throw new \LogicException(sprintf(
+            throw new LogicException(sprintf(
                 'Identity property %s::$%s uses an unsupported mapping type %s. ' .
                 'Identities must ultimately map to int or string properties.',
                 $classMetadata->className,
                 $idProperty,
-                get_class($propertyMapping)
+                get_class($propertyMapping),
             ));
         }
     }
@@ -171,7 +182,7 @@ class ClassMetadataBuilder
     /**
      * @param class-string $className
      */
-    private function fillEmbeddableMetadata(EmbeddableMetadata $classMetadata, string $className, EmbeddableConfiguration $embeddableConfiguration) : void
+    private function fillEmbeddableMetadata(EmbeddableMetadata $classMetadata, string $className, EmbeddableConfiguration $embeddableConfiguration): void
     {
         $classMetadata->className = $className;
 

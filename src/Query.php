@@ -4,6 +4,10 @@ declare(strict_types=1);
 
 namespace Brick\ORM;
 
+use InvalidArgumentException;
+
+use function array_values;
+
 class Query
 {
     /**
@@ -16,7 +20,7 @@ class Query
      *
      * @var list<string>|null
      */
-    private array|null $properties = null;
+    private null|array $properties = null;
 
     /**
      * @var list<QueryPredicate>
@@ -28,9 +32,9 @@ class Query
      */
     private array $orderBy = [];
 
-    private int|null $limit = null;
+    private null|int $limit = null;
 
-    private int|null $offset = null;
+    private null|int $offset = null;
 
     /**
      * @param class-string $className
@@ -40,7 +44,7 @@ class Query
         $this->className = $className;
     }
 
-    public function setProperties(string ...$properties) : Query
+    public function setProperties(string ...$properties): Query
     {
         $this->properties = array_values($properties);
 
@@ -48,9 +52,9 @@ class Query
     }
 
     /**
-     * @throws \InvalidArgumentException If the operator is invalid.
+     * @throws InvalidArgumentException If the operator is invalid.
      */
-    public function addPredicate(string $property, string $operator, mixed $value) : Query
+    public function addPredicate(string $property, string $operator, mixed $value): Query
     {
         $this->predicates[] = new QueryPredicate($property, $operator, $value);
 
@@ -58,21 +62,21 @@ class Query
     }
 
     /**
-     * @param string $property The property to order by.
+     * @param string $property  The property to order by.
      * @param string $direction The order direction, 'ASC' or 'DESC'.
      *
-     * @throws \InvalidArgumentException If the order direction is invalid.
+     * @throws InvalidArgumentException If the order direction is invalid.
      */
-    public function addOrderBy(string $property, string $direction = 'ASC') : Query
+    public function addOrderBy(string $property, string $direction = 'ASC'): Query
     {
         $this->orderBy[] = new QueryOrderBy($property, $direction);
 
         return $this;
     }
 
-    public function setLimit(int $limit, int $offset = 0) : Query
+    public function setLimit(int $limit, int $offset = 0): Query
     {
-        $this->limit  = $limit;
+        $this->limit = $limit;
         $this->offset = $offset;
 
         return $this;
@@ -81,7 +85,7 @@ class Query
     /**
      * @return class-string
      */
-    public function getClassName() : string
+    public function getClassName(): string
     {
         return $this->className;
     }
@@ -89,7 +93,7 @@ class Query
     /**
      * @return list<string>|null
      */
-    public function getProperties() : array|null
+    public function getProperties(): null|array
     {
         return $this->properties;
     }
@@ -97,7 +101,7 @@ class Query
     /**
      * @return list<QueryPredicate>
      */
-    public function getPredicates() : array
+    public function getPredicates(): array
     {
         return $this->predicates;
     }
@@ -105,17 +109,17 @@ class Query
     /**
      * @return list<QueryOrderBy>
      */
-    public function getOrderBy() : array
+    public function getOrderBy(): array
     {
         return $this->orderBy;
     }
 
-    public function getLimit() : int|null
+    public function getLimit(): null|int
     {
         return $this->limit;
     }
 
-    public function getOffset() : int|null
+    public function getOffset(): null|int
     {
         return $this->offset;
     }

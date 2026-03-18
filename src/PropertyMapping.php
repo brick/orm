@@ -12,26 +12,26 @@ interface PropertyMapping
     /**
      * Returns the PHP type of the property, or null if the mapping can handle mixed types (such as JSON columns).
      */
-    public function getType() : string|null;
+    public function getType(): null|string;
 
     /**
      * Returns whether the property is nullable.
      */
-    public function isNullable() : bool;
+    public function isNullable(): bool;
 
     /**
      * Returns the list of database field names the property maps to.
      *
      * @return list<string>
      */
-    public function getFieldNames() : array;
+    public function getFieldNames(): array;
 
     /**
      * Returns the number of database values required to compute the property value.
      *
      * This must return the number entries returned by getFieldToInputValuesSQL().
      */
-    public function getInputValuesCount() : int;
+    public function getInputValuesCount(): int;
 
     /**
      * Returns the SQL expressions to read each database value required to compute the property value.
@@ -52,7 +52,7 @@ interface PropertyMapping
      *
      * @return list<string> The list of fields to read, optionally wrapped with SQL code.
      */
-    public function getFieldToInputValuesSQL(array $fieldNames) : array;
+    public function getFieldToInputValuesSQL(array $fieldNames): array;
 
     /**
      * Converts the given database values to a property value.
@@ -63,7 +63,7 @@ interface PropertyMapping
      *
      * @return mixed The property value.
      */
-    public function convertInputValuesToProp(Gateway $gateway, array $values) : mixed;
+    public function convertInputValuesToProp(Gateway $gateway, array $values): mixed;
 
     /**
      * Converts the given property to SQL expressions and values for each database field it is mapped to.
@@ -94,5 +94,5 @@ interface PropertyMapping
      *
      * @return list<list<mixed>>
      */
-    public function convertPropToFields(mixed $propValue) : array;
+    public function convertPropToFields(mixed $propValue): array;
 }

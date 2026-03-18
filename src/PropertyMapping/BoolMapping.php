@@ -11,12 +11,12 @@ use Brick\ORM\Gateway;
  */
 class BoolMapping extends BuiltinTypeMapping
 {
-    public function getType() : string|null
+    public function getType(): null|string
     {
         return 'bool';
     }
 
-    public function convertInputValuesToProp(Gateway $gateway, array $values) : mixed
+    public function convertInputValuesToProp(Gateway $gateway, array $values): mixed
     {
         if ($values[0] === null) {
             return null;
@@ -25,16 +25,16 @@ class BoolMapping extends BuiltinTypeMapping
         return (bool) $values[0];
     }
 
-    public function convertPropToFields(mixed $propValue) : array
+    public function convertPropToFields(mixed $propValue): array
     {
         if ($propValue === null) {
             return [
-                ['NULL']
+                ['NULL'],
             ];
         }
 
         return [
-            ['?', (bool) $propValue]
+            ['?', (bool) $propValue],
         ];
     }
 }

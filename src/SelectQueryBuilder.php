@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace Brick\ORM;
 
+use function count;
+use function implode;
+
 /**
  * Low-level class to build SELECT queries.
  *
@@ -26,7 +29,7 @@ class SelectQueryBuilder
     /**
      * An optional table alias.
      */
-    private string|null $tableAlias;
+    private null|string $tableAlias;
 
     /**
      * @var list<string>
@@ -49,23 +52,23 @@ class SelectQueryBuilder
 
     /**
      * @param list<string> $selectFields The fields or expressions to SELECT.
-     * @param string $tableName The table name.
-     * @param string|null $tableAlias An optional table alias.
+     * @param string       $tableName    The table name.
+     * @param string|null  $tableAlias   An optional table alias.
      */
-    public function __construct(array $selectFields, string $tableName, string|null $tableAlias = null)
+    public function __construct(array $selectFields, string $tableName, null|string $tableAlias = null)
     {
         $this->selectFields = $selectFields;
-        $this->tableName    = $tableName;
-        $this->tableAlias   = $tableAlias;
+        $this->tableName = $tableName;
+        $this->tableAlias = $tableAlias;
     }
 
     /**
-     * @param string $joinType The JOIN type, such as INNER or LEFT.
-     * @param string $tableName The table name.
-     * @param string $tableAlias The table alias.
+     * @param string       $joinType       The JOIN type, such as INNER or LEFT.
+     * @param string       $tableName      The table name.
+     * @param string       $tableAlias     The table alias.
      * @param list<string> $joinConditions The list of A=B join conditions.
      */
-    public function addJoin(string $joinType, string $tableName, string $tableAlias, array $joinConditions) : void
+    public function addJoin(string $joinType, string $tableName, string $tableAlias, array $joinConditions): void
     {
         $this->joins[] = ' ' . $joinType . ' JOIN ' . $tableName .
             ' AS ' . $tableAlias .
@@ -79,9 +82,9 @@ class SelectQueryBuilder
      * existing conditions.
      *
      * @param list<string> $whereConditions The WHERE conditions.
-     * @param 'AND'|'OR' $operator The operator.
+     * @param 'AND'|'OR'   $operator        The operator.
      */
-    public function addWhereConditions(array $whereConditions, string $operator = 'AND') : void
+    public function addWhereConditions(array $whereConditions, string $operator = 'AND'): void
     {
         $parentheses = ($operator === 'OR' && count($whereConditions) > 1);
 
@@ -95,15 +98,15 @@ class SelectQueryBuilder
     }
 
     /**
-     * @param string $expression The expression to order by.
-     * @param 'ASC'|'DESC' $direction The order direction.
+     * @param string       $expression The expression to order by.
+     * @param 'ASC'|'DESC' $direction  The order direction.
      */
-    public function addOrderBy(string $expression, string $direction = 'ASC') : void
+    public function addOrderBy(string $expression, string $direction = 'ASC'): void
     {
         $this->orderBy[] = $expression . ' ' . $direction;
     }
 
-    public function setLimit(int $limit, int $offset = 0) : void
+    public function setLimit(int $limit, int $offset = 0): void
     {
         $this->limit = ' LIMIT ' . $limit;
 
@@ -115,12 +118,12 @@ class SelectQueryBuilder
     /**
      * @param int $options A bitmask of options.
      */
-    public function setOptions(int $options) : void
+    public function setOptions(int $options): void
     {
         $this->options = $options;
     }
 
-    public function build() : string
+    public function build(): string
     {
         $query = 'SELECT ' . implode(', ', $this->selectFields) . ' FROM ' . $this->tableName;
 

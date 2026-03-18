@@ -19,17 +19,17 @@ class Country
         $this->name = $name;
     }
 
-    public function getCode() : string
+    public function getCode(): string
     {
         return $this->code;
     }
 
-    public function getName() : string
+    public function getName(): string
     {
         return $this->name;
     }
 
-    public function setName(string $name) : void
+    public function setName(string $name): void
     {
         $this->name = $name;
     }

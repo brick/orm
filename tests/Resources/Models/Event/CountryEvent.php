@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Brick\ORM\Tests\Resources\Models\Event;
 
-use Brick\ORM\Tests\Resources\Models\Event;
 use Brick\ORM\Tests\Resources\Models\Country;
+use Brick\ORM\Tests\Resources\Models\Event;
 
 abstract class CountryEvent extends Event
 {
@@ -18,7 +18,7 @@ abstract class CountryEvent extends Event
         $this->country = $country;
     }
 
-    public function getCountry() : Country
+    public function getCountry(): Country
     {
         return $this->country;
     }

@@ -24,17 +24,17 @@ class FollowUserEvent extends Event
         $this->isFollow = $isFollow;
     }
 
-    public function getFollower() : User
+    public function getFollower(): User
     {
         return $this->follower;
     }
 
-    public function getFollowee() : User
+    public function getFollowee(): User
     {
         return $this->followee;
     }
 
-    public function isFollow() : bool
+    public function isFollow(): bool
     {
         return $this->isFollow;
     }

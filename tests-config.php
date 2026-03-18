@@ -6,9 +6,10 @@ use Brick\ORM\Configuration;
 use Brick\ORM\PropertyMapping\JsonMapping;
 use Brick\ORM\Tests\Resources\Mappings;
 use Brick\ORM\Tests\Resources\Models;
+use Brick\ORM\Tests\Resources\Models\Event;
 use Brick\ORM\Tests\Resources\Objects;
 
-return (function() {
+return (function () {
     $config = new Configuration();
 
     $config->setRepositoryNamespace('Brick\ORM\Tests\Generated\Repository');
@@ -30,17 +31,17 @@ return (function() {
     $config->addEntity(Models\Country::class)
         ->setIdentityProperties('code');
 
-    $config->addEntity(Brick\ORM\Tests\Resources\Models\Event::class)
+    $config->addEntity(Event::class)
         ->setIdentityProperties('id')
         ->setAutoIncrement()
         ->setInheritanceMapping('type', [
-            'CreateCountry'           => Models\Event\CountryEvent\CreateCountryEvent::class,
-            'EditCountryName'         => Models\Event\CountryEvent\EditCountryNameEvent::class,
-            'CreateUser'              => Models\Event\UserEvent\CreateUserEvent::class,
-            'EditUserBillingAddress'  => Models\Event\UserEvent\EditUserBillingAddressEvent::class,
+            'CreateCountry' => Models\Event\CountryEvent\CreateCountryEvent::class,
+            'EditCountryName' => Models\Event\CountryEvent\EditCountryNameEvent::class,
+            'CreateUser' => Models\Event\UserEvent\CreateUserEvent::class,
+            'EditUserBillingAddress' => Models\Event\UserEvent\EditUserBillingAddressEvent::class,
             'EditUserDeliveryAddress' => Models\Event\UserEvent\EditUserDeliveryAddressEvent::class,
-            'EditUserName'            => Models\Event\UserEvent\EditUserNameEvent::class,
-            'FollowUser'              => Models\Event\FollowUserEvent::class
+            'EditUserName' => Models\Event\UserEvent\EditUserNameEvent::class,
+            'FollowUser' => Models\Event\FollowUserEvent::class,
         ]);
 
     $config->addEmbeddable(Models\Address::class);

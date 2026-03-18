@@ -18,11 +18,11 @@ use Brick\ORM\RepositoryBuilder;
 
 // Include the autoloader
 
-(function() {
-    $possibleVendorLocations = array(
-        '..',         // when used in its original location during development, in bin/
-        '../../../..' // when used from a Composer vendor directory, in vendor/brick/orm/bin/
-    );
+(function (): void {
+    $possibleVendorLocations = [
+        '..', // when used in its original location during development, in bin/
+        '../../../..', // when used from a Composer vendor directory, in vendor/brick/orm/bin/
+    ];
 
     $found = false;
     foreach ($possibleVendorLocations as $location) {
@@ -30,6 +30,7 @@ use Brick\ORM\RepositoryBuilder;
         if (is_readable($autoloader)) {
             require $autoloader;
             $found = true;
+
             break;
         }
     }
@@ -39,7 +40,6 @@ use Brick\ORM\RepositoryBuilder;
         echo 'Did you install your dependencies using Composer?', PHP_EOL;
         exit(1);
     }
-
 })();
 
 if ($argc !== 2) {
@@ -49,14 +49,14 @@ if ($argc !== 2) {
 
 // Start building
 
-(function(string $path) {
+(function (string $path): void {
     /** @var Configuration $configuration */
     $configuration = require $path;
 
     // Build class metadata for all entity classes
 
     /** @var ClassMetadata[] $classMetadata */
-    $classMetadata = (function() use ($configuration) {
+    $classMetadata = (function () use ($configuration) {
         $builder = new ClassMetadataBuilder($configuration);
         $classMetadata = $builder->build();
 
@@ -72,7 +72,7 @@ if ($argc !== 2) {
 
     // Build repositories for all aggregate roots
 
-    (function() use ($configuration, $classMetadata) {
+    (function () use ($configuration, $classMetadata): void {
         foreach ($configuration->getEntities() as $className => $entityConfiguration) {
             if ($entityConfiguration->getBelongsTo() !== null) {
                 // Only generate repositories for aggregate roots.
@@ -89,7 +89,7 @@ if ($argc !== 2) {
                 $type = $classMetadata[$className]->propertyMappings[$idProperty]->getType();
 
                 if ($type === null) {
-                    throw new \LogicException('An identity property cannot be mapped to a mixed type.');
+                    throw new LogicException('An identity property cannot be mapped to a mixed type.');
                 }
 
                 $identityProps[$idProperty] = $type;
@@ -107,10 +107,10 @@ if ($argc !== 2) {
 
     // Build proxies for all non-abstract entity classes
 
-    (function() use ($configuration, $classMetadata) {
+    (function () use ($configuration, $classMetadata): void {
         foreach ($configuration->getEntities() as $entityConfiguration) {
             foreach ($entityConfiguration->getClassHierarchy() as $concreteClassName) {
-                $reflectionClass = new \ReflectionClass($concreteClassName);
+                $reflectionClass = new ReflectionClass($concreteClassName);
 
                 if ($reflectionClass->isAbstract()) {
                     continue;

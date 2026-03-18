@@ -27,44 +27,44 @@ class UserRepository
         $this->gateway = $gateway;
     }
 
-    public function load(int $id, int $options = 0, string ...$props) : ?User
+    public function load(int $id, int $options = 0, string ...$props): ?User
     {
         /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->gateway->load(User::class, ['id' => $id], $options, ...$props);
     }
 
-    public function getReference(int $id) : User
+    public function getReference(int $id): User
     {
         /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->gateway->getReference(User::class, ['id' => $id]);
     }
 
-    public function exists(User $user) : bool
+    public function exists(User $user): bool
     {
         return $this->gateway->exists($user);
     }
 
-    public function existsIdentity(int $id) : bool
+    public function existsIdentity(int $id): bool
     {
         return $this->gateway->existsIdentity(User::class, ['id' => $id]);
     }
 
-    public function add(User $user) : void
+    public function add(User $user): void
     {
         $this->gateway->add($user);
     }
 
-    public function update(User $user) : void
+    public function update(User $user): void
     {
         $this->gateway->update($user);
     }
 
-    public function remove(User $user) : void
+    public function remove(User $user): void
     {
         $this->gateway->remove($user);
     }
 
-    public function removeIdentity(int $id) : void
+    public function removeIdentity(int $id): void
     {
         $this->gateway->removeIdentity(User::class, ['id' => $id]);
     }

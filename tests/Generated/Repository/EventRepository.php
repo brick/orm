@@ -27,44 +27,44 @@ class EventRepository
         $this->gateway = $gateway;
     }
 
-    public function load(int $id, int $options = 0, string ...$props) : ?Event
+    public function load(int $id, int $options = 0, string ...$props): ?Event
     {
         /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->gateway->load(Event::class, ['id' => $id], $options, ...$props);
     }
 
-    public function getReference(int $id) : Event
+    public function getReference(int $id): Event
     {
         /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->gateway->getReference(Event::class, ['id' => $id]);
     }
 
-    public function exists(Event $event) : bool
+    public function exists(Event $event): bool
     {
         return $this->gateway->exists($event);
     }
 
-    public function existsIdentity(int $id) : bool
+    public function existsIdentity(int $id): bool
     {
         return $this->gateway->existsIdentity(Event::class, ['id' => $id]);
     }
 
-    public function add(Event $event) : void
+    public function add(Event $event): void
     {
         $this->gateway->add($event);
     }
 
-    public function update(Event $event) : void
+    public function update(Event $event): void
     {
         $this->gateway->update($event);
     }
 
-    public function remove(Event $event) : void
+    public function remove(Event $event): void
     {
         $this->gateway->remove($event);
     }
 
-    public function removeIdentity(int $id) : void
+    public function removeIdentity(int $id): void
     {
         $this->gateway->removeIdentity(Event::class, ['id' => $id]);
     }

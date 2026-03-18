@@ -12,16 +12,16 @@ class Geometry
 
     public function __construct(string $wkt, int $srid)
     {
-        $this->wkt  = $wkt;
+        $this->wkt = $wkt;
         $this->srid = $srid;
     }
 
-    public function getWKT() : string
+    public function getWKT(): string
     {
         return $this->wkt;
     }
 
-    public function getSRID() : int
+    public function getSRID(): int
     {
         return $this->srid;
     }

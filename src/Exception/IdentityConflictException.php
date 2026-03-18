@@ -4,23 +4,24 @@ declare(strict_types=1);
 
 namespace Brick\ORM\Exception;
 
+use function sprintf;
+
 /**
  * Exception thrown when attempting when two instances with the same identity conflict.
  */
 class IdentityConflictException extends ORMException
 {
     /**
-     * @param class-string $className The entity class name.
+     * @param class-string     $className      The entity class name.
      * @param list<int|string> $scalarIdentity The identity, as a list of scalar values.
-     *
      */
-    public static function identityMapConflict(string $className, array $scalarIdentity) : self
+    public static function identityMapConflict(string $className, array $scalarIdentity): self
     {
         return new self(sprintf(
             'The instance of entity type %s with identity %s cannot be added to the identity map, ' .
             'because another instance of this type with the same identity already exists.',
             $className,
-            self::exportScalarIdentity($scalarIdentity)
+            self::exportScalarIdentity($scalarIdentity),
         ));
     }
 }

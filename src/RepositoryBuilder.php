@@ -4,24 +4,41 @@ declare(strict_types=1);
 
 namespace Brick\ORM;
 
+use ReflectionClass;
+use ReflectionException;
+use RuntimeException;
+
+use function array_unique;
+use function array_values;
+use function count;
+use function file_get_contents;
+use function implode;
+use function in_array;
+use function ord;
+use function str_replace;
+use function strlen;
+use function strtolower;
+use function substr;
+use function var_export;
+
 class RepositoryBuilder
 {
-    private string|null $repositoryNamespace = null;
+    private null|string $repositoryNamespace = null;
 
     /**
      * @var class-string|null
      */
-    private string|null $entityClassName = null;
+    private null|string $entityClassName = null;
 
     /**
      * @var array<string, string>|null
      */
-    private array|null $identityProps = null;
+    private null|array $identityProps = null;
 
     /**
      * @param string $namespace The namespace of the repository.
      */
-    public function setRepositoryNamespace(string $namespace) : void
+    public function setRepositoryNamespace(string $namespace): void
     {
         $this->repositoryNamespace = $namespace;
     }
@@ -29,7 +46,7 @@ class RepositoryBuilder
     /**
      * @param class-string $className The FQCN of the entity.
      */
-    public function setEntityClassName(string $className) : void
+    public function setEntityClassName(string $className): void
     {
         $this->entityClassName = $className;
     }
@@ -37,7 +54,7 @@ class RepositoryBuilder
     /**
      * @param array<string, string> $props An associative array of property name to type.
      */
-    public function setIdentityProps(array $props) : void
+    public function setIdentityProps(array $props): void
     {
         $this->identityProps = $props;
     }
@@ -45,28 +62,28 @@ class RepositoryBuilder
     /**
      * Builds and returns the repository source code.
      *
-     * @throws \RuntimeException If data are missing.
-     * @throws \ReflectionException If a class does not exist.
+     * @throws RuntimeException    If data are missing.
+     * @throws ReflectionException If a class does not exist.
      */
-    public function build() : string
+    public function build(): string
     {
         if ($this->repositoryNamespace === null) {
-            throw new \RuntimeException('Missing repository namespace.');
+            throw new RuntimeException('Missing repository namespace.');
         }
 
         if ($this->entityClassName === null) {
-            throw new \RuntimeException('Missing entity class name.');
+            throw new RuntimeException('Missing entity class name.');
         }
 
         if ($this->identityProps === null) {
-            throw new \RuntimeException('Missing identity props.');
+            throw new RuntimeException('Missing identity props.');
         }
 
         $imports = [
-            $this->entityClassName
+            $this->entityClassName,
         ];
 
-        $entityClassShortName = (new \ReflectionClass($this->entityClassName))->getShortName();
+        $entityClassShortName = (new ReflectionClass($this->entityClassName))->getShortName();
 
         $code = file_get_contents(__DIR__ . '/RepositoryTemplate.php');
 
@@ -84,7 +101,7 @@ class RepositoryBuilder
             'array',
             'object',
             'callable',
-            'iterable'
+            'iterable',
         ];
 
         $identityProps = [];
@@ -98,7 +115,7 @@ class RepositoryBuilder
             } else {
                 /** @var class-string $type */
                 $imports[] = $type;
-                $type = (new \ReflectionClass($type))->getShortName();
+                $type = (new ReflectionClass($type))->getShortName();
             }
 
             $identityProps[] = $type . ' $' . $prop;
@@ -136,7 +153,7 @@ class RepositoryBuilder
      *
      * Examples: 'User' => 'user', 'ABBREntity' => 'abbrEntity'.
      */
-    private function getParamNameForClassName(string $className) : string
+    private function getParamNameForClassName(string $className): string
     {
         $length = strlen($className);
 
@@ -164,7 +181,7 @@ class RepositoryBuilder
     /**
      * Checks if an ASCII letter is uppercase.
      */
-    private function isUppercase(string $letter) : bool
+    private function isUppercase(string $letter): bool
     {
         $ord = ord($letter);
 

@@ -28,44 +28,44 @@ class FollowRepository
         $this->gateway = $gateway;
     }
 
-    public function load(User $follower, User $followee, int $options = 0, string ...$props) : ?Follow
+    public function load(User $follower, User $followee, int $options = 0, string ...$props): ?Follow
     {
         /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->gateway->load(Follow::class, ['follower' => $follower, 'followee' => $followee], $options, ...$props);
     }
 
-    public function getReference(User $follower, User $followee) : Follow
+    public function getReference(User $follower, User $followee): Follow
     {
         /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->gateway->getReference(Follow::class, ['follower' => $follower, 'followee' => $followee]);
     }
 
-    public function exists(Follow $follow) : bool
+    public function exists(Follow $follow): bool
     {
         return $this->gateway->exists($follow);
     }
 
-    public function existsIdentity(User $follower, User $followee) : bool
+    public function existsIdentity(User $follower, User $followee): bool
     {
         return $this->gateway->existsIdentity(Follow::class, ['follower' => $follower, 'followee' => $followee]);
     }
 
-    public function add(Follow $follow) : void
+    public function add(Follow $follow): void
     {
         $this->gateway->add($follow);
     }
 
-    public function update(Follow $follow) : void
+    public function update(Follow $follow): void
     {
         $this->gateway->update($follow);
     }
 
-    public function remove(Follow $follow) : void
+    public function remove(Follow $follow): void
     {
         $this->gateway->remove($follow);
     }
 
-    public function removeIdentity(User $follower, User $followee) : void
+    public function removeIdentity(User $follower, User $followee): void
     {
         $this->gateway->removeIdentity(Follow::class, ['follower' => $follower, 'followee' => $followee]);
     }

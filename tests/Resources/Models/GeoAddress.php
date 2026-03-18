@@ -17,22 +17,16 @@ class GeoAddress
 
     public function __construct(Address $address, Geometry $location)
     {
-        $this->address  = $address;
+        $this->address = $address;
         $this->location = $location;
     }
 
-    /**
-     * @return Address
-     */
-    public function getAddress() : Address
+    public function getAddress(): Address
     {
         return $this->address;
     }
 
-    /**
-     * @return Geometry
-     */
-    public function getLocation() : Geometry
+    public function getLocation(): Geometry
     {
         return $this->location;
     }

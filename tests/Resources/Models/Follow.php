@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Brick\ORM\Tests\Resources\Models;
 
+use function time;
+
 /**
  * An entity with a composite identity composed of 2 other entities (follower, followee).
  */
@@ -19,20 +21,20 @@ class Follow
     {
         $this->follower = $follower;
         $this->followee = $followee;
-        $this->since    = time();
+        $this->since = time();
     }
 
-    public function getFollower() : User
+    public function getFollower(): User
     {
         return $this->follower;
     }
 
-    public function getFollowee() : User
+    public function getFollowee(): User
     {
         return $this->followee;
     }
 
-    public function getSince() : int
+    public function getSince(): int
     {
         return $this->since;
     }

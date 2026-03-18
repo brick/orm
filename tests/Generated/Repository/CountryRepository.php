@@ -27,44 +27,44 @@ class CountryRepository
         $this->gateway = $gateway;
     }
 
-    public function load(string $code, int $options = 0, string ...$props) : ?Country
+    public function load(string $code, int $options = 0, string ...$props): ?Country
     {
         /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->gateway->load(Country::class, ['code' => $code], $options, ...$props);
     }
 
-    public function getReference(string $code) : Country
+    public function getReference(string $code): Country
     {
         /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->gateway->getReference(Country::class, ['code' => $code]);
     }
 
-    public function exists(Country $country) : bool
+    public function exists(Country $country): bool
     {
         return $this->gateway->exists($country);
     }
 
-    public function existsIdentity(string $code) : bool
+    public function existsIdentity(string $code): bool
     {
         return $this->gateway->existsIdentity(Country::class, ['code' => $code]);
     }
 
-    public function add(Country $country) : void
+    public function add(Country $country): void
     {
         $this->gateway->add($country);
     }
 
-    public function update(Country $country) : void
+    public function update(Country $country): void
     {
         $this->gateway->update($country);
     }
 
-    public function remove(Country $country) : void
+    public function remove(Country $country): void
     {
         $this->gateway->remove($country);
     }
 
-    public function removeIdentity(string $code) : void
+    public function removeIdentity(string $code): void
     {
         $this->gateway->removeIdentity(Country::class, ['code' => $code]);
     }

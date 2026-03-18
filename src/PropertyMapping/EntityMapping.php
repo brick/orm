@@ -5,8 +5,11 @@ declare(strict_types=1);
 namespace Brick\ORM\PropertyMapping;
 
 use Brick\ORM\EntityMetadata;
-use Brick\ORM\PropertyMapping;
 use Brick\ORM\Gateway;
+use Brick\ORM\PropertyMapping;
+
+use function array_slice;
+use function get_class;
 
 /**
  * @internal
@@ -23,23 +26,23 @@ class EntityMapping implements PropertyMapping
     public bool $isNullable;
 
     /**
-     * @param EntityMetadata $classMetadata The target entity class metadata.
-     * @param string $fieldNamePrefix The prefix for field names.
-     * @param bool $isNullable Whether the property is nullable.
+     * @param EntityMetadata $classMetadata   The target entity class metadata.
+     * @param string         $fieldNamePrefix The prefix for field names.
+     * @param bool           $isNullable      Whether the property is nullable.
      */
     public function __construct(EntityMetadata $classMetadata, string $fieldNamePrefix, bool $isNullable)
     {
-        $this->classMetadata   = $classMetadata;
+        $this->classMetadata = $classMetadata;
         $this->fieldNamePrefix = $fieldNamePrefix;
-        $this->isNullable      = $isNullable;
+        $this->isNullable = $isNullable;
     }
 
-    public function getType() : string|null
+    public function getType(): null|string
     {
         return $this->classMetadata->className;
     }
 
-    public function isNullable() : bool
+    public function isNullable(): bool
     {
         return $this->isNullable;
     }
@@ -47,7 +50,7 @@ class EntityMapping implements PropertyMapping
     /**
      * @todo precompute for better performance
      */
-    public function getFieldNames() : array
+    public function getFieldNames(): array
     {
         $names = [];
 
@@ -67,7 +70,7 @@ class EntityMapping implements PropertyMapping
     /**
      * @todo precompute for better performance
      */
-    public function getInputValuesCount() : int
+    public function getInputValuesCount(): int
     {
         $count = 0;
 
@@ -86,7 +89,7 @@ class EntityMapping implements PropertyMapping
     /**
      * @todo precompute for better performance
      */
-    public function getFieldToInputValuesSQL(array $fieldNames) : array
+    public function getFieldToInputValuesSQL(array $fieldNames): array
     {
         $wrappedFields = [];
         $currentIndex = 0;
@@ -110,7 +113,7 @@ class EntityMapping implements PropertyMapping
         return $wrappedFields;
     }
 
-    public function convertInputValuesToProp(Gateway $gateway, array $values) : mixed
+    public function convertInputValuesToProp(Gateway $gateway, array $values): mixed
     {
         $currentIndex = 0;
 
@@ -151,7 +154,7 @@ class EntityMapping implements PropertyMapping
     /**
      * @todo use Gateway::getIdentity() instead; currently does not check that the object has an identity
      */
-    public function convertPropToFields(mixed $propValue) : array
+    public function convertPropToFields(mixed $propValue): array
     {
         $result = [];
 
@@ -173,7 +176,7 @@ class EntityMapping implements PropertyMapping
         $identity = [];
 
         if ($entity !== null) {
-            (function() use ($idProperties, & $identity) {
+            (function () use ($idProperties, &$identity): void {
                 foreach ($idProperties as $prop) {
                     $identity[$prop] = $this->{$prop};
                 }

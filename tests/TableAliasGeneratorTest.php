@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Brick\ORM\Tests;
 
 use Brick\ORM\TableAliasGenerator;
-
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -13,14 +12,14 @@ use PHPUnit\Framework\TestCase;
  */
 class TableAliasGeneratorTest extends TestCase
 {
-    public function testGenerate()
+    public function testGenerate(): void
     {
         $generator = new TableAliasGenerator();
 
         $expected = [
             'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm',
             'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z1',
-            'z2', 'z3', 'z4', 'z5', 'z6', 'z7', 'z8', 'z9', 'z10', 'z11', 'z12'
+            'z2', 'z3', 'z4', 'z5', 'z6', 'z7', 'z8', 'z9', 'z10', 'z11', 'z12',
         ];
 
         foreach ($expected as $value) {

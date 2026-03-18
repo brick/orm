@@ -7,6 +7,9 @@ namespace Brick\ORM\PropertyMapping;
 use Brick\ORM\Gateway;
 use Brick\ORM\PropertyMapping;
 
+use function json_decode;
+use function json_encode;
+
 /**
  * Maps a column of any type to a JSON datatype in the database.
  */
@@ -28,32 +31,32 @@ class JsonMapping implements PropertyMapping
         $this->objectAsArray = $objectAsArray;
     }
 
-    public function isNullable() : bool
+    public function isNullable(): bool
     {
         return $this->isNullable;
     }
 
-    public function getFieldNames() : array
+    public function getFieldNames(): array
     {
         return [$this->fieldName];
     }
 
-    public function getInputValuesCount() : int
+    public function getInputValuesCount(): int
     {
         return 1;
     }
 
-    public function getFieldToInputValuesSQL(array $fieldNames) : array
+    public function getFieldToInputValuesSQL(array $fieldNames): array
     {
         return $fieldNames;
     }
 
-    public function getType() : string|null
+    public function getType(): null|string
     {
         return null;
     }
 
-    public function convertInputValuesToProp(Gateway $gateway, array $values) : mixed
+    public function convertInputValuesToProp(Gateway $gateway, array $values): mixed
     {
         /** @var array{string|null} $values */
 
@@ -64,16 +67,16 @@ class JsonMapping implements PropertyMapping
         return json_decode($values[0], $this->objectAsArray);
     }
 
-    public function convertPropToFields(mixed $propValue) : array
+    public function convertPropToFields(mixed $propValue): array
     {
         if ($propValue === null) {
             return [
-                ['NULL']
+                ['NULL'],
             ];
         }
 
         return [
-            ['?', json_encode($propValue)]
+            ['?', json_encode($propValue)],
         ];
     }
 }

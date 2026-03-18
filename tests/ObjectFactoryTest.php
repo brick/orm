@@ -7,8 +7,9 @@ namespace Brick\ORM\Tests;
 use Brick\ORM\EntityMetadata;
 use Brick\ORM\ObjectFactory;
 use Brick\ORM\Tests\Resources\Models\User;
-
 use PHPUnit\Framework\TestCase;
+
+use function get_class;
 
 /**
  * @todo PHP 7.4: test an object with all combinations of properties:
@@ -24,7 +25,7 @@ use PHPUnit\Framework\TestCase;
  */
 class ObjectFactoryTest extends TestCase
 {
-    public function testInstantiate()
+    public function testInstantiate(): void
     {
         $testClassMetadata = new EntityMetadata();
         $testClassMetadata->className = User::class;
@@ -33,26 +34,26 @@ class ObjectFactoryTest extends TestCase
         $objectFactory = new ObjectFactory();
         $user = $objectFactory->instantiate($testClassMetadata);
 
-        $this->assertSame(User::class, get_class($user));
+        self::assertSame(User::class, get_class($user));
 
-        $this->assertSame([
+        self::assertSame([
             "\0*\0billingAddress" => null,
             "\0*\0deliveryAddress" => null,
             "\0*\0lastEvent" => null,
             "\0*\0data" => ['any' => 'data'],
-            "\0*\0transient" => []
+            "\0*\0transient" => [],
         ], (array) $user);
 
-        $this->assertSame([
+        self::assertSame([
             'billingAddress' => null,
             'deliveryAddress' => null,
             'lastEvent' => null,
             'data' => ['any' => 'data'],
-            'transient' => []
+            'transient' => [],
         ], $objectFactory->read($user));
     }
 
-    public function testInstantiateWithPersistentProps()
+    public function testInstantiateWithPersistentProps(): void
     {
         $testClassMetadata = new EntityMetadata();
         $testClassMetadata->className = User::class;
@@ -61,21 +62,21 @@ class ObjectFactoryTest extends TestCase
         $objectFactory = new ObjectFactory();
         $user = $objectFactory->instantiate($testClassMetadata);
 
-        $this->assertSame(User::class, get_class($user));
+        self::assertSame(User::class, get_class($user));
 
-        $this->assertSame([
-            "\0*\0transient" => []
+        self::assertSame([
+            "\0*\0transient" => [],
         ], (array) $user);
 
-        $this->assertSame([
-            'transient' => []
+        self::assertSame([
+            'transient' => [],
         ], $objectFactory->read($user));
     }
 
-    public function testWrite()
+    public function testWrite(): void
     {
         $values = [
-            'name' => 'John'
+            'name' => 'John',
         ];
 
         $testClassMetadata = new EntityMetadata();
@@ -86,16 +87,16 @@ class ObjectFactoryTest extends TestCase
         $user = $objectFactory->instantiate($testClassMetadata);
         $objectFactory->write($user, $values);
 
-        $this->assertSame(User::class, get_class($user));
+        self::assertSame(User::class, get_class($user));
 
-        $this->assertSame([
+        self::assertSame([
             "\0*\0name" => 'John',
-            "\0*\0transient" => []
+            "\0*\0transient" => [],
         ], (array) $user);
 
-        $this->assertSame([
+        self::assertSame([
             'name' => 'John',
-            'transient' => []
+            'transient' => [],
         ], $objectFactory->read($user));
     }
 }
